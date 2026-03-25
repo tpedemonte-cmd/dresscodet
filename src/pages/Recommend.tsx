@@ -28,11 +28,27 @@ const EVENTS = [
   { value: 'universidad', label: '📚 Universidad' },
 ];
 
+const WEATHER = [
+  { value: 'soleado', label: '☀️ Soleado' },
+  { value: 'nublado', label: '☁️ Nublado' },
+  { value: 'lluvia', label: '🌧️ Llueve' },
+  { value: 'tormenta', label: '⛈️ Tormenta' },
+];
+
+const SEASONS = [
+  { value: 'verano', label: '🌞 Verano' },
+  { value: 'otoño', label: '🍂 Otoño' },
+  { value: 'invierno', label: '❄️ Invierno' },
+  { value: 'primavera', label: '🌸 Primavera' },
+];
+
 export default function Recommend() {
   const { user } = useAuth();
   const [mood, setMood] = useState('');
   const [event, setEvent] = useState('');
   const [temperature, setTemperature] = useState([20]);
+  const [weather, setWeather] = useState('');
+  const [season, setSeason] = useState('');
   const [recommendation, setRecommendation] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -50,7 +66,7 @@ export default function Recommend() {
   });
 
   const handleRecommend = async () => {
-    if (!mood || !event) {
+    if (!mood || !event || !weather || !season) {
       toast.error('Completá todos los campos');
       return;
     }
@@ -73,6 +89,8 @@ export default function Recommend() {
           mood,
           event,
           temperature: temperature[0],
+          weather,
+          season,
         },
       });
 
@@ -145,10 +163,38 @@ export default function Recommend() {
           </div>
         </div>
 
+        <div className="space-y-2">
+          <label className="text-sm font-body font-medium text-foreground">Clima</label>
+          <Select value={weather} onValueChange={setWeather}>
+            <SelectTrigger>
+              <SelectValue placeholder="¿Cómo está el clima?" />
+            </SelectTrigger>
+            <SelectContent>
+              {WEATHER.map((w) => (
+                <SelectItem key={w.value} value={w.value}>{w.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-body font-medium text-foreground">Estación del año</label>
+          <Select value={season} onValueChange={setSeason}>
+            <SelectTrigger>
+              <SelectValue placeholder="¿En qué estación estamos?" />
+            </SelectTrigger>
+            <SelectContent>
+              {SEASONS.map((s) => (
+                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <Button
           variant="warm"
           className="w-full"
-          disabled={loading || !mood || !event}
+          disabled={loading || !mood || !event || !weather || !season}
           onClick={handleRecommend}
         >
           {loading ? (

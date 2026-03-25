@@ -9,18 +9,20 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { wardrobe, mood, event, temperature } = await req.json();
+    const { wardrobe, mood, event, temperature, weather, season } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `Sos un estilista personal argentino. El usuario te va a dar su guardarropas, estado de ánimo, tipo de evento y temperatura. Tenés que recomendar un outfit completo usando SOLAMENTE las prendas que tiene en su placard. Sé específico con qué combinaciones hacer. Respondé en español argentino, de manera amigable y con onda. Si no tiene prendas adecuadas, sugerí qué podría agregar. Mantené la respuesta corta y concisa (máximo 3-4 párrafos).`;
+    const systemPrompt = `Sos un estilista personal argentino. El usuario te va a dar su guardarropas, estado de ánimo, tipo de evento, temperatura, clima y estación del año. Tenés que recomendar un outfit completo usando SOLAMENTE las prendas que tiene en su placard. Sé específico con qué combinaciones hacer. Respondé en español argentino, de manera amigable y con onda. Si no tiene prendas adecuadas, sugerí qué podría agregar. Mantené la respuesta corta y concisa (máximo 3-4 párrafos).`;
 
     const userPrompt = `Mi guardarropas: ${wardrobe}
 
 Estado de ánimo: ${mood}
 Evento: ${event}
 Temperatura: ${temperature}°C
+Clima: ${weather}
+Estación del año: ${season}
 
 ¿Qué me recomendás ponerme?`;
 
