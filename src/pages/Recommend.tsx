@@ -47,6 +47,8 @@ export default function Recommend() {
   const [mood, setMood] = useState('');
   const [event, setEvent] = useState('');
   const [temperature, setTemperature] = useState([20]);
+  const [weather, setWeather] = useState('');
+  const [season, setSeason] = useState('');
   const [recommendation, setRecommendation] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
