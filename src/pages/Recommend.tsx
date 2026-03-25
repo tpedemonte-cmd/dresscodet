@@ -66,7 +66,7 @@ export default function Recommend() {
   });
 
   const handleRecommend = async () => {
-    if (!mood || !event) {
+    if (!mood || !event || !weather || !season) {
       toast.error('Completá todos los campos');
       return;
     }
