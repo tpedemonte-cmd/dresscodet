@@ -28,6 +28,20 @@ const EVENTS = [
   { value: 'universidad', label: '📚 Universidad' },
 ];
 
+const WEATHER = [
+  { value: 'soleado', label: '☀️ Soleado' },
+  { value: 'nublado', label: '☁️ Nublado' },
+  { value: 'lluvia', label: '🌧️ Llueve' },
+  { value: 'tormenta', label: '⛈️ Tormenta' },
+];
+
+const SEASONS = [
+  { value: 'verano', label: '🌞 Verano' },
+  { value: 'otoño', label: '🍂 Otoño' },
+  { value: 'invierno', label: '❄️ Invierno' },
+  { value: 'primavera', label: '🌸 Primavera' },
+];
+
 export default function Recommend() {
   const { user } = useAuth();
   const [mood, setMood] = useState('');
