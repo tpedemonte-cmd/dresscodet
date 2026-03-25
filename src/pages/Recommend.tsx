@@ -89,6 +89,8 @@ export default function Recommend() {
           mood,
           event,
           temperature: temperature[0],
+          weather,
+          season,
         },
       });
 
