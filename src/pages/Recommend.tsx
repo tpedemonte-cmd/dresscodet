@@ -163,6 +163,35 @@ export default function Recommend() {
           </div>
         </div>
 
+        <div className="space-y-2">
+          <label className="text-sm font-body font-medium text-foreground">Clima</label>
+          <Select value={weather} onValueChange={setWeather}>
+            <SelectTrigger>
+              <SelectValue placeholder="¿Cómo está el clima?" />
+            </SelectTrigger>
+            <SelectContent>
+              {WEATHER.map((w) => (
+                <SelectItem key={w.value} value={w.value}>{w.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-body font-medium text-foreground">Estación del año</label>
+          <Select value={season} onValueChange={setSeason}>
+            <SelectTrigger>
+              <SelectValue placeholder="¿En qué estación estamos?" />
+            </SelectTrigger>
+            <SelectContent>
+              {SEASONS.map((s) => (
+                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          </div>
+        </div>
+
         <Button
           variant="warm"
           className="w-full"
