@@ -195,7 +195,7 @@ export default function Recommend() {
         <Button
           variant="warm"
           className="w-full"
-          disabled={loading || !mood || !event}
+          disabled={loading || !mood || !event || !weather || !season}
           onClick={handleRecommend}
         >
           {loading ? (
