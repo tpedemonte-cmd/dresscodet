@@ -189,7 +189,6 @@ export default function Recommend() {
               ))}
             </SelectContent>
           </Select>
-          </div>
         </div>
 
         <Button
