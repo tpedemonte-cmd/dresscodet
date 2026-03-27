@@ -136,6 +136,14 @@ export default function Wardrobe() {
           ))}
         </div>
       )}
+
+      {editingItem && (
+        <EditItemDialog
+          item={editingItem}
+          open={!!editingItem}
+          onOpenChange={(open) => { if (!open) setEditingItem(null); }}
+        />
+      )}
     </div>
   );
 }
