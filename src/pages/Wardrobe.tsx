@@ -121,6 +121,12 @@ export default function Wardrobe() {
                 {item.color && <p className="text-xs text-muted-foreground mt-0.5">{item.color}</p>}
               </div>
               <button
+                onClick={() => setEditingItem(item)}
+                className="absolute top-2 left-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity text-foreground hover:bg-primary hover:text-primary-foreground"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+              <button
                 onClick={() => deleteMutation.mutate(item.id)}
                 className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:bg-destructive hover:text-destructive-foreground"
               >
