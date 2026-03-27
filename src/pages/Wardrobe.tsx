@@ -51,6 +51,14 @@ export default function Wardrobe() {
     },
   });
 
+  const favMutation = useMutation({
+    mutationFn: async ({ id, is_favorite }: { id: string; is_favorite: boolean }) => {
+      const { error } = await supabase.from('clothing_items').update({ is_favorite } as any).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['clothing_items'] }),
+  });
+
   const filtered = filter ? items.filter((i) => i.category === filter) : items;
   const categories = [...new Set(items.map((i) => i.category))];
 
