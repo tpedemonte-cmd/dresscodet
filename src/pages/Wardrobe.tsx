@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { Trash2, Pencil } from 'lucide-react';
+import { Trash2, Pencil, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import EditItemDialog from '@/components/EditItemDialog';
@@ -49,6 +49,14 @@ export default function Wardrobe() {
       queryClient.invalidateQueries({ queryKey: ['clothing_items'] });
       toast.success('Prenda eliminada');
     },
+  });
+
+  const favMutation = useMutation({
+    mutationFn: async ({ id, is_favorite }: { id: string; is_favorite: boolean }) => {
+      const { error } = await supabase.from('clothing_items').update({ is_favorite } as any).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['clothing_items'] }),
   });
 
   const filtered = filter ? items.filter((i) => i.category === filter) : items;
@@ -121,8 +129,14 @@ export default function Wardrobe() {
                 {item.color && <p className="text-xs text-muted-foreground mt-0.5">{item.color}</p>}
               </div>
               <button
+                onClick={() => favMutation.mutate({ id: item.id, is_favorite: !(item as any).is_favorite })}
+                className={`absolute top-2 left-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm transition-opacity ${(item as any).is_favorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+              >
+                <Heart className={`h-4 w-4 ${(item as any).is_favorite ? 'fill-destructive text-destructive' : 'text-muted-foreground'}`} />
+              </button>
+              <button
                 onClick={() => setEditingItem(item)}
-                className="absolute top-2 left-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity text-foreground hover:bg-primary hover:text-primary-foreground"
+                className="absolute top-2 right-10 p-1.5 rounded-full bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity text-foreground hover:bg-primary hover:text-primary-foreground"
               >
                 <Pencil className="h-4 w-4" />
               </button>

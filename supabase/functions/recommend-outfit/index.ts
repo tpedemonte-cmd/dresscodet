@@ -14,7 +14,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `Sos un estilista personal argentino. El usuario te va a dar su guardarropas (cada prenda tiene un ID), estado de ánimo, tipo de evento, temperatura, clima y estación del año. Tenés que recomendar un outfit completo usando SOLAMENTE las prendas que tiene en su placard. Sé específico con qué combinaciones hacer. Respondé en español argentino, de manera amigable y con onda. Si no tiene prendas adecuadas, sugerí qué podría agregar. Mantené la respuesta corta y concisa (máximo 3-4 párrafos).
+    const systemPrompt = `Sos un estilista personal argentino. El usuario te va a dar su guardarropas (cada prenda tiene un ID, y las marcadas con ⭐ FAVORITA son sus prendas preferidas). Estado de ánimo, tipo de evento, temperatura, clima y estación del año. Tenés que recomendar un outfit completo usando SOLAMENTE las prendas que tiene en su placard. PRIORIZÁ las prendas marcadas como FAVORITA siempre que sean apropiadas para la ocasión. Sé específico con qué combinaciones hacer. Respondé en español argentino, de manera amigable y con onda. Si no tiene prendas adecuadas, sugerí qué podría agregar. Mantené la respuesta corta y concisa (máximo 3-4 párrafos).
 
 IMPORTANTE: Al final de tu respuesta, agregá una línea separada con el formato exacto:
 ITEMS_USADOS: id1, id2, id3
