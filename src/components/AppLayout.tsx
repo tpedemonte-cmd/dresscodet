@@ -12,6 +12,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     { path: '/', icon: Shirt, label: 'Mi Placard' },
     { path: '/agregar', icon: Plus, label: 'Agregar' },
     { path: '/recomendar', icon: Sparkles, label: 'Outfit' },
+    { path: '/historial', icon: Clock, label: 'Historial' },
   ];
 
   return (

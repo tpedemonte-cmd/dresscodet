@@ -103,11 +103,26 @@ export default function Recommend() {
       let cleanText = fullText.replace(/\n?ITEMS_USADOS:.+/i, '').trim();
       setRecommendation(cleanText);
       
+      let usedItemIds: string[] = [];
       if (itemsMatch && itemsMatch[1].trim() !== 'ninguno') {
-        const usedIds = itemsMatch[1].split(',').map((id: string) => id.trim());
-        setRecommendedItems(items.filter(item => usedIds.includes(item.id)));
+        usedItemIds = itemsMatch[1].split(',').map((id: string) => id.trim());
+        setRecommendedItems(items.filter(item => usedItemIds.includes(item.id)));
       } else {
         setRecommendedItems([]);
+      }
+
+      // Save to history
+      if (user) {
+        await supabase.from('outfit_history').insert({
+          user_id: user.id,
+          mood,
+          event,
+          temperature: temperature[0],
+          weather,
+          season,
+          recommendation: cleanText,
+          recommended_item_ids: usedItemIds,
+        } as any);
       }
     } catch (err: any) {
       if (err?.message?.includes('429') || err?.status === 429) {
