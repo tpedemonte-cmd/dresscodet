@@ -20,7 +20,8 @@ IMPORTANTE: Al final de tu respuesta, agregá una línea separada con el formato
 ITEMS_USADOS: id1, id2, id3
 donde los IDs son los de las prendas que recomendaste usar. Si no usaste ninguna, poné ITEMS_USADOS: ninguno`;
 
-    const userPrompt = `Mi guardarropas: ${wardrobe}
+    const userPrompt = `Mi guardarropas:
+${wardrobe}
 
 Estado de ánimo: ${mood}
 Evento: ${event}

@@ -232,6 +232,19 @@ export default function Recommend() {
           <div className="font-body text-foreground whitespace-pre-line leading-relaxed">
             {recommendation}
           </div>
+          {recommendedItems.length > 0 && (
+            <div className="pt-3 border-t border-border">
+              <p className="text-sm font-body font-medium text-muted-foreground mb-2">Prendas del outfit:</p>
+              <div className="grid grid-cols-3 gap-2">
+                {recommendedItems.map((item) => (
+                  <div key={item.id} className="rounded-lg overflow-hidden bg-secondary">
+                    <img src={item.image_url} alt={item.name} className="w-full aspect-square object-cover" />
+                    <p className="text-xs font-body text-center py-1 text-foreground truncate px-1">{item.name}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
