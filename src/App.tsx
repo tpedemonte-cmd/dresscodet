@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Wardrobe from "./pages/Wardrobe";
 import AddItem from "./pages/AddItem";
 import Recommend from "./pages/Recommend";
+import History from "./pages/History";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const AppRoutes = () => {
       <Route path="/" element={<ProtectedRoute><Wardrobe /></ProtectedRoute>} />
       <Route path="/agregar" element={<ProtectedRoute><AddItem /></ProtectedRoute>} />
       <Route path="/recomendar" element={<ProtectedRoute><Recommend /></ProtectedRoute>} />
+      <Route path="/historial" element={<ProtectedRoute><History /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

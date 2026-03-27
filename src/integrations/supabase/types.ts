@@ -44,6 +44,45 @@ export type Database = {
         }
         Relationships: []
       }
+      outfit_history: {
+        Row: {
+          created_at: string
+          event: string
+          id: string
+          mood: string
+          recommendation: string
+          recommended_item_ids: string[] | null
+          season: string
+          temperature: number
+          user_id: string
+          weather: string
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          id?: string
+          mood: string
+          recommendation: string
+          recommended_item_ids?: string[] | null
+          season: string
+          temperature: number
+          user_id: string
+          weather: string
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          id?: string
+          mood?: string
+          recommendation?: string
+          recommended_item_ids?: string[] | null
+          season?: string
+          temperature?: number
+          user_id?: string
+          weather?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
