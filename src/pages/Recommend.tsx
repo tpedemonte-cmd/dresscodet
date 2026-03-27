@@ -50,6 +50,7 @@ export default function Recommend() {
   const [weather, setWeather] = useState('');
   const [season, setSeason] = useState('');
   const [recommendation, setRecommendation] = useState<string | null>(null);
+  const [recommendedItems, setRecommendedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   const { data: items = [] } = useQuery({
