@@ -78,6 +78,7 @@ export default function Recommend() {
 
     setLoading(true);
     setRecommendation(null);
+    setRecommendedItems([]);
 
     try {
       const wardrobeSummary = items.map(i => 
