@@ -82,7 +82,7 @@ export default function Recommend() {
 
     try {
       const wardrobeSummary = items.map(i => 
-        `- ID:${i.id} | ${i.name} (${i.category}${i.color ? ', ' + i.color : ''})`
+        `- ID:${i.id} | ${i.name} (${i.category}${i.color ? ', ' + i.color : ''})${(i as any).is_favorite ? ' ⭐ FAVORITA' : ''}`
       ).join('\n');
 
       const { data, error } = await supabase.functions.invoke('recommend-outfit', {
