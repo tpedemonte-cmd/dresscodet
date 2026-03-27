@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import EditItemDialog from '@/components/EditItemDialog';
 
 const CATEGORIES: Record<string, string> = {
   remera: '👕 Remera',
@@ -24,6 +25,7 @@ export default function Wardrobe() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<any>(null);
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['clothing_items', user?.id],
@@ -119,6 +121,12 @@ export default function Wardrobe() {
                 {item.color && <p className="text-xs text-muted-foreground mt-0.5">{item.color}</p>}
               </div>
               <button
+                onClick={() => setEditingItem(item)}
+                className="absolute top-2 left-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity text-foreground hover:bg-primary hover:text-primary-foreground"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+              <button
                 onClick={() => deleteMutation.mutate(item.id)}
                 className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:bg-destructive hover:text-destructive-foreground"
               >
@@ -127,6 +135,14 @@ export default function Wardrobe() {
             </div>
           ))}
         </div>
+      )}
+
+      {editingItem && (
+        <EditItemDialog
+          item={editingItem}
+          open={!!editingItem}
+          onOpenChange={(open) => { if (!open) setEditingItem(null); }}
+        />
       )}
     </div>
   );
