@@ -50,6 +50,7 @@ export default function Recommend() {
   const [weather, setWeather] = useState('');
   const [season, setSeason] = useState('');
   const [recommendation, setRecommendation] = useState<string | null>(null);
+  const [recommendedItems, setRecommendedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   const { data: items = [] } = useQuery({
@@ -77,11 +78,12 @@ export default function Recommend() {
 
     setLoading(true);
     setRecommendation(null);
+    setRecommendedItems([]);
 
     try {
       const wardrobeSummary = items.map(i => 
-        `${i.name} (${i.category}${i.color ? ', ' + i.color : ''})`
-      ).join('; ');
+        `- ID:${i.id} | ${i.name} (${i.category}${i.color ? ', ' + i.color : ''})`
+      ).join('\n');
 
       const { data, error } = await supabase.functions.invoke('recommend-outfit', {
         body: {
@@ -95,7 +97,18 @@ export default function Recommend() {
       });
 
       if (error) throw error;
-      setRecommendation(data.recommendation);
+      
+      const fullText: string = data.recommendation || '';
+      const itemsMatch = fullText.match(/ITEMS_USADOS:\s*(.+)/i);
+      let cleanText = fullText.replace(/\n?ITEMS_USADOS:.+/i, '').trim();
+      setRecommendation(cleanText);
+      
+      if (itemsMatch && itemsMatch[1].trim() !== 'ninguno') {
+        const usedIds = itemsMatch[1].split(',').map((id: string) => id.trim());
+        setRecommendedItems(items.filter(item => usedIds.includes(item.id)));
+      } else {
+        setRecommendedItems([]);
+      }
     } catch (err: any) {
       if (err?.message?.includes('429') || err?.status === 429) {
         toast.error('Demasiadas solicitudes, intentá de nuevo en un momento');
@@ -219,6 +232,19 @@ export default function Recommend() {
           <div className="font-body text-foreground whitespace-pre-line leading-relaxed">
             {recommendation}
           </div>
+          {recommendedItems.length > 0 && (
+            <div className="pt-3 border-t border-border">
+              <p className="text-sm font-body font-medium text-muted-foreground mb-2">Prendas del outfit:</p>
+              <div className="grid grid-cols-3 gap-2">
+                {recommendedItems.map((item) => (
+                  <div key={item.id} className="rounded-lg overflow-hidden bg-secondary">
+                    <img src={item.image_url} alt={item.name} className="w-full aspect-square object-cover" />
+                    <p className="text-xs font-body text-center py-1 text-foreground truncate px-1">{item.name}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
