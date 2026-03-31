@@ -10,6 +10,7 @@ import Wardrobe from "./pages/Wardrobe";
 import AddItem from "./pages/AddItem";
 import Recommend from "./pages/Recommend";
 import History from "./pages/History";
+import Stats from "./pages/Stats";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
