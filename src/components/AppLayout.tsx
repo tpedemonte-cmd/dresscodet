@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
-import { Shirt, Plus, Sparkles, LogOut, Clock } from 'lucide-react';
+import { Shirt, Plus, Sparkles, LogOut, Clock, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
@@ -13,6 +13,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     { path: '/agregar', icon: Plus, label: 'Agregar' },
     { path: '/recomendar', icon: Sparkles, label: 'Outfit' },
     { path: '/historial', icon: Clock, label: 'Historial' },
+    { path: '/estadisticas', icon: BarChart3, label: 'Stats' },
   ];
 
   return (
