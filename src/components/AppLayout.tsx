@@ -13,6 +13,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     { path: '/agregar', icon: Plus, label: 'Agregar' },
     { path: '/recomendar', icon: Sparkles, label: 'Outfit' },
     { path: '/historial', icon: Clock, label: 'Historial' },
+    { path: '/estadisticas', icon: BarChart3, label: 'Stats' },
   ];
 
   return (

@@ -34,6 +34,7 @@ const AppRoutes = () => {
       <Route path="/agregar" element={<ProtectedRoute><AddItem /></ProtectedRoute>} />
       <Route path="/recomendar" element={<ProtectedRoute><Recommend /></ProtectedRoute>} />
       <Route path="/historial" element={<ProtectedRoute><History /></ProtectedRoute>} />
+      <Route path="/estadisticas" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
