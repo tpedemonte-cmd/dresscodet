@@ -11,6 +11,7 @@ import AddItem from "./pages/AddItem";
 import Recommend from "./pages/Recommend";
 import History from "./pages/History";
 import Stats from "./pages/Stats";
+import Marketplace from "./pages/Marketplace";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const AppRoutes = () => {
       <Route path="/recomendar" element={<ProtectedRoute><Recommend /></ProtectedRoute>} />
       <Route path="/historial" element={<ProtectedRoute><History /></ProtectedRoute>} />
       <Route path="/estadisticas" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
+      <Route path="/tienda" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
