@@ -5,7 +5,8 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Sparkles } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Sparkles, ShoppingBag, ExternalLink, Truck, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MOODS = [
@@ -42,6 +43,23 @@ const SEASONS = [
   { value: 'primavera', label: '🌸 Primavera' },
 ];
 
+type MarketplaceProduct = {
+  id: string;
+  title: string;
+  price: number;
+  currency: string;
+  thumbnail: string;
+  image: string;
+  permalink: string;
+  free_shipping: boolean;
+};
+
+type ShoppingSuggestion = {
+  query: string;
+  products: MarketplaceProduct[];
+  loading: boolean;
+};
+
 export default function Recommend() {
   const { user } = useAuth();
   const [mood, setMood] = useState('');
@@ -51,6 +69,7 @@ export default function Recommend() {
   const [season, setSeason] = useState('');
   const [recommendation, setRecommendation] = useState<string | null>(null);
   const [recommendedItems, setRecommendedItems] = useState<any[]>([]);
+  const [shoppingSuggestions, setShoppingSuggestions] = useState<ShoppingSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
 
   const { data: items = [] } = useQuery({
@@ -66,6 +85,18 @@ export default function Recommend() {
     enabled: !!user,
   });
 
+  const searchMarketplace = async (query: string): Promise<MarketplaceProduct[]> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('search-marketplace', {
+        body: { query, limit: 4 },
+      });
+      if (error) throw error;
+      return data.products || [];
+    } catch {
+      return [];
+    }
+  };
+
   const handleRecommend = async () => {
     if (!mood || !event || !weather || !season) {
       toast.error('Completá todos los campos');
@@ -79,47 +110,49 @@ export default function Recommend() {
     setLoading(true);
     setRecommendation(null);
     setRecommendedItems([]);
+    setShoppingSuggestions([]);
 
     try {
-      const wardrobeSummary = items.map(i => 
-        `- ID:${i.id} | ${i.name} (${i.category}${i.color ? ', ' + i.color : ''})${(i as any).is_favorite ? ' ⭐ FAVORITA' : ''}`
+      const wardrobeSummary = items.map(i =>
+        `- ID:${i.id} | ${i.name} (${i.category}${i.color ? ', ' + i.color : ''})${i.is_favorite ? ' ⭐ FAVORITA' : ''}`
       ).join('\n');
 
       const { data, error } = await supabase.functions.invoke('recommend-outfit', {
-        body: {
-          wardrobe: wardrobeSummary,
-          mood,
-          event,
-          temperature: temperature[0],
-          weather,
-          season,
-        },
+        body: { wardrobe: wardrobeSummary, mood, event, temperature: temperature[0], weather, season },
       });
 
       if (error) throw error;
-      
+
       const fullText: string = data.recommendation || '';
+
+      // Parse ITEMS_USADOS
       const itemsMatch = fullText.match(/ITEMS_USADOS:\s*(.+)/i);
-      let cleanText = fullText.replace(/\n?ITEMS_USADOS:.+/i, '').trim();
+      let cleanText = fullText.replace(/\n?ITEMS_USADOS:.+/i, '').replace(/\n?COMPRAR:.+/i, '').trim();
       setRecommendation(cleanText);
-      
+
       let usedItemIds: string[] = [];
       if (itemsMatch && itemsMatch[1].trim() !== 'ninguno') {
         usedItemIds = itemsMatch[1].split(',').map((id: string) => id.trim());
         setRecommendedItems(items.filter(item => usedItemIds.includes(item.id)));
-      } else {
-        setRecommendedItems([]);
+      }
+
+      // Parse COMPRAR
+      const buyMatch = fullText.match(/COMPRAR:\s*(.+)/i);
+      if (buyMatch && buyMatch[1].trim() !== 'nada') {
+        const queries = buyMatch[1].split('|').map((q: string) => q.trim()).filter(Boolean);
+        const suggestions: ShoppingSuggestion[] = queries.map(q => ({ query: q, products: [], loading: true }));
+        setShoppingSuggestions(suggestions);
+
+        // Fetch products in parallel
+        const results = await Promise.all(queries.map(q => searchMarketplace(q)));
+        setShoppingSuggestions(queries.map((q, i) => ({ query: q, products: results[i], loading: false })));
       }
 
       // Save to history
       if (user) {
         await supabase.from('outfit_history').insert({
           user_id: user.id,
-          mood,
-          event,
-          temperature: temperature[0],
-          weather,
-          season,
+          mood, event, temperature: temperature[0], weather, season,
           recommendation: cleanText,
           recommended_item_ids: usedItemIds,
         } as any);
@@ -138,6 +171,9 @@ export default function Recommend() {
     }
   };
 
+  const formatPrice = (price: number, currency: string) =>
+    new Intl.NumberFormat('es-AR', { style: 'currency', currency: currency || 'ARS', maximumFractionDigits: 0 }).format(price);
+
   return (
     <div className="max-w-md mx-auto space-y-6">
       <div>
@@ -149,13 +185,9 @@ export default function Recommend() {
         <div className="space-y-2">
           <label className="text-sm font-body font-medium text-foreground">Estado de ánimo</label>
           <Select value={mood} onValueChange={setMood}>
-            <SelectTrigger>
-              <SelectValue placeholder="¿Cómo te sentís?" />
-            </SelectTrigger>
+            <SelectTrigger><SelectValue placeholder="¿Cómo te sentís?" /></SelectTrigger>
             <SelectContent>
-              {MOODS.map((m) => (
-                <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-              ))}
+              {MOODS.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -163,13 +195,9 @@ export default function Recommend() {
         <div className="space-y-2">
           <label className="text-sm font-body font-medium text-foreground">Tipo de juntada</label>
           <Select value={event} onValueChange={setEvent}>
-            <SelectTrigger>
-              <SelectValue placeholder="¿A dónde vas?" />
-            </SelectTrigger>
+            <SelectTrigger><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
             <SelectContent>
-              {EVENTS.map((e) => (
-                <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>
-              ))}
+              {EVENTS.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -178,29 +206,18 @@ export default function Recommend() {
           <label className="text-sm font-body font-medium text-foreground">
             Temperatura: {temperature[0]}°C
           </label>
-          <Slider
-            value={temperature}
-            onValueChange={setTemperature}
-            min={-5}
-            max={45}
-            step={1}
-          />
+          <Slider value={temperature} onValueChange={setTemperature} min={-5} max={45} step={1} />
           <div className="flex justify-between text-xs text-muted-foreground font-body">
-            <span>🥶 -5°C</span>
-            <span>🔥 45°C</span>
+            <span>🥶 -5°C</span><span>🔥 45°C</span>
           </div>
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-body font-medium text-foreground">Clima</label>
           <Select value={weather} onValueChange={setWeather}>
-            <SelectTrigger>
-              <SelectValue placeholder="¿Cómo está el clima?" />
-            </SelectTrigger>
+            <SelectTrigger><SelectValue placeholder="¿Cómo está el clima?" /></SelectTrigger>
             <SelectContent>
-              {WEATHER.map((w) => (
-                <SelectItem key={w.value} value={w.value}>{w.label}</SelectItem>
-              ))}
+              {WEATHER.map((w) => <SelectItem key={w.value} value={w.value}>{w.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -208,23 +225,14 @@ export default function Recommend() {
         <div className="space-y-2">
           <label className="text-sm font-body font-medium text-foreground">Estación del año</label>
           <Select value={season} onValueChange={setSeason}>
-            <SelectTrigger>
-              <SelectValue placeholder="¿En qué estación estamos?" />
-            </SelectTrigger>
+            <SelectTrigger><SelectValue placeholder="¿En qué estación estamos?" /></SelectTrigger>
             <SelectContent>
-              {SEASONS.map((s) => (
-                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-              ))}
+              {SEASONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
 
-        <Button
-          variant="warm"
-          className="w-full"
-          disabled={loading || !mood || !event || !weather || !season}
-          onClick={handleRecommend}
-        >
+        <Button variant="warm" className="w-full" disabled={loading || !mood || !event || !weather || !season} onClick={handleRecommend}>
           {loading ? (
             <span className="flex items-center gap-2">
               <div className="animate-spin h-4 w-4 border-2 border-accent-foreground border-t-transparent rounded-full" />
@@ -260,6 +268,66 @@ export default function Recommend() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Shopping suggestions */}
+      {shoppingSuggestions.length > 0 && (
+        <div className="bg-card p-6 rounded-xl shadow-elevated space-y-4 animate-in fade-in slide-in-from-bottom-4">
+          <h3 className="font-display font-bold text-lg text-foreground flex items-center gap-2">
+            <ShoppingBag className="h-5 w-5 text-primary" />
+            Te falta algo? Compralo acá
+          </h3>
+          {shoppingSuggestions.map((suggestion, idx) => (
+            <div key={idx} className="space-y-2">
+              <p className="text-sm font-body font-medium text-muted-foreground capitalize">
+                🔍 {suggestion.query}
+              </p>
+              {suggestion.loading ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : suggestion.products.length === 0 ? (
+                <p className="text-xs text-muted-foreground font-body">No se encontraron productos</p>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  {suggestion.products.map((product) => (
+                    <a
+                      key={product.id}
+                      href={product.permalink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group bg-secondary rounded-lg overflow-hidden hover:shadow-card transition-all"
+                    >
+                      <div className="aspect-square overflow-hidden">
+                        <img
+                          src={product.image || product.thumbnail}
+                          alt={product.title}
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                          loading="lazy"
+                          onError={(e) => { (e.target as HTMLImageElement).src = product.thumbnail; }}
+                        />
+                      </div>
+                      <div className="p-2 space-y-1">
+                        <p className="text-[11px] font-body text-foreground line-clamp-2 leading-tight">{product.title}</p>
+                        <p className="text-sm font-display font-bold text-foreground">{formatPrice(product.price, product.currency)}</p>
+                        <div className="flex items-center gap-1">
+                          {product.free_shipping && (
+                            <Badge variant="secondary" className="text-[9px] gap-0.5 px-1 py-0">
+                              <Truck className="h-2.5 w-2.5" /> Gratis
+                            </Badge>
+                          )}
+                          <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
+                            <ExternalLink className="h-2 w-2" /> ML
+                          </span>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>

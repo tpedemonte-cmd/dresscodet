@@ -16,9 +16,13 @@ serve(async (req) => {
 
     const systemPrompt = `Sos un estilista personal argentino. El usuario te va a dar su guardarropas (cada prenda tiene un ID, y las marcadas con ⭐ FAVORITA son sus prendas preferidas). Estado de ánimo, tipo de evento, temperatura, clima y estación del año. Tenés que recomendar un outfit completo usando SOLAMENTE las prendas que tiene en su placard. PRIORIZÁ las prendas marcadas como FAVORITA siempre que sean apropiadas para la ocasión. Sé específico con qué combinaciones hacer. Respondé en español argentino, de manera amigable y con onda. Si no tiene prendas adecuadas, sugerí qué podría agregar. Mantené la respuesta corta y concisa (máximo 3-4 párrafos).
 
-IMPORTANTE: Al final de tu respuesta, agregá una línea separada con el formato exacto:
+IMPORTANTE: Al final de tu respuesta, agregá DOS líneas separadas con el formato exacto:
+
 ITEMS_USADOS: id1, id2, id3
-donde los IDs son los de las prendas que recomendaste usar. Si no usaste ninguna, poné ITEMS_USADOS: ninguno`;
+donde los IDs son los de las prendas que recomendaste usar. Si no usaste ninguna, poné ITEMS_USADOS: ninguno
+
+COMPRAR: término1 | término2 | término3
+donde cada término es una búsqueda corta para Mercado Libre de una prenda que le falta al usuario y completaría el outfit (ej: "campera de cuero negra", "zapatillas blancas casual"). Si el outfit está completo con lo que tiene, poné COMPRAR: nada`;
 
     const userPrompt = `Mi guardarropas:
 ${wardrobe}
