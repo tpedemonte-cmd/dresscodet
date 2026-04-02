@@ -57,6 +57,10 @@ export default function Marketplace() {
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [searched, setSearched] = useState(false);
+  const [priceRange, setPriceRange] = useState('all');
+  const [size, setSize] = useState('all');
+  const [freeShippingOnly, setFreeShippingOnly] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const handleSearch = async (searchQuery?: string) => {
     const q = searchQuery || query;
@@ -70,7 +74,12 @@ export default function Marketplace() {
 
     try {
       const { data, error } = await supabase.functions.invoke('search-marketplace', {
-        body: { query: q, limit: 24 },
+        body: {
+          query: size !== 'all' ? `${q} talle ${size}` : q,
+          limit: 24,
+          priceRange: priceRange !== 'all' ? priceRange : undefined,
+          freeShipping: freeShippingOnly || undefined,
+        },
       });
 
       if (error) throw error;
