@@ -130,8 +130,12 @@ export default function Recommend() {
         `- ID:${i.id} | ${i.name} (${i.category}${i.color ? ', ' + i.color : ''})${i.is_favorite ? ' ⭐ FAVORITA' : ''}`
       ).join('\n');
 
+      const wishlistSummary = wishlistItems.length > 0
+        ? wishlistItems.map((w: any) => `- ${w.title} ($${w.price} ${w.currency})`).join('\n')
+        : '';
+
       const { data, error } = await supabase.functions.invoke('recommend-outfit', {
-        body: { wardrobe: wardrobeSummary, mood, event, temperature: temperature[0], weather, season },
+        body: { wardrobe: wardrobeSummary, wishlist: wishlistSummary, mood, event, temperature: temperature[0], weather, season },
       });
 
       if (error) throw error;
