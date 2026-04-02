@@ -3,8 +3,29 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, ExternalLink, Truck, ShoppingBag, Loader2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Search, ExternalLink, Truck, ShoppingBag, Loader2, SlidersHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
+
+const PRICE_RANGES = [
+  { label: 'Todos los precios', value: 'all' },
+  { label: 'Hasta $20.000', value: '0-20000' },
+  { label: '$20.000 - $50.000', value: '20000-50000' },
+  { label: '$50.000 - $100.000', value: '50000-100000' },
+  { label: 'Más de $100.000', value: '100000-*' },
+];
+
+const SIZE_OPTIONS = [
+  { label: 'Todos los talles', value: 'all' },
+  { label: 'XS', value: 'XS' },
+  { label: 'S', value: 'S' },
+  { label: 'M', value: 'M' },
+  { label: 'L', value: 'L' },
+  { label: 'XL', value: 'XL' },
+  { label: 'XXL', value: 'XXL' },
+];
 
 const QUICK_SEARCHES = [
   { label: '👕 Remeras', query: 'remera' },
