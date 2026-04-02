@@ -129,21 +129,78 @@ export default function Marketplace() {
         </Button>
       </div>
 
-      {/* Quick searches */}
-      <div className="flex flex-wrap gap-2">
-        {QUICK_SEARCHES.map((qs) => (
-          <button
-            key={qs.query}
-            onClick={() => {
-              setQuery(qs.query);
-              handleSearch(qs.query);
-            }}
-            className="px-3 py-1.5 text-sm font-body rounded-full bg-secondary text-secondary-foreground hover:bg-accent transition-colors"
-          >
-            {qs.label}
-          </button>
-        ))}
+      {/* Filters toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex flex-wrap gap-2">
+          {QUICK_SEARCHES.map((qs) => (
+            <button
+              key={qs.query}
+              onClick={() => {
+                setQuery(qs.query);
+                handleSearch(qs.query);
+              }}
+              className="px-3 py-1.5 text-sm font-body rounded-full bg-secondary text-secondary-foreground hover:bg-accent transition-colors"
+            >
+              {qs.label}
+            </button>
+          ))}
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+          className="shrink-0"
+        >
+          <SlidersHorizontal className="h-4 w-4 mr-1" />
+          Filtros
+        </Button>
       </div>
+
+      {/* Filters panel */}
+      {showFilters && (
+        <div className="bg-card rounded-xl p-4 shadow-card space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Precio</Label>
+              <Select value={priceRange} onValueChange={setPriceRange}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRICE_RANGES.map((p) => (
+                    <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Talle</Label>
+              <Select value={size} onValueChange={setSize}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SIZE_OPTIONS.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5 flex flex-col justify-end">
+              <div className="flex items-center gap-2 h-9">
+                <Switch
+                  id="free-shipping"
+                  checked={freeShippingOnly}
+                  onCheckedChange={setFreeShippingOnly}
+                />
+                <Label htmlFor="free-shipping" className="text-sm cursor-pointer flex items-center gap-1">
+                  <Truck className="h-3.5 w-3.5" /> Envío gratis
+                </Label>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Results */}
       {loading && (
