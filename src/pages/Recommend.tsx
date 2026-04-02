@@ -85,6 +85,19 @@ export default function Recommend() {
     enabled: !!user,
   });
 
+  const { data: wishlistItems = [] } = useQuery({
+    queryKey: ['wishlist', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('wishlist')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const searchMarketplace = async (query: string): Promise<MarketplaceProduct[]> => {
     try {
       const { data, error } = await supabase.functions.invoke('search-marketplace', {
