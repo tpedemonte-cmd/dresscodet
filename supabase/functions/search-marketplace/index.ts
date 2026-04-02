@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { query, category, offset = 0, limit = 20 } = await req.json();
+    const { query, category, offset = 0, limit = 20, priceRange, freeShipping } = await req.json();
 
     if (!query || typeof query !== "string") {
       return new Response(JSON.stringify({ error: "Query is required" }), {
@@ -18,7 +18,6 @@ serve(async (req) => {
       });
     }
 
-    // Map categories to Mercado Libre category IDs for Argentina (MLA)
     const categoryMap: Record<string, string> = {
       remera: "MLA109282",
       pantalon: "MLA109276",
@@ -39,7 +38,21 @@ serve(async (req) => {
       url += `&category=${categoryMap[category]}`;
     }
 
-    // Only new items, with pictures, sorted by relevance
+    // Price filter
+    if (priceRange) {
+      const [min, max] = priceRange.split("-");
+      if (max === "*") {
+        url += `&price=${min}-`;
+      } else {
+        url += `&price=${min}-${max}`;
+      }
+    }
+
+    // Free shipping filter
+    if (freeShipping) {
+      url += `&shipping_cost=free`;
+    }
+
     url += "&condition=new&has_pictures=yes&sort=relevance";
 
     console.log("Searching ML:", url);
