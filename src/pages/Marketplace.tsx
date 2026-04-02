@@ -3,8 +3,29 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, ExternalLink, Truck, ShoppingBag, Loader2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Search, ExternalLink, Truck, ShoppingBag, Loader2, SlidersHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
+
+const PRICE_RANGES = [
+  { label: 'Todos los precios', value: 'all' },
+  { label: 'Hasta $20.000', value: '0-20000' },
+  { label: '$20.000 - $50.000', value: '20000-50000' },
+  { label: '$50.000 - $100.000', value: '50000-100000' },
+  { label: 'Más de $100.000', value: '100000-*' },
+];
+
+const SIZE_OPTIONS = [
+  { label: 'Todos los talles', value: 'all' },
+  { label: 'XS', value: 'XS' },
+  { label: 'S', value: 'S' },
+  { label: 'M', value: 'M' },
+  { label: 'L', value: 'L' },
+  { label: 'XL', value: 'XL' },
+  { label: 'XXL', value: 'XXL' },
+];
 
 const QUICK_SEARCHES = [
   { label: '👕 Remeras', query: 'remera' },
@@ -36,6 +57,10 @@ export default function Marketplace() {
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [searched, setSearched] = useState(false);
+  const [priceRange, setPriceRange] = useState('all');
+  const [size, setSize] = useState('all');
+  const [freeShippingOnly, setFreeShippingOnly] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const handleSearch = async (searchQuery?: string) => {
     const q = searchQuery || query;
@@ -49,7 +74,12 @@ export default function Marketplace() {
 
     try {
       const { data, error } = await supabase.functions.invoke('search-marketplace', {
-        body: { query: q, limit: 24 },
+        body: {
+          query: size !== 'all' ? `${q} talle ${size}` : q,
+          limit: 24,
+          priceRange: priceRange !== 'all' ? priceRange : undefined,
+          freeShipping: freeShippingOnly || undefined,
+        },
       });
 
       if (error) throw error;
@@ -99,21 +129,78 @@ export default function Marketplace() {
         </Button>
       </div>
 
-      {/* Quick searches */}
-      <div className="flex flex-wrap gap-2">
-        {QUICK_SEARCHES.map((qs) => (
-          <button
-            key={qs.query}
-            onClick={() => {
-              setQuery(qs.query);
-              handleSearch(qs.query);
-            }}
-            className="px-3 py-1.5 text-sm font-body rounded-full bg-secondary text-secondary-foreground hover:bg-accent transition-colors"
-          >
-            {qs.label}
-          </button>
-        ))}
+      {/* Filters toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex flex-wrap gap-2">
+          {QUICK_SEARCHES.map((qs) => (
+            <button
+              key={qs.query}
+              onClick={() => {
+                setQuery(qs.query);
+                handleSearch(qs.query);
+              }}
+              className="px-3 py-1.5 text-sm font-body rounded-full bg-secondary text-secondary-foreground hover:bg-accent transition-colors"
+            >
+              {qs.label}
+            </button>
+          ))}
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+          className="shrink-0"
+        >
+          <SlidersHorizontal className="h-4 w-4 mr-1" />
+          Filtros
+        </Button>
       </div>
+
+      {/* Filters panel */}
+      {showFilters && (
+        <div className="bg-card rounded-xl p-4 shadow-card space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Precio</Label>
+              <Select value={priceRange} onValueChange={setPriceRange}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRICE_RANGES.map((p) => (
+                    <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Talle</Label>
+              <Select value={size} onValueChange={setSize}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SIZE_OPTIONS.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5 flex flex-col justify-end">
+              <div className="flex items-center gap-2 h-9">
+                <Switch
+                  id="free-shipping"
+                  checked={freeShippingOnly}
+                  onCheckedChange={setFreeShippingOnly}
+                />
+                <Label htmlFor="free-shipping" className="text-sm cursor-pointer flex items-center gap-1">
+                  <Truck className="h-3.5 w-3.5" /> Envío gratis
+                </Label>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Results */}
       {loading && (
