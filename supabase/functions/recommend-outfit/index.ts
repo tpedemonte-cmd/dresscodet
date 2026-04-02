@@ -9,12 +9,18 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { wardrobe, mood, event, temperature, weather, season } = await req.json();
+    const { wardrobe, wishlist, mood, event, temperature, weather, season } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `Sos un estilista personal argentino. El usuario te va a dar su guardarropas (cada prenda tiene un ID, y las marcadas con ⭐ FAVORITA son sus prendas preferidas). Estado de ánimo, tipo de evento, temperatura, clima y estación del año. Tenés que recomendar un outfit completo usando SOLAMENTE las prendas que tiene en su placard. PRIORIZÁ las prendas marcadas como FAVORITA siempre que sean apropiadas para la ocasión. Sé específico con qué combinaciones hacer. Respondé en español argentino, de manera amigable y con onda. Si no tiene prendas adecuadas, sugerí qué podría agregar. Mantené la respuesta corta y concisa (máximo 3-4 párrafos).
+    const systemPrompt = `Sos un estilista personal argentino. El usuario te va a dar su guardarropas (cada prenda tiene un ID, y las marcadas con ⭐ FAVORITA son sus prendas preferidas). También puede tener una WISHLIST con productos que le gustan de tiendas online pero que todavía no compró. Estado de ánimo, tipo de evento, temperatura, clima y estación del año. 
+
+Tenés que recomendar un outfit completo usando SOLAMENTE las prendas que tiene en su placard. PRIORIZÁ las prendas marcadas como FAVORITA siempre que sean apropiadas para la ocasión. Sé específico con qué combinaciones hacer.
+
+Si hay productos en la WISHLIST que combinan bien con el outfit o lo complementarían, mencioná cuáles le vendrían bien y por qué. Esto le da un empujoncito para comprarse algo que ya le gustaba.
+
+Respondé en español argentino, de manera amigable y con onda. Si no tiene prendas adecuadas, sugerí qué podría agregar. Mantené la respuesta corta y concisa (máximo 3-4 párrafos).
 
 IMPORTANTE: Al final de tu respuesta, agregá DOS líneas separadas con el formato exacto:
 
@@ -24,8 +30,13 @@ donde los IDs son los de las prendas que recomendaste usar. Si no usaste ninguna
 COMPRAR: término1 | término2 | término3
 donde cada término es una búsqueda corta para Mercado Libre de una prenda que le falta al usuario y completaría el outfit (ej: "campera de cuero negra", "zapatillas blancas casual"). Si el outfit está completo con lo que tiene, poné COMPRAR: nada`;
 
+    let wishlistSection = '';
+    if (wishlist && wishlist.trim()) {
+      wishlistSection = `\n\nMi wishlist (productos que me gustan pero no compré todavía):\n${wishlist}`;
+    }
+
     const userPrompt = `Mi guardarropas:
-${wardrobe}
+${wardrobe}${wishlistSection}
 
 Estado de ánimo: ${mood}
 Evento: ${event}
