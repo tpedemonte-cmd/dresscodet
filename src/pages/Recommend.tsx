@@ -5,8 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Badge } from '@/components/ui/badge';
-import { Sparkles, ShoppingBag, ExternalLink, Truck, Loader2 } from 'lucide-react';
+import { Sparkles, ShoppingBag, ExternalLink, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MOODS = [
@@ -43,20 +42,9 @@ const SEASONS = [
   { value: 'primavera', label: '🌸 Primavera' },
 ];
 
-type MarketplaceProduct = {
-  id: string;
-  title: string;
-  price: number;
-  currency: string;
-  thumbnail: string;
-  image: string;
-  permalink: string;
-  free_shipping: boolean;
-};
-
 type ShoppingSuggestion = {
   query: string;
-  products: MarketplaceProduct[];
+  searchUrl: string;
   loading: boolean;
 };
 
@@ -98,15 +86,15 @@ export default function Recommend() {
     enabled: !!user,
   });
 
-  const searchMarketplace = async (query: string): Promise<MarketplaceProduct[]> => {
+  const getSearchUrl = async (query: string): Promise<string> => {
     try {
       const { data, error } = await supabase.functions.invoke('search-marketplace', {
-        body: { query, limit: 4 },
+        body: { query },
       });
       if (error) throw error;
-      return data.products || [];
+      return data.searchUrl || `https://listado.mercadolibre.com.ar/${encodeURIComponent(query.replace(/ /g, '-'))}`;
     } catch {
-      return [];
+      return `https://listado.mercadolibre.com.ar/${encodeURIComponent(query.replace(/ /g, '-'))}`;
     }
   };
 
@@ -157,12 +145,11 @@ export default function Recommend() {
       const buyMatch = fullText.match(/COMPRAR:\s*(.+)/i);
       if (buyMatch && buyMatch[1].trim() !== 'nada') {
         const queries = buyMatch[1].split('|').map((q: string) => q.trim()).filter(Boolean);
-        const suggestions: ShoppingSuggestion[] = queries.map(q => ({ query: q, products: [], loading: true }));
+        const suggestions: ShoppingSuggestion[] = queries.map(q => ({ query: q, searchUrl: '', loading: true }));
         setShoppingSuggestions(suggestions);
 
-        // Fetch products in parallel
-        const results = await Promise.all(queries.map(q => searchMarketplace(q)));
-        setShoppingSuggestions(queries.map((q, i) => ({ query: q, products: results[i], loading: false })));
+        const results = await Promise.all(queries.map(q => getSearchUrl(q)));
+        setShoppingSuggestions(queries.map((q, i) => ({ query: q, searchUrl: results[i], loading: false })));
       }
 
       // Save to history
@@ -296,52 +283,26 @@ export default function Recommend() {
             Te falta algo? Compralo acá
           </h3>
           {shoppingSuggestions.map((suggestion, idx) => (
-            <div key={idx} className="space-y-2">
-              <p className="text-sm font-body font-medium text-muted-foreground capitalize">
-                🔍 {suggestion.query}
-              </p>
+            <div key={idx}>
               {suggestion.loading ? (
-                <div className="flex justify-center py-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                <div className="flex items-center gap-2 py-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground font-body">{suggestion.query}</span>
                 </div>
-              ) : suggestion.products.length === 0 ? (
-                <p className="text-xs text-muted-foreground font-body">No se encontraron productos</p>
               ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  {suggestion.products.map((product) => (
-                    <a
-                      key={product.id}
-                      href={product.permalink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group bg-secondary rounded-lg overflow-hidden hover:shadow-card transition-all"
-                    >
-                      <div className="aspect-square overflow-hidden">
-                        <img
-                          src={product.image || product.thumbnail}
-                          alt={product.title}
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform"
-                          loading="lazy"
-                          onError={(e) => { (e.target as HTMLImageElement).src = product.thumbnail; }}
-                        />
-                      </div>
-                      <div className="p-2 space-y-1">
-                        <p className="text-[11px] font-body text-foreground line-clamp-2 leading-tight">{product.title}</p>
-                        <p className="text-sm font-display font-bold text-foreground">{formatPrice(product.price, product.currency)}</p>
-                        <div className="flex items-center gap-1">
-                          {product.free_shipping && (
-                            <Badge variant="secondary" className="text-[9px] gap-0.5 px-1 py-0">
-                              <Truck className="h-2.5 w-2.5" /> Gratis
-                            </Badge>
-                          )}
-                          <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
-                            <ExternalLink className="h-2 w-2" /> ML
-                          </span>
-                        </div>
-                      </div>
-                    </a>
-                  ))}
-                </div>
+                <a
+                  href={suggestion.searchUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between gap-2 p-3 rounded-lg bg-secondary hover:bg-accent transition-colors group"
+                >
+                  <span className="text-sm font-body font-medium text-foreground capitalize">
+                    🔍 {suggestion.query}
+                  </span>
+                  <span className="text-xs text-muted-foreground flex items-center gap-1 group-hover:text-foreground transition-colors">
+                    Ver en ML <ExternalLink className="h-3 w-3" />
+                  </span>
+                </a>
               )}
             </div>
           ))}
