@@ -146,6 +146,13 @@ export default function Recommend() {
         setRecommendedItems(items.filter(item => usedItemIds.includes(item.id)));
       }
 
+      // Parse WISHLIST_USADOS
+      const wishlistMatch = fullText.match(/WISHLIST_USADOS:\s*(.+)/i);
+      if (wishlistMatch && wishlistMatch[1].trim() !== 'ninguno') {
+        const usedWishlistIds = wishlistMatch[1].split(',').map((id: string) => id.trim());
+        setRecommendedWishlistItems(wishlistItems.filter((w: any) => usedWishlistIds.includes(w.id)));
+      }
+
       // Parse COMPRAR
       const buyMatch = fullText.match(/COMPRAR:\s*(.+)/i);
       if (buyMatch && buyMatch[1].trim() !== 'nada') {
