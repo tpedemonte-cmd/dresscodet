@@ -284,6 +284,25 @@ export default function Recommend() {
               </div>
             </div>
           )}
+          {recommendedWishlistItems.length > 0 && (
+            <div className="pt-3 border-t border-border">
+              <p className="text-sm font-body font-medium text-muted-foreground mb-2">🛒 De tu wishlist (todavía no lo tenés):</p>
+              <div className="grid grid-cols-3 gap-2">
+                {recommendedWishlistItems.map((item: any) => (
+                  <a
+                    key={item.id}
+                    href={item.permalink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-lg overflow-hidden bg-secondary/50 border border-dashed border-primary/30 hover:border-primary transition-colors group"
+                  >
+                    <img src={item.image || item.thumbnail} alt={item.title} className="w-full aspect-square object-contain group-hover:scale-105 transition-transform" />
+                    <p className="text-xs font-body text-center py-1 text-foreground truncate px-1">{item.title}</p>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
