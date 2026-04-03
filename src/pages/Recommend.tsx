@@ -112,7 +112,7 @@ export default function Recommend() {
     setLoading(true);
     setRecommendation(null);
     setRecommendedItems([]);
-    setShoppingSuggestions([]);
+    setRecommendedWishlistItems([]);
 
     try {
       const wardrobeSummary = items.map(i =>
