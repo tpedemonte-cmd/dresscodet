@@ -146,12 +146,11 @@ export default function Recommend() {
       const buyMatch = fullText.match(/COMPRAR:\s*(.+)/i);
       if (buyMatch && buyMatch[1].trim() !== 'nada') {
         const queries = buyMatch[1].split('|').map((q: string) => q.trim()).filter(Boolean);
-        const suggestions: ShoppingSuggestion[] = queries.map(q => ({ query: q, products: [], loading: true }));
+        const suggestions: ShoppingSuggestion[] = queries.map(q => ({ query: q, searchUrl: '', loading: true }));
         setShoppingSuggestions(suggestions);
 
-        // Fetch products in parallel
-        const results = await Promise.all(queries.map(q => searchMarketplace(q)));
-        setShoppingSuggestions(queries.map((q, i) => ({ query: q, products: results[i], loading: false })));
+        const results = await Promise.all(queries.map(q => getSearchUrl(q)));
+        setShoppingSuggestions(queries.map((q, i) => ({ query: q, searchUrl: results[i], loading: false })));
       }
 
       // Save to history
