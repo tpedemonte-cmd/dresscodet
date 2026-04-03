@@ -87,15 +87,15 @@ export default function Recommend() {
     enabled: !!user,
   });
 
-  const searchMarketplace = async (query: string): Promise<MarketplaceProduct[]> => {
+  const getSearchUrl = async (query: string): Promise<string> => {
     try {
       const { data, error } = await supabase.functions.invoke('search-marketplace', {
-        body: { query, limit: 4 },
+        body: { query },
       });
       if (error) throw error;
-      return data.products || [];
+      return data.searchUrl || `https://listado.mercadolibre.com.ar/${encodeURIComponent(query.replace(/ /g, '-'))}`;
     } catch {
-      return [];
+      return `https://listado.mercadolibre.com.ar/${encodeURIComponent(query.replace(/ /g, '-'))}`;
     }
   };
 
