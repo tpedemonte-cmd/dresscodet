@@ -120,7 +120,7 @@ export default function Recommend() {
       ).join('\n');
 
       const wishlistSummary = wishlistItems.length > 0
-        ? wishlistItems.map((w: any) => `- ${w.title} ($${w.price} ${w.currency})`).join('\n')
+        ? wishlistItems.map((w: any) => `- ID:${w.id} | ${w.title} ($${w.price} ${w.currency})`).join('\n')
         : '';
 
       const { data, error } = await supabase.functions.invoke('recommend-outfit', {
