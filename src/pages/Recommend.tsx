@@ -133,7 +133,11 @@ export default function Recommend() {
 
       // Parse ITEMS_USADOS
       const itemsMatch = fullText.match(/ITEMS_USADOS:\s*(.+)/i);
-      let cleanText = fullText.replace(/\n?ITEMS_USADOS:.+/i, '').replace(/\n?COMPRAR:.+/i, '').trim();
+      let cleanText = fullText
+        .replace(/\n?ITEMS_USADOS:.+/i, '')
+        .replace(/\n?WISHLIST_USADOS:.+/i, '')
+        .replace(/\n?COMPRAR:.+/i, '')
+        .trim();
       setRecommendation(cleanText);
 
       let usedItemIds: string[] = [];
