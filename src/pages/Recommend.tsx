@@ -43,20 +43,9 @@ const SEASONS = [
   { value: 'primavera', label: '🌸 Primavera' },
 ];
 
-type MarketplaceProduct = {
-  id: string;
-  title: string;
-  price: number;
-  currency: string;
-  thumbnail: string;
-  image: string;
-  permalink: string;
-  free_shipping: boolean;
-};
-
 type ShoppingSuggestion = {
   query: string;
-  products: MarketplaceProduct[];
+  searchUrl: string;
   loading: boolean;
 };
 
