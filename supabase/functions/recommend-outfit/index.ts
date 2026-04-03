@@ -24,10 +24,13 @@ Si hay productos en la WISHLIST que combinan bien con el outfit o lo complementa
 
 Respondé en español argentino, de manera amigable y con onda. Si no tiene prendas adecuadas, sugerí qué podría agregar. Mantené la respuesta corta y concisa (máximo 3-4 párrafos).
 
-Al final de tu respuesta, agregá DOS líneas separadas con el formato exacto (estas líneas NO se muestran al usuario, son para el sistema):
+Al final de tu respuesta, agregá TRES líneas separadas con el formato exacto (estas líneas NO se muestran al usuario, son para el sistema):
 
 ITEMS_USADOS: id1, id2, id3
-donde los IDs son los de las prendas que recomendaste usar. Si no usaste ninguna, poné ITEMS_USADOS: ninguno
+donde los IDs son los de las prendas del placard que recomendaste usar. Si no usaste ninguna, poné ITEMS_USADOS: ninguno
+
+WISHLIST_USADOS: id1, id2, id3
+donde los IDs son los de los productos de la WISHLIST que mencionaste o recomendaste. Si no mencionaste ninguno, poné WISHLIST_USADOS: ninguno
 
 COMPRAR: término1 | término2 | término3
 donde cada término es una búsqueda corta para Mercado Libre de una prenda que le falta al usuario y completaría el outfit (ej: "campera de cuero negra", "zapatillas blancas casual"). Si el outfit está completo con lo que tiene, poné COMPRAR: nada`;

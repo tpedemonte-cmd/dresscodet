@@ -56,6 +56,7 @@ export default function Recommend() {
   const [weather, setWeather] = useState('');
   const [season, setSeason] = useState('');
   const [recommendation, setRecommendation] = useState<string | null>(null);
+  const [recommendedWishlistItems, setRecommendedWishlistItems] = useState<any[]>([]);
   const [recommendedItems, setRecommendedItems] = useState<any[]>([]);
   const [shoppingSuggestions, setShoppingSuggestions] = useState<ShoppingSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
@@ -111,7 +112,7 @@ export default function Recommend() {
     setLoading(true);
     setRecommendation(null);
     setRecommendedItems([]);
-    setShoppingSuggestions([]);
+    setRecommendedWishlistItems([]);
 
     try {
       const wardrobeSummary = items.map(i =>
@@ -119,7 +120,7 @@ export default function Recommend() {
       ).join('\n');
 
       const wishlistSummary = wishlistItems.length > 0
-        ? wishlistItems.map((w: any) => `- ${w.title} ($${w.price} ${w.currency})`).join('\n')
+        ? wishlistItems.map((w: any) => `- ID:${w.id} | ${w.title} ($${w.price} ${w.currency})`).join('\n')
         : '';
 
       const { data, error } = await supabase.functions.invoke('recommend-outfit', {
@@ -132,13 +133,24 @@ export default function Recommend() {
 
       // Parse ITEMS_USADOS
       const itemsMatch = fullText.match(/ITEMS_USADOS:\s*(.+)/i);
-      let cleanText = fullText.replace(/\n?ITEMS_USADOS:.+/i, '').replace(/\n?COMPRAR:.+/i, '').trim();
+      let cleanText = fullText
+        .replace(/\n?ITEMS_USADOS:.+/i, '')
+        .replace(/\n?WISHLIST_USADOS:.+/i, '')
+        .replace(/\n?COMPRAR:.+/i, '')
+        .trim();
       setRecommendation(cleanText);
 
       let usedItemIds: string[] = [];
       if (itemsMatch && itemsMatch[1].trim() !== 'ninguno') {
         usedItemIds = itemsMatch[1].split(',').map((id: string) => id.trim());
         setRecommendedItems(items.filter(item => usedItemIds.includes(item.id)));
+      }
+
+      // Parse WISHLIST_USADOS
+      const wishlistMatch = fullText.match(/WISHLIST_USADOS:\s*(.+)/i);
+      if (wishlistMatch && wishlistMatch[1].trim() !== 'ninguno') {
+        const usedWishlistIds = wishlistMatch[1].split(',').map((id: string) => id.trim());
+        setRecommendedWishlistItems(wishlistItems.filter((w: any) => usedWishlistIds.includes(w.id)));
       }
 
       // Parse COMPRAR
@@ -268,6 +280,25 @@ export default function Recommend() {
                     <img src={item.image_url} alt={item.name} className="w-full aspect-square object-cover" />
                     <p className="text-xs font-body text-center py-1 text-foreground truncate px-1">{item.name}</p>
                   </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {recommendedWishlistItems.length > 0 && (
+            <div className="pt-3 border-t border-border">
+              <p className="text-sm font-body font-medium text-muted-foreground mb-2">🛒 De tu wishlist (todavía no lo tenés):</p>
+              <div className="grid grid-cols-3 gap-2">
+                {recommendedWishlistItems.map((item: any) => (
+                  <a
+                    key={item.id}
+                    href={item.permalink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-lg overflow-hidden bg-secondary/50 border border-dashed border-primary/30 hover:border-primary transition-colors group"
+                  >
+                    <img src={item.image || item.thumbnail} alt={item.title} className="w-full aspect-square object-contain group-hover:scale-105 transition-transform" />
+                    <p className="text-xs font-body text-center py-1 text-foreground truncate px-1">{item.title}</p>
+                  </a>
                 ))}
               </div>
             </div>
