@@ -18,30 +18,49 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Extract item ID from ML URL patterns:
-    // https://articulo.mercadolibre.com.ar/MLA-123456789-title_JM
-    // https://www.mercadolibre.com.ar/.../p/MLA12345678
-    // MLA-123456789
-    const patterns = [
-      /MLA-?\d+/i,
-    ];
-
+    // Extract item ID from various ML URL patterns:
+    // 1. wid query param: ?wid=MLA1597168171
+    // 2. articulo URL: /MLA-123456789-title_JM
+    // 3. product URL: /p/MLA12345678
+    // 4. Direct ID: MLA-123456789
+    
     let itemId: string | null = null;
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match) {
-        itemId = match[0].replace('-', '');
-        // Normalize: ensure format is MLA + digits
-        if (!itemId.startsWith('MLA')) {
-          itemId = 'MLA' + itemId;
+    
+    // First try wid param (universal product pages use this)
+    const widMatch = url.match(/[?&]wid=(MLA\d+)/i);
+    if (widMatch) {
+      itemId = widMatch[1].toUpperCase();
+    }
+    
+    // Then try standard item patterns (skip MLAU universal IDs)
+    if (!itemId) {
+      const itemMatch = url.match(/\b(MLA)-?(\d{8,})/i);
+      if (itemMatch) {
+        const prefix = itemMatch[1].toUpperCase();
+        const digits = itemMatch[2];
+        // Skip if it's actually MLAU (universal product, not an item)
+        const fullContext = url.substring(url.indexOf(itemMatch[0]) - 1, url.indexOf(itemMatch[0]) + itemMatch[0].length + 1);
+        if (!fullContext.includes('MLAU')) {
+          itemId = `${prefix}${digits}`;
         }
-        break;
       }
     }
 
+    // Fallback: try to find item ID in articulo subdomain pattern
+    if (!itemId) {
+      const articuloMatch = url.match(/articulo\.mercadolibre\.[^/]+\/(MLA-?\d+)/i);
+      if (articuloMatch) {
+        itemId = articuloMatch[1].replace(/-/g, '').toUpperCase();
+        if (!itemId.startsWith('MLA')) itemId = 'MLA' + itemId;
+      }
+    }
+
+    console.log('URL received:', url);
+    console.log('Extracted item ID:', itemId);
+
     if (!itemId) {
       return new Response(
-        JSON.stringify({ error: 'No se pudo extraer el ID del producto. Asegurate de pegar un link válido de Mercado Libre.' }),
+        JSON.stringify({ error: 'No se pudo extraer el ID del producto. Asegurate de pegar un link válido de Mercado Libre (desde "articulo.mercadolibre..." o copiá el link del producto).' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
