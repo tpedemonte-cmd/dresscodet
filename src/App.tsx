@@ -38,6 +38,7 @@ const AppRoutes = () => {
       <Route path="/historial" element={<ProtectedRoute><History /></ProtectedRoute>} />
       <Route path="/estadisticas" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
       <Route path="/tienda" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+      <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

@@ -15,6 +15,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     { path: '/historial', icon: Clock, label: 'Historial' },
     { path: '/estadisticas', icon: BarChart3, label: 'Stats' },
     { path: '/tienda', icon: ShoppingBag, label: 'Tienda' },
+    { path: '/wishlist', icon: Heart, label: 'Wishlist' },
   ];
 
   return (
