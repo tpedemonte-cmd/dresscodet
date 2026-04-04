@@ -5,7 +5,8 @@ import { Heart, Trash2, ExternalLink, Truck, Plus, Link, Loader2 } from 'lucide-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
 type WishlistItem = {
@@ -31,7 +32,11 @@ export default function Wishlist() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [mlUrl, setMlUrl] = useState('');
+  const [manualTitle, setManualTitle] = useState('');
+  const [manualPrice, setManualPrice] = useState('');
   const [adding, setAdding] = useState(false);
+  const [step, setStep] = useState<'url' | 'details'>('url');
+  const [extractedData, setExtractedData] = useState<{ product_id: string; permalink: string; thumbnail: string } | null>(null);
 
   const fetchWishlist = useCallback(async () => {
     if (!user) return;
@@ -54,14 +59,22 @@ export default function Wishlist() {
     toast.success('Eliminado de tu wishlist');
   };
 
-  const handleAddFromLink = async () => {
+  const resetDialog = () => {
+    setMlUrl('');
+    setManualTitle('');
+    setManualPrice('');
+    setStep('url');
+    setExtractedData(null);
+  };
+
+  const handleExtractUrl = async () => {
     if (!mlUrl.trim()) {
       toast.error('Pegá un link de Mercado Libre');
       return;
     }
 
-    if (!user) {
-      toast.error('Tenés que estar logueado');
+    if (!mlUrl.includes('mercadolibre.com') && !mlUrl.includes('mercadolibre.co')) {
+      toast.error('El link debe ser de Mercado Libre');
       return;
     }
 
@@ -72,32 +85,56 @@ export default function Wishlist() {
       });
 
       if (error || !data?.success) {
-        toast.error(data?.error || 'No se pudo extraer el producto');
+        toast.error(data?.error || 'No se pudo procesar el link');
         return;
       }
 
       const product = data.product;
+      setExtractedData({
+        product_id: product.product_id,
+        permalink: product.permalink,
+        thumbnail: product.thumbnail,
+      });
+      if (product.title) setManualTitle(product.title);
+      setStep('details');
+    } catch (err) {
+      toast.error('Error al procesar el link');
+    } finally {
+      setAdding(false);
+    }
+  };
 
-      // Check if already in wishlist
-      const existing = items.find(i => i.product_id === product.product_id);
-      if (existing) {
-        toast.info('Este producto ya está en tu wishlist');
-        return;
-      }
+  const handleSave = async () => {
+    if (!manualTitle.trim()) {
+      toast.error('Ponele un nombre al producto');
+      return;
+    }
+    if (!user || !extractedData) return;
 
+    const price = Number(manualPrice) || 0;
+
+    // Check if already in wishlist
+    const existing = items.find(i => i.product_id === extractedData.product_id);
+    if (existing) {
+      toast.info('Este producto ya está en tu wishlist');
+      return;
+    }
+
+    setAdding(true);
+    try {
       const { data: inserted, error: insertError } = await supabase
         .from('wishlist')
         .insert({
           user_id: user.id,
-          product_id: product.product_id,
-          title: product.title,
-          price: product.price,
-          currency: product.currency,
-          thumbnail: product.thumbnail,
-          image: product.image,
-          permalink: product.permalink,
-          free_shipping: product.free_shipping,
-          seller: product.seller,
+          product_id: extractedData.product_id,
+          title: manualTitle.trim(),
+          price,
+          currency: 'ARS',
+          thumbnail: extractedData.thumbnail,
+          image: null,
+          permalink: extractedData.permalink,
+          free_shipping: false,
+          seller: null,
         })
         .select()
         .single();
@@ -108,11 +145,11 @@ export default function Wishlist() {
       }
 
       setItems(prev => [inserted as WishlistItem, ...prev]);
-      setMlUrl('');
       setDialogOpen(false);
+      resetDialog();
       toast.success('¡Producto agregado a tu wishlist!');
     } catch (err) {
-      toast.error('Error al procesar el link');
+      toast.error('Error al guardar');
     } finally {
       setAdding(false);
     }
@@ -139,7 +176,7 @@ export default function Wishlist() {
           </p>
         </div>
 
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetDialog(); }}>
           <DialogTrigger asChild>
             <Button variant="warm" size="sm" className="gap-1.5">
               <Plus className="h-4 w-4" />
@@ -150,39 +187,77 @@ export default function Wishlist() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Link className="h-5 w-5 text-primary" />
-                Agregar desde Mercado Libre
+                {step === 'url' ? 'Agregar desde Mercado Libre' : 'Completá los datos'}
               </DialogTitle>
+              <DialogDescription>
+                {step === 'url'
+                  ? 'Pegá el link del producto de Mercado Libre.'
+                  : 'Confirmá el nombre y agregá el precio si querés.'}
+              </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground font-body">
-                Pegá el link del producto de Mercado Libre y lo guardamos automáticamente.
-              </p>
-              <Input
-                value={mlUrl}
-                onChange={(e) => setMlUrl(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddFromLink()}
-                placeholder="https://articulo.mercadolibre.com.ar/MLA-..."
-                disabled={adding}
-              />
-              <Button
-                variant="warm"
-                className="w-full"
-                onClick={handleAddFromLink}
-                disabled={adding || !mlUrl.trim()}
-              >
-                {adding ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Extrayendo datos...
-                  </>
-                ) : (
-                  <>
-                    <Heart className="h-4 w-4" />
-                    Guardar en wishlist
-                  </>
-                )}
-              </Button>
-            </div>
+
+            {step === 'url' ? (
+              <div className="space-y-4">
+                <Input
+                  value={mlUrl}
+                  onChange={(e) => setMlUrl(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleExtractUrl()}
+                  placeholder="https://articulo.mercadolibre.com.ar/MLA-..."
+                  disabled={adding}
+                />
+                <Button
+                  variant="warm"
+                  className="w-full"
+                  onClick={handleExtractUrl}
+                  disabled={adding || !mlUrl.trim()}
+                >
+                  {adding ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Procesando...</>
+                  ) : (
+                    <>Continuar</>
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="product-name">Nombre del producto</Label>
+                  <Input
+                    id="product-name"
+                    value={manualTitle}
+                    onChange={(e) => setManualTitle(e.target.value)}
+                    placeholder="Ej: Campera de cuero negra"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-price">Precio (opcional)</Label>
+                  <Input
+                    id="product-price"
+                    type="number"
+                    value={manualPrice}
+                    onChange={(e) => setManualPrice(e.target.value)}
+                    placeholder="Ej: 45000"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => setStep('url')}>
+                    Atrás
+                  </Button>
+                  <Button
+                    variant="warm"
+                    className="flex-1"
+                    onClick={handleSave}
+                    disabled={adding || !manualTitle.trim()}
+                  >
+                    {adding ? (
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Guardando...</>
+                    ) : (
+                      <><Heart className="h-4 w-4" /> Guardar</>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
@@ -201,13 +276,17 @@ export default function Wishlist() {
                 href={item.permalink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-secondary"
+                className="shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-secondary flex items-center justify-center"
               >
                 <img
                   src={item.image || item.thumbnail}
                   alt={item.title}
                   className="w-full h-full object-contain"
-                  onError={(e) => { (e.target as HTMLImageElement).src = item.thumbnail; }}
+                  onError={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    img.style.display = 'none';
+                    img.parentElement!.innerHTML = '<span class="text-3xl">🛍️</span>';
+                  }}
                 />
               </a>
               <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -220,9 +299,11 @@ export default function Wishlist() {
                   >
                     {item.title}
                   </a>
-                  <p className="text-base font-display font-bold text-foreground mt-1">
-                    {formatPrice(item.price, item.currency)}
-                  </p>
+                  {item.price > 0 && (
+                    <p className="text-base font-display font-bold text-foreground mt-1">
+                      {formatPrice(item.price, item.currency)}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <div className="flex items-center gap-1.5">
