@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { Heart, Trash2, ExternalLink, Truck } from 'lucide-react';
+import { Heart, Trash2, ExternalLink, Truck, Plus, Link, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
 type WishlistItem = {
@@ -27,6 +29,9 @@ export default function Wishlist() {
   const { user } = useAuth();
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [mlUrl, setMlUrl] = useState('');
+  const [adding, setAdding] = useState(false);
 
   const fetchWishlist = useCallback(async () => {
     if (!user) return;
@@ -49,6 +54,70 @@ export default function Wishlist() {
     toast.success('Eliminado de tu wishlist');
   };
 
+  const handleAddFromLink = async () => {
+    if (!mlUrl.trim()) {
+      toast.error('Pegá un link de Mercado Libre');
+      return;
+    }
+
+    if (!user) {
+      toast.error('Tenés que estar logueado');
+      return;
+    }
+
+    setAdding(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('extract-ml-product', {
+        body: { url: mlUrl.trim() },
+      });
+
+      if (error || !data?.success) {
+        toast.error(data?.error || 'No se pudo extraer el producto');
+        return;
+      }
+
+      const product = data.product;
+
+      // Check if already in wishlist
+      const existing = items.find(i => i.product_id === product.product_id);
+      if (existing) {
+        toast.info('Este producto ya está en tu wishlist');
+        return;
+      }
+
+      const { data: inserted, error: insertError } = await supabase
+        .from('wishlist')
+        .insert({
+          user_id: user.id,
+          product_id: product.product_id,
+          title: product.title,
+          price: product.price,
+          currency: product.currency,
+          thumbnail: product.thumbnail,
+          image: product.image,
+          permalink: product.permalink,
+          free_shipping: product.free_shipping,
+          seller: product.seller,
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        toast.error('Error al guardar en la wishlist');
+        return;
+      }
+
+      setItems(prev => [inserted as WishlistItem, ...prev]);
+      setMlUrl('');
+      setDialogOpen(false);
+      toast.success('¡Producto agregado a tu wishlist!');
+    } catch (err) {
+      toast.error('Error al procesar el link');
+    } finally {
+      setAdding(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -59,21 +128,70 @@ export default function Wishlist() {
 
   return (
     <div className="max-w-md mx-auto space-y-6">
-      <div>
-        <h2 className="text-2xl font-display font-bold text-foreground flex items-center gap-2">
-          <Heart className="h-6 w-6 text-primary" />
-          Mi Wishlist
-        </h2>
-        <p className="text-muted-foreground font-body">
-          {items.length} {items.length === 1 ? 'producto guardado' : 'productos guardados'}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-display font-bold text-foreground flex items-center gap-2">
+            <Heart className="h-6 w-6 text-primary" />
+            Mi Wishlist
+          </h2>
+          <p className="text-muted-foreground font-body">
+            {items.length} {items.length === 1 ? 'producto guardado' : 'productos guardados'}
+          </p>
+        </div>
+
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="warm" size="sm" className="gap-1.5">
+              <Plus className="h-4 w-4" />
+              Agregar
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Link className="h-5 w-5 text-primary" />
+                Agregar desde Mercado Libre
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground font-body">
+                Pegá el link del producto de Mercado Libre y lo guardamos automáticamente.
+              </p>
+              <Input
+                value={mlUrl}
+                onChange={(e) => setMlUrl(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddFromLink()}
+                placeholder="https://articulo.mercadolibre.com.ar/MLA-..."
+                disabled={adding}
+              />
+              <Button
+                variant="warm"
+                className="w-full"
+                onClick={handleAddFromLink}
+                disabled={adding || !mlUrl.trim()}
+              >
+                {adding ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Extrayendo datos...
+                  </>
+                ) : (
+                  <>
+                    <Heart className="h-4 w-4" />
+                    Guardar en wishlist
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {items.length === 0 ? (
         <div className="text-center py-16 space-y-2">
           <p className="text-4xl">💫</p>
           <p className="text-muted-foreground font-body">Tu wishlist está vacía.</p>
-          <p className="text-sm text-muted-foreground font-body">Guardá productos desde la Tienda para verlos acá.</p>
+          <p className="text-sm text-muted-foreground font-body">Tocá "Agregar" y pegá un link de Mercado Libre.</p>
         </div>
       ) : (
         <div className="space-y-3">
