@@ -12,6 +12,7 @@ import Recommend from "./pages/Recommend";
 import History from "./pages/History";
 import Stats from "./pages/Stats";
 import Marketplace from "./pages/Marketplace";
+import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const AppRoutes = () => {
       <Route path="/historial" element={<ProtectedRoute><History /></ProtectedRoute>} />
       <Route path="/estadisticas" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
       <Route path="/tienda" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+      <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
