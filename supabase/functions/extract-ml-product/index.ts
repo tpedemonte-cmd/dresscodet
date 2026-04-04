@@ -3,65 +3,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-function extractMetaContent(html: string, property: string): string | null {
-  // Try og: and other meta properties
-  const patterns = [
-    new RegExp(`<meta[^>]+property=["']${property}["'][^>]+content=["']([^"']+)["']`, 'i'),
-    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${property}["']`, 'i'),
-    new RegExp(`<meta[^>]+name=["']${property}["'][^>]+content=["']([^"']+)["']`, 'i'),
-    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${property}["']`, 'i'),
-  ];
-  for (const pattern of patterns) {
-    const match = html.match(pattern);
-    if (match) return match[1];
-  }
-  return null;
-}
-
-function extractPrice(html: string): { price: number; currency: string } {
-  // Try JSON-LD first
-  const jsonLdMatch = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
-  if (jsonLdMatch) {
-    for (const block of jsonLdMatch) {
-      const jsonStr = block.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
-      try {
-        const data = JSON.parse(jsonStr);
-        if (data?.offers?.price) {
-          return { price: Number(data.offers.price), currency: data.offers.priceCurrency || 'ARS' };
-        }
-        if (data?.offers?.[0]?.price) {
-          return { price: Number(data.offers[0].price), currency: data.offers[0].priceCurrency || 'ARS' };
-        }
-      } catch { /* skip */ }
-    }
-  }
-  
-  // Fallback: try meta tag
-  const priceStr = extractMetaContent(html, 'product:price:amount') || extractMetaContent(html, 'og:price:amount');
-  if (priceStr) {
-    const currency = extractMetaContent(html, 'product:price:currency') || 'ARS';
-    return { price: Number(priceStr), currency };
-  }
-  
-  return { price: 0, currency: 'ARS' };
-}
-
-function extractItemId(url: string): string | null {
-  // Try item_id param
-  const itemIdParam = url.match(/item_id[=:](?:MLA-?)(\d+)/i);
-  if (itemIdParam) return `MLA${itemIdParam[1]}`;
-  
-  // Try wid param
-  const widMatch = url.match(/[?&#]wid=(MLA-?\d+)/i);
-  if (widMatch) return widMatch[1].replace(/-/g, '');
-  
-  // Try articulo URL pattern
-  const artMatch = url.match(/articulo\.mercadolibre\.[^/]+\/(MLA-?\d+)/i);
-  if (artMatch) return artMatch[1].replace(/-/g, '');
-  
-  return null;
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -77,64 +18,56 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Clean URL (remove fragment)
-    const cleanUrl = url.split('#')[0];
-    console.log('Fetching product page:', cleanUrl);
-
-    // Fetch the actual product page
-    const pageResponse = await fetch(cleanUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'es-AR,es;q=0.9',
-      },
-      redirect: 'follow',
-    });
-
-    if (!pageResponse.ok) {
-      console.error('Page fetch error:', pageResponse.status);
+    // Validate it's a Mercado Libre URL
+    if (!url.includes('mercadolibre.com') && !url.includes('mercadolibre.co')) {
       return new Response(
-        JSON.stringify({ error: 'No se pudo acceder al producto. Verificá el link.' }),
+        JSON.stringify({ error: 'El link debe ser de Mercado Libre' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const html = await pageResponse.text();
+    // Extract title from URL slug
+    // Patterns: /product-name-slug/p/MLA... or /MLA-123-product-name-slug_JM
+    let title = '';
     
-    // Extract data from meta tags
-    const title = extractMetaContent(html, 'og:title') || extractMetaContent(html, 'twitter:title') || 'Producto de Mercado Libre';
-    const image = extractMetaContent(html, 'og:image') || extractMetaContent(html, 'twitter:image');
-    const permalink = extractMetaContent(html, 'og:url') || cleanUrl;
-    const { price, currency } = extractPrice(html);
+    // Try path-based title: /campera-safari-de-piel-sintetica-mujer/p/...
+    const slugMatch = url.match(/mercadolibre\.[^/]+\/([^/]+)\/(p|up)\//i);
+    if (slugMatch) {
+      title = slugMatch[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
     
+    // Try articulo pattern: /MLA-123-product-name_JM
+    if (!title) {
+      const artMatch = url.match(/MLA-?\d+-([^?#]+?)_JM/i);
+      if (artMatch) {
+        title = artMatch[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      }
+    }
+
     // Extract product ID
-    const productId = extractItemId(url) || extractItemId(permalink) || `ML-${Date.now()}`;
+    let productId = `ML-${Date.now()}`;
+    const itemIdParam = url.match(/item_id[=:](?:MLA-?)(\d+)/i);
+    const widMatch = url.match(/[?&#]wid=(MLA-?\d+)/i);
+    const artIdMatch = url.match(/\/(MLA-?\d+)/i);
+    
+    if (itemIdParam) productId = `MLA${itemIdParam[1]}`;
+    else if (widMatch) productId = widMatch[1].replace(/-/g, '');
+    else if (artIdMatch) productId = artIdMatch[1].replace(/-/g, '');
 
-    // Check for free shipping in page content
-    const freeShipping = html.includes('Llega gratis') || html.includes('Envío gratis') || html.includes('free_shipping":true');
+    // Clean permalink (remove tracking params after #)
+    const permalink = url.split('#')[0];
 
-    const thumbnail = image?.replace(/-O\./, '-D_NQ_NP_') || image || '';
+    // Try to build a thumbnail from the product ID
+    const thumbnail = `https://http2.mlstatic.com/D_NQ_NP_${productId}-MLA_O.webp`;
 
     const product = {
       product_id: productId,
-      title: title.replace(' | MercadoLibre', '').replace(' - MercadoLibre', '').trim(),
-      price,
-      currency,
-      thumbnail: thumbnail,
-      image: image || null,
+      title: title || '',
       permalink,
-      free_shipping: freeShipping,
-      seller: null,
+      thumbnail,
     };
 
-    console.log('Extracted product:', JSON.stringify({ title: product.title, price: product.price, productId: product.product_id }));
-
-    if (!product.title || product.title === 'Producto de Mercado Libre') {
-      return new Response(
-        JSON.stringify({ error: 'No se pudieron extraer los datos del producto. Probá con otro link.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    console.log('Extracted from URL:', JSON.stringify(product));
 
     return new Response(
       JSON.stringify({ success: true, product }),
