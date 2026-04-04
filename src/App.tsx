@@ -12,6 +12,7 @@ import Recommend from "./pages/Recommend";
 import History from "./pages/History";
 import Stats from "./pages/Stats";
 import Marketplace from "./pages/Marketplace";
+import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
