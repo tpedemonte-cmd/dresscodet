@@ -65,9 +65,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('Fetching ML item:', itemId);
+    // Format ID with dash for API: MLA928503634 -> MLA-928503634
+    const formattedId = itemId.replace(/^(MLA)(\d+)$/, '$1-$2');
+    console.log('Fetching ML item:', formattedId);
 
-    const response = await fetch(`https://api.mercadolibre.com/items/${itemId}`);
+    const response = await fetch(`https://api.mercadolibre.com/items/${formattedId}`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        'Accept': 'application/json',
+      },
+    });
     
     if (!response.ok) {
       console.error('ML API error:', response.status);
