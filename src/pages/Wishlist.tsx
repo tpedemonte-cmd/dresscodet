@@ -33,7 +33,7 @@ export default function Wishlist() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [mlUrl, setMlUrl] = useState('');
   const [manualTitle, setManualTitle] = useState('');
-  const [manualPrice, setManualPrice] = useState('');
+  
   const [adding, setAdding] = useState(false);
   const [step, setStep] = useState<'url' | 'details'>('url');
   const [extractedData, setExtractedData] = useState<{ product_id: string; permalink: string; thumbnail: string } | null>(null);
