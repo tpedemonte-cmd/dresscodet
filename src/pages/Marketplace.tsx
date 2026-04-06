@@ -38,9 +38,18 @@ const CATEGORIES = [
   { label: '🩳 Shorts', query: 'short', emoji: '🩳' },
   { label: '🧶 Buzos', query: 'buzo hoodie', emoji: '🧶' },
   { label: '👜 Carteras', query: 'cartera mujer', emoji: '👜' },
-  { label: '🧣 Accesorios', query: 'accesorios moda', emoji: '🧣' },
-  { label: '🩴 Ojotas', query: 'ojotas', emoji: '🩴' },
+  { label: '⌚ Relojes', query: 'reloj moda', emoji: '⌚' },
+  { label: '📿 Cadenas', query: 'cadena collar moda', emoji: '📿' },
+  { label: '💍 Anillos', query: 'anillo moda', emoji: '💍' },
+  { label: '🧿 Pulseras', query: 'pulsera moda', emoji: '🧿' },
+  { label: '🕶️ Lentes', query: 'lentes de sol moda', emoji: '🕶️' },
   { label: '🧢 Gorras', query: 'gorra', emoji: '🧢' },
+  { label: '🩴 Ojotas', query: 'ojotas', emoji: '🩴' },
+  { label: '🧣 Bufandas', query: 'bufanda moda', emoji: '🧣' },
+  { label: '👛 Billeteras', query: 'billetera moda', emoji: '👛' },
+  { label: '🎒 Mochilas', query: 'mochila moda', emoji: '🎒' },
+  { label: '🧤 Guantes', query: 'guantes moda', emoji: '🧤' },
+  { label: '💎 Aros', query: 'aros mujer moda', emoji: '💎' },
 ];
 
 type WishlistItem = {
