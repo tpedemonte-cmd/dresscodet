@@ -33,7 +33,7 @@ export default function Wishlist() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [mlUrl, setMlUrl] = useState('');
   const [manualTitle, setManualTitle] = useState('');
-  const [manualPrice, setManualPrice] = useState('');
+  
   const [adding, setAdding] = useState(false);
   const [step, setStep] = useState<'url' | 'details'>('url');
   const [extractedData, setExtractedData] = useState<{ product_id: string; permalink: string; thumbnail: string } | null>(null);
@@ -62,7 +62,7 @@ export default function Wishlist() {
   const resetDialog = () => {
     setMlUrl('');
     setManualTitle('');
-    setManualPrice('');
+    
     setStep('url');
     setExtractedData(null);
   };
@@ -111,8 +111,6 @@ export default function Wishlist() {
     }
     if (!user || !extractedData) return;
 
-    const price = Number(manualPrice) || 0;
-
     // Check if already in wishlist
     const existing = items.find(i => i.product_id === extractedData.product_id);
     if (existing) {
@@ -128,7 +126,7 @@ export default function Wishlist() {
           user_id: user.id,
           product_id: extractedData.product_id,
           title: manualTitle.trim(),
-          price,
+          price: 0,
           currency: 'ARS',
           thumbnail: extractedData.thumbnail,
           image: null,
@@ -229,16 +227,8 @@ export default function Wishlist() {
                     placeholder="Ej: Campera de cuero negra"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="product-price">Precio (opcional)</Label>
-                  <Input
-                    id="product-price"
-                    type="number"
-                    value={manualPrice}
-                    onChange={(e) => setManualPrice(e.target.value)}
-                    placeholder="Ej: 45000"
-                  />
-                </div>
+
+
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setStep('url')}>
                     Atrás
