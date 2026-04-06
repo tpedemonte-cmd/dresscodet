@@ -126,7 +126,7 @@ export default function Wishlist() {
           user_id: user.id,
           product_id: extractedData.product_id,
           title: manualTitle.trim(),
-          price,
+          price: 0,
           currency: 'ARS',
           thumbnail: extractedData.thumbnail,
           image: null,
