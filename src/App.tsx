@@ -8,6 +8,7 @@ import AppLayout from "@/components/AppLayout";
 import Auth from "./pages/Auth";
 import Wardrobe from "./pages/Wardrobe";
 import AddItem from "./pages/AddItem";
+import Tryon from "./pages/Tryon";
 import Recommend from "./pages/Recommend";
 import History from "./pages/History";
 import Stats from "./pages/Stats";
@@ -34,6 +35,7 @@ const AppRoutes = () => {
       <Route path="/auth" element={user ? <Navigate to="/" /> : <Auth />} />
       <Route path="/" element={<ProtectedRoute><Wardrobe /></ProtectedRoute>} />
       <Route path="/agregar" element={<ProtectedRoute><AddItem /></ProtectedRoute>} />
+      <Route path="/probador" element={<ProtectedRoute><Tryon /></ProtectedRoute>} />
       <Route path="/recomendar" element={<ProtectedRoute><Recommend /></ProtectedRoute>} />
       <Route path="/historial" element={<ProtectedRoute><History /></ProtectedRoute>} />
       <Route path="/estadisticas" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
