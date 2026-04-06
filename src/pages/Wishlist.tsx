@@ -111,8 +111,6 @@ export default function Wishlist() {
     }
     if (!user || !extractedData) return;
 
-    const price = Number(manualPrice) || 0;
-
     // Check if already in wishlist
     const existing = items.find(i => i.product_id === extractedData.product_id);
     if (existing) {
