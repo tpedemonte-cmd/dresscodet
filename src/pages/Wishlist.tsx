@@ -62,7 +62,7 @@ export default function Wishlist() {
   const resetDialog = () => {
     setMlUrl('');
     setManualTitle('');
-    setManualPrice('');
+    
     setStep('url');
     setExtractedData(null);
   };
