@@ -227,16 +227,8 @@ export default function Wishlist() {
                     placeholder="Ej: Campera de cuero negra"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="product-price">Precio (opcional)</Label>
-                  <Input
-                    id="product-price"
-                    type="number"
-                    value={manualPrice}
-                    onChange={(e) => setManualPrice(e.target.value)}
-                    placeholder="Ej: 45000"
-                  />
-                </div>
+
+
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setStep('url')}>
                     Atrás
