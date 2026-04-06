@@ -35,6 +35,7 @@ const AppRoutes = () => {
       <Route path="/auth" element={user ? <Navigate to="/" /> : <Auth />} />
       <Route path="/" element={<ProtectedRoute><Wardrobe /></ProtectedRoute>} />
       <Route path="/agregar" element={<ProtectedRoute><AddItem /></ProtectedRoute>} />
+      <Route path="/probador" element={<ProtectedRoute><Tryon /></ProtectedRoute>} />
       <Route path="/recomendar" element={<ProtectedRoute><Recommend /></ProtectedRoute>} />
       <Route path="/historial" element={<ProtectedRoute><History /></ProtectedRoute>} />
       <Route path="/estadisticas" element={<ProtectedRoute><Stats /></ProtectedRoute>} />

@@ -11,6 +11,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const navItems = [
     { path: '/', icon: Shirt, label: 'Mi Placard' },
     { path: '/agregar', icon: Plus, label: 'Agregar' },
+    { path: '/probador', icon: ScanFace, label: 'Probador' },
     { path: '/recomendar', icon: Sparkles, label: 'Outfit' },
     { path: '/historial', icon: Clock, label: 'Historial' },
     { path: '/estadisticas', icon: BarChart3, label: 'Stats' },
