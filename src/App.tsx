@@ -8,6 +8,7 @@ import AppLayout from "@/components/AppLayout";
 import Auth from "./pages/Auth";
 import Wardrobe from "./pages/Wardrobe";
 import AddItem from "./pages/AddItem";
+import Tryon from "./pages/Tryon";
 import Recommend from "./pages/Recommend";
 import History from "./pages/History";
 import Stats from "./pages/Stats";
