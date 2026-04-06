@@ -163,7 +163,7 @@ export default function Marketplace() {
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-body text-foreground line-clamp-2">{item.title}</p>
-                      <p className="text-sm font-display font-bold text-foreground">{formatPrice(item.price, item.currency)}</p>
+                      {item.price > 0 && <p className="text-sm font-display font-bold text-foreground">{formatPrice(item.price, item.currency)}</p>}
                     </div>
                     <div className="flex gap-1">
                       <a href={item.permalink} target="_blank" rel="noopener noreferrer">
