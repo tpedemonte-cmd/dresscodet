@@ -256,7 +256,7 @@ export default function Tryon() {
               <ChevronLeft className="h-4 w-4 text-foreground" />
             </button>
             <div ref={scrollRef} className="flex gap-3 overflow-x-auto scrollbar-hide px-6 py-1" style={{ scrollbarWidth: 'none' }}>
-              {items.map((item) => {
+              {items.filter(item => !categoryFilter || item.category === categoryFilter).map((item) => {
                 const isSelected = selectedItems.some(i => i.id === item.id);
                 return (
                   <button
