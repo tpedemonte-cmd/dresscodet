@@ -6,6 +6,17 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+async function fetchImageAsBase64(url: string): Promise<{ base64: string; mime: string }> {
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error("No se pudo descargar la imagen de la prenda");
+  const buffer = await resp.arrayBuffer();
+  const base64 = btoa(
+    new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+  );
+  const mime = resp.headers.get("content-type") || "image/jpeg";
+  return { base64, mime };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -13,38 +24,72 @@ serve(async (req) => {
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const body = await req.json();
+    const { userPhotoBase64 } = body;
+
+    // Support both single item (legacy) and multiple items
+    let clothingItems: { imageUrl: string; name: string; category: string }[] = [];
+    if (body.clothingItems && Array.isArray(body.clothingItems)) {
+      clothingItems = body.clothingItems;
+    } else if (body.clothingImageUrl) {
+      clothingItems = [{
+        imageUrl: body.clothingImageUrl,
+        name: body.clothingName || "clothing item",
+        category: body.clothingCategory || "general",
+      }];
     }
 
-    const { userPhotoBase64, clothingImageUrl, clothingName, clothingCategory } = await req.json();
-
-    if (!userPhotoBase64 || !clothingImageUrl) {
+    if (!userPhotoBase64 || clothingItems.length === 0) {
       return new Response(
-        JSON.stringify({ error: "Se requiere una foto tuya y una prenda seleccionada." }),
+        JSON.stringify({ error: "Se requiere una foto tuya y al menos una prenda seleccionada." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Download clothing image and convert to base64
-    const clothingResp = await fetch(clothingImageUrl);
-    if (!clothingResp.ok) {
-      throw new Error("No se pudo descargar la imagen de la prenda");
-    }
-    const clothingBuffer = await clothingResp.arrayBuffer();
-    const clothingBase64 = btoa(
-      new Uint8Array(clothingBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+    // Download all clothing images in parallel
+    const clothingImages = await Promise.all(
+      clothingItems.map(async (item) => {
+        const { base64, mime } = await fetchImageAsBase64(item.imageUrl);
+        return { ...item, base64, mime };
+      })
     );
-    const clothingMime = clothingResp.headers.get("content-type") || "image/jpeg";
 
-    const prompt = `You are a virtual fashion try-on assistant. Take the person in the first image and realistically dress them in the clothing item shown in the second image (${clothingName || "clothing item"}, category: ${clothingCategory || "general"}). 
-    
+    const itemsList = clothingImages
+      .map((item, i) => `${i + 1}. ${item.name} (${item.category})`)
+      .join("\n");
+
+    const prompt = clothingImages.length === 1
+      ? `You are a virtual fashion try-on assistant. Take the person in the first image and realistically dress them in the clothing item shown in the second image (${clothingImages[0].name}, category: ${clothingImages[0].category}).
+
 Rules:
 - Keep the person's face, body shape, skin tone, and pose exactly as they are
 - Replace or overlay the relevant clothing area with the garment from the second image
 - Make it look natural and realistic, matching lighting and perspective
 - Keep the background from the first image
-- Output a full-body or upper-body photo of the person wearing the item`;
+- Output a full-body or upper-body photo of the person wearing the item`
+      : `You are a virtual fashion try-on assistant. Take the person in the first image and realistically dress them in ALL the clothing items shown in the following images to create a complete outfit.
+
+Items to apply:
+${itemsList}
+
+Rules:
+- Keep the person's face, body shape, skin tone, and pose exactly as they are
+- Apply EACH clothing item to the correct body area based on its category
+- Layer items naturally (e.g., jacket over shirt)
+- Make it look natural and realistic, matching lighting and perspective
+- Keep the background from the first image
+- Output a full-body or upper-body photo of the person wearing the complete outfit`;
+
+    const contentParts: any[] = [
+      { type: "text", text: prompt },
+      { type: "image_url", image_url: { url: userPhotoBase64 } },
+      ...clothingImages.map(img => ({
+        type: "image_url",
+        image_url: { url: `data:${img.mime};base64,${img.base64}` },
+      })),
+    ];
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -54,22 +99,7 @@ Rules:
       },
       body: JSON.stringify({
         model: "google/gemini-3-pro-image-preview",
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: prompt },
-              {
-                type: "image_url",
-                image_url: { url: userPhotoBase64 },
-              },
-              {
-                type: "image_url",
-                image_url: { url: `data:${clothingMime};base64,${clothingBase64}` },
-              },
-            ],
-          },
-        ],
+        messages: [{ role: "user", content: contentParts }],
         modalities: ["image", "text"],
       }),
     });
@@ -97,7 +127,7 @@ Rules:
     const resultText = data.choices?.[0]?.message?.content || "";
 
     if (!resultImage) {
-      throw new Error("No se pudo generar la imagen. Probá con otra foto o prenda.");
+      throw new Error("No se pudo generar la imagen. Probá con otra foto o prendas.");
     }
 
     return new Response(
