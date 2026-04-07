@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, Loader2, Sparkles, RotateCcw, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Camera, Upload, Loader2, Sparkles, RotateCcw, ChevronLeft, ChevronRight, X, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
 const CATEGORIES: Record<string, string> = {
@@ -14,6 +14,7 @@ const CATEGORIES: Record<string, string> = {
 
 export default function Tryon() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -22,6 +23,7 @@ export default function Tryon() {
   const [selectedItems, setSelectedItems] = useState<any[]>([]);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const { data: items = [] } = useQuery({
     queryKey: ['clothing_items', user?.id],
@@ -99,6 +101,50 @@ export default function Tryon() {
     }
   };
 
+  const handleSaveLook = async () => {
+    if (!resultImage || !user) return;
+    setSaving(true);
+
+    try {
+      // Convert base64 to blob
+      const base64Data = resultImage.startsWith('data:')
+        ? resultImage.split(',')[1]
+        : resultImage;
+      const byteChars = atob(base64Data);
+      const byteArray = new Uint8Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) {
+        byteArray[i] = byteChars.charCodeAt(i);
+      }
+      const blob = new Blob([byteArray], { type: 'image/png' });
+
+      const fileName = `${user.id}/${Date.now()}.png`;
+      const { error: uploadError } = await supabase.storage
+        .from('look-images')
+        .upload(fileName, blob, { contentType: 'image/png' });
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from('look-images').getPublicUrl(fileName);
+
+      const itemNames = selectedItems.map(i => `${CATEGORIES[i.category] || '📦'} ${i.name}`).join(', ');
+
+      const { error: insertError } = await supabase.from('saved_looks').insert({
+        user_id: user.id,
+        image_url: urlData.publicUrl,
+        item_ids: selectedItems.map(i => i.id),
+        note: itemNames,
+      });
+      if (insertError) throw insertError;
+
+      queryClient.invalidateQueries({ queryKey: ['saved_looks'] });
+      toast.success('¡Look guardado en tu galería!');
+    } catch (err: any) {
+      console.error('Save look error:', err);
+      toast.error('Error al guardar el look');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const scroll = (dir: 'left' | 'right') => {
     if (!scrollRef.current) return;
     scrollRef.current.scrollBy({ left: dir === 'left' ? -200 : 200, behavior: 'smooth' });
@@ -161,7 +207,6 @@ export default function Tryon() {
           <span className="text-muted-foreground font-normal ml-1">(podés seleccionar varias)</span>
         </p>
 
-        {/* Selected items chips */}
         {selectedItems.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {selectedItems.map(item => (
@@ -219,14 +264,26 @@ export default function Tryon() {
         )}
       </div>
 
-      {/* Generate button */}
-      <Button variant="warm" className="w-full" disabled={!selfie || selectedItems.length === 0 || loading} onClick={handleTryon}>
-        {loading ? (
-          <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando outfit virtual...</>
-        ) : (
-          <><Sparkles className="h-4 w-4 mr-2" /> Probarme {selectedItems.length > 1 ? `estas ${selectedItems.length} prendas` : 'esta prenda'}</>
+      {/* Action buttons */}
+      <div className="space-y-3">
+        <Button variant="warm" className="w-full" disabled={!selfie || selectedItems.length === 0 || loading} onClick={handleTryon}>
+          {loading ? (
+            <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando outfit virtual...</>
+          ) : (
+            <><Sparkles className="h-4 w-4 mr-2" /> Probarme {selectedItems.length > 1 ? `estas ${selectedItems.length} prendas` : 'esta prenda'}</>
+          )}
+        </Button>
+
+        {resultImage && (
+          <Button variant="outline" className="w-full" disabled={saving} onClick={handleSaveLook}>
+            {saving ? (
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando...</>
+            ) : (
+              <><Save className="h-4 w-4 mr-2" /> Guardar este look</>
+            )}
+          </Button>
         )}
-      </Button>
+      </div>
 
       {/* Info */}
       <div className="bg-card rounded-xl p-4 shadow-card text-center">
