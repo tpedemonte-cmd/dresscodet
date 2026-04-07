@@ -208,6 +208,33 @@ export default function Tryon() {
           <span className="text-muted-foreground font-normal ml-1">(podés seleccionar varias)</span>
         </p>
 
+        {/* Category filter chips */}
+        {items.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setCategoryFilter(null)}
+              className={`text-xs font-body px-3 py-1 rounded-full transition-colors ${
+                categoryFilter === null ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Todas
+            </button>
+            {Object.entries(CATEGORIES)
+              .filter(([key]) => items.some(i => i.category === key))
+              .map(([key, emoji]) => (
+                <button
+                  key={key}
+                  onClick={() => setCategoryFilter(prev => prev === key ? null : key)}
+                  className={`text-xs font-body px-3 py-1 rounded-full transition-colors ${
+                    categoryFilter === key ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {emoji} {key}
+                </button>
+              ))}
+          </div>
+        )}
+
         {selectedItems.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {selectedItems.map(item => (
