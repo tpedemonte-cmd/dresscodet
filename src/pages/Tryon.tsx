@@ -24,6 +24,7 @@ export default function Tryon() {
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   const { data: items = [] } = useQuery({
     queryKey: ['clothing_items', user?.id],
