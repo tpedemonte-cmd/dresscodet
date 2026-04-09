@@ -11,6 +11,24 @@ import { useState } from 'react';
 export default function Looks() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const shareLook = (imageUrl: string, note: string | null, method: 'whatsapp' | 'twitter' | 'copy') => {
+    const text = note ? `Mirá mi look: ${note}` : '¡Mirá el look que armé!';
+    const url = imageUrl;
+
+    if (method === 'whatsapp') {
+      window.open(`https://wa.me/?text=${encodeURIComponent(`${text}\n${url}`)}`, '_blank');
+    } else if (method === 'twitter') {
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopiedId(url);
+        toast.success('Link copiado');
+        setTimeout(() => setCopiedId(null), 2000);
+      });
+    }
+  };
 
   const { data: looks = [], isLoading } = useQuery({
     queryKey: ['saved_looks', user?.id],
