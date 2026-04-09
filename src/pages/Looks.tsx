@@ -1,30 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { Trash2, ImageIcon, Share2, Copy, Check, Sparkles, ExternalLink, Loader2, ShoppingBag } from 'lucide-react';
+import { Trash2, ImageIcon, Share2, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useState } from 'react';
-
-type StyleRecommendation = {
-  item: string;
-  reason: string;
-  search_query: string;
-};
-
-type StyleResult = {
-  style_profile: string;
-  recommendations: StyleRecommendation[];
-};
+import StyleRecommendationsWidget from '@/components/StyleRecommendationsWidget';
 
 export default function Looks() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [styleResult, setStyleResult] = useState<StyleResult | null>(null);
-  const [loadingRecs, setLoadingRecs] = useState(false);
 
   const shareLook = (imageUrl: string, note: string | null, method: 'whatsapp' | 'twitter' | 'copy') => {
     const text = note ? `Mirá mi look: ${note}` : '¡Mirá el look que armé!';
@@ -68,30 +56,6 @@ export default function Looks() {
     onError: () => toast.error('Error al eliminar el look'),
   });
 
-  const handleGetRecommendations = async () => {
-    setLoadingRecs(true);
-    setStyleResult(null);
-    try {
-      const { data, error } = await supabase.functions.invoke('style-recommendations');
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
-      setStyleResult(data);
-    } catch (err: any) {
-      if (err?.message?.includes('429') || err?.status === 429) {
-        toast.error('Demasiadas solicitudes, intentá de nuevo en un momento');
-      } else if (err?.message?.includes('402') || err?.status === 402) {
-        toast.error('Créditos agotados. Agregá fondos en Configuración.');
-      } else {
-        toast.error('Error al analizar tu estilo');
-      }
-      console.error(err);
-    } finally {
-      setLoadingRecs(false);
-    }
-  };
-
-  const getMLUrl = (query: string) =>
-    `https://listado.mercadolibre.com.ar/${encodeURIComponent(query.replace(/ /g, '-'))}`;
 
   if (isLoading) {
     return (
@@ -111,71 +75,7 @@ export default function Looks() {
         <p className="text-muted-foreground font-body">Tus outfits generados con el probador virtual</p>
       </div>
 
-      {/* Style Recommendations Section */}
-      <div className="bg-card rounded-xl p-5 shadow-card space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5 text-primary" />
-            <h3 className="font-display font-bold text-foreground">Recomendado para vos</h3>
-          </div>
-          <Button
-            variant="warm"
-            size="sm"
-            onClick={handleGetRecommendations}
-            disabled={loadingRecs}
-          >
-            {loadingRecs ? (
-              <span className="flex items-center gap-1.5">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Analizando...
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5" />
-                {styleResult ? 'Actualizar' : 'Analizar mi estilo'}
-              </span>
-            )}
-          </Button>
-        </div>
-
-        {!styleResult && !loadingRecs && (
-          <p className="text-sm text-muted-foreground font-body">
-            Analizamos tus looks, outfits y prendas favoritas para recomendarte qué te falta y dónde comprarlo 🛍️
-          </p>
-        )}
-
-        {styleResult && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
-            <div className="bg-secondary/50 rounded-lg p-3">
-              <p className="text-sm font-body text-foreground">
-                <span className="font-medium">Tu estilo:</span> {styleResult.style_profile}
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {styleResult.recommendations.map((rec, i) => (
-                <a
-                  key={i}
-                  href={getMLUrl(rec.search_query)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block p-3 rounded-lg bg-secondary/30 border border-border hover:border-primary/40 hover:bg-secondary/50 transition-all group"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-0.5 flex-1">
-                      <p className="text-sm font-body font-medium text-foreground">{rec.item}</p>
-                      <p className="text-xs text-muted-foreground font-body">{rec.reason}</p>
-                    </div>
-                    <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0 group-hover:text-primary transition-colors pt-0.5">
-                      Buscar <ExternalLink className="h-3 w-3" />
-                    </span>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+      <StyleRecommendationsWidget />
 
       {/* Looks Gallery */}
       {looks.length === 0 ? (

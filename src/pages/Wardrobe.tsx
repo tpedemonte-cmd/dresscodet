@@ -5,6 +5,7 @@ import { Trash2, Pencil, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import EditItemDialog from '@/components/EditItemDialog';
+import StyleRecommendationsWidget from '@/components/StyleRecommendationsWidget';
 
 const CATEGORIES: Record<string, string> = {
   remera: '👕 Remera',
@@ -76,6 +77,8 @@ export default function Wardrobe() {
         <h2 className="text-2xl font-display font-bold text-foreground">Tu Guardarropas</h2>
         <p className="text-muted-foreground font-body">{items.length} prendas</p>
       </div>
+
+      {items.length > 0 && <StyleRecommendationsWidget compact />}
 
       {categories.length > 0 && (
         <div className="flex gap-2 flex-wrap">
