@@ -96,12 +96,42 @@ export default function Looks() {
                   {new Date(look.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
-              <button
-                onClick={() => deleteMutation.mutate(look.id)}
-                className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </button>
+              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="bg-background/80 backdrop-blur-sm rounded-full p-1.5">
+                      <Share2 className="h-4 w-4 text-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-2 flex gap-2" side="bottom" align="end">
+                    <button
+                      onClick={() => shareLook(look.image_url, look.note, 'whatsapp')}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[hsl(142,70%,45%)] text-white text-xs font-medium hover:opacity-90 transition-opacity"
+                    >
+                      WhatsApp
+                    </button>
+                    <button
+                      onClick={() => shareLook(look.image_url, look.note, 'twitter')}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-foreground text-background text-xs font-medium hover:opacity-90 transition-opacity"
+                    >
+                      X / Twitter
+                    </button>
+                    <button
+                      onClick={() => shareLook(look.image_url, look.note, 'copy')}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground text-xs font-medium hover:opacity-90 transition-opacity"
+                    >
+                      {copiedId === look.image_url ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                      Link
+                    </button>
+                  </PopoverContent>
+                </Popover>
+                <button
+                  onClick={() => deleteMutation.mutate(look.id)}
+                  className="bg-background/80 backdrop-blur-sm rounded-full p-1.5"
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
