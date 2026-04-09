@@ -1,0 +1,208 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.100.0";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  try {
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader) throw new Error("No authorization header");
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error("Unauthorized");
+
+    // Fetch user data in parallel
+    const [itemsRes, looksRes, historyRes, wishlistRes] = await Promise.all([
+      supabase.from("clothing_items").select("*").eq("user_id", user.id),
+      supabase.from("saved_looks").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
+      supabase.from("outfit_history").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(30),
+      supabase.from("wishlist").select("*").eq("user_id", user.id),
+    ]);
+
+    const items = itemsRes.data || [];
+    const looks = looksRes.data || [];
+    const history = historyRes.data || [];
+    const wishlist = wishlistRes.data || [];
+
+    if (items.length === 0) {
+      return new Response(JSON.stringify({ recommendations: [] }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    // Build context about user's style
+    const wardrobeSummary = items.map(i =>
+      `${i.name} (${i.category}, ${i.color || "sin color"})${i.is_favorite ? " ⭐FAVORITA" : ""}`
+    ).join("\n");
+
+    const categories = items.map(i => i.category);
+    const categoryCounts: Record<string, number> = {};
+    categories.forEach(c => { categoryCounts[c] = (categoryCounts[c] || 0) + 1; });
+
+    const lookNotes = looks.filter(l => l.note).map(l => l.note).join("\n");
+
+    const historyContext = history.map(h =>
+      `Evento: ${h.event}, Ánimo: ${h.mood}, Estación: ${h.season} → ${h.recommendation.substring(0, 150)}...`
+    ).join("\n");
+
+    // Track which items are used most in recommendations
+    const itemUsage: Record<string, number> = {};
+    history.forEach(h => {
+      (h.recommended_item_ids || []).forEach((id: string) => {
+        itemUsage[id] = (itemUsage[id] || 0) + 1;
+      });
+    });
+
+    const mostUsedItems = Object.entries(itemUsage)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 10)
+      .map(([id]) => items.find(i => i.id === id))
+      .filter(Boolean)
+      .map(i => `${i!.name} (${i!.category})`)
+      .join(", ");
+
+    const wishlistContext = wishlist.length > 0
+      ? wishlist.map(w => `${w.title} ($${w.price})`).join("\n")
+      : "No tiene wishlist";
+
+    const systemPrompt = `Sos un personal shopper argentino experto en moda. Analizás el estilo de un usuario basándote en su guardarropas, los looks que armó, y su historial de outfits para entender sus gustos y recomendarle prendas NUEVAS que no tiene.
+
+Tu objetivo: Recomendar 3-5 prendas o accesorios que el usuario NO tiene pero que le encantarían según su estilo, y que combinen con lo que ya usa.
+
+Responde EXCLUSIVAMENTE en formato JSON válido con esta estructura:
+{
+  "style_profile": "breve descripción del estilo del usuario en 1-2 oraciones",
+  "recommendations": [
+    {
+      "item": "nombre descriptivo de la prenda",
+      "reason": "por qué le queda bien según su estilo, max 2 oraciones",
+      "search_query": "término de búsqueda para Mercado Libre Argentina, específico y corto"
+    }
+  ]
+}
+
+Reglas:
+- NO recomiendes cosas que ya tiene (revisá bien el guardarropas)
+- Basate en colores, categorías y combinaciones que usa seguido
+- Si tiene muchas remeras pero pocos accesorios, sugeri accesorios
+- Los search_query deben ser específicos: "cinturón cuero marrón hombre" no "cinturón"
+- Priorizá prendas que complementen sus favoritas
+- Máximo 5 recomendaciones
+- Hablá en argentino casual`;
+
+    const userPrompt = `GUARDARROPAS:
+${wardrobeSummary}
+
+DISTRIBUCIÓN POR CATEGORÍA:
+${Object.entries(categoryCounts).map(([k, v]) => `${k}: ${v}`).join(", ")}
+
+PRENDAS MÁS USADAS EN OUTFITS:
+${mostUsedItems || "Sin datos aún"}
+
+NOTAS DE LOOKS GUARDADOS:
+${lookNotes || "Sin notas"}
+
+HISTORIAL DE OUTFITS RECIENTES:
+${historyContext || "Sin historial aún"}
+
+WISHLIST (cosas que le gustan):
+${wishlistContext}
+
+Analizá todo y recomendá prendas nuevas que le encantarían.`;
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        tools: [{
+          type: "function",
+          function: {
+            name: "style_recommendations",
+            description: "Return personalized style recommendations",
+            parameters: {
+              type: "object",
+              properties: {
+                style_profile: { type: "string" },
+                recommendations: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      item: { type: "string" },
+                      reason: { type: "string" },
+                      search_query: { type: "string" },
+                    },
+                    required: ["item", "reason", "search_query"],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              required: ["style_profile", "recommendations"],
+              additionalProperties: false,
+            },
+          },
+        }],
+        tool_choice: { type: "function", function: { name: "style_recommendations" } },
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "Payment required" }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const text = await response.text();
+      console.error("AI error:", response.status, text);
+      throw new Error("AI gateway error");
+    }
+
+    const data = await response.json();
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    
+    let result = { style_profile: "", recommendations: [] };
+    if (toolCall?.function?.arguments) {
+      try {
+        result = JSON.parse(toolCall.function.arguments);
+      } catch {
+        console.error("Failed to parse tool call arguments");
+      }
+    }
+
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (e) {
+    console.error("style-recommendations error:", e);
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
