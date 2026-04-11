@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, AlertTriangle, Star, Clock } from 'lucide-react';
+import { analizarUsoPrendas, type ItemUsage } from '@/lib/wardrobeAnalysis';
+import { useState } from 'react';
 
 const CATEGORY_LABELS: Record<string, string> = {
   remera: '👕 Remera', pantalon: '👖 Pantalón', campera: '🧥 Campera',
