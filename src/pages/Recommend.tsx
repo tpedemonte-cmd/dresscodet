@@ -89,6 +89,19 @@ export default function Recommend() {
     enabled: !!user,
   });
 
+  const { data: outfitHistory = [] } = useQuery({
+    queryKey: ['outfit_history', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('outfit_history')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const getSearchUrl = async (query: string): Promise<string> => {
     try {
       const { data, error } = await supabase.functions.invoke('search-marketplace', {
