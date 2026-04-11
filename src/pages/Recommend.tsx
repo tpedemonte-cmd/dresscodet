@@ -8,6 +8,8 @@ import { Slider } from '@/components/ui/slider';
 import { Sparkles, ShoppingBag, ExternalLink, Loader2, History } from 'lucide-react';
 import { toast } from 'sonner';
 import { recomendarPorHistorial, type ScoredOutfit } from '@/lib/outfitSimilarity';
+import { analizarUsoPrendas, type ItemUsage } from '@/lib/wardrobeAnalysis';
+import { Clock, AlertTriangle } from 'lucide-react';
 
 const MOODS = [
   { value: 'feliz', label: '😊 Feliz' },
