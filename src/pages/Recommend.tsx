@@ -5,8 +5,9 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Sparkles, ShoppingBag, ExternalLink, Loader2 } from 'lucide-react';
+import { Sparkles, ShoppingBag, ExternalLink, Loader2, History } from 'lucide-react';
 import { toast } from 'sonner';
+import { recomendarPorHistorial, type ScoredOutfit } from '@/lib/outfitSimilarity';
 
 const MOODS = [
   { value: 'feliz', label: '😊 Feliz' },
@@ -60,6 +61,7 @@ export default function Recommend() {
   const [recommendedItems, setRecommendedItems] = useState<any[]>([]);
   const [shoppingSuggestions, setShoppingSuggestions] = useState<ShoppingSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
+  const [historyMatches, setHistoryMatches] = useState<ScoredOutfit[]>([]);
 
   const { data: items = [] } = useQuery({
     queryKey: ['clothing_items', user?.id],
@@ -79,6 +81,19 @@ export default function Recommend() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wishlist')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: outfitHistory = [] } = useQuery({
+    queryKey: ['outfit_history', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('outfit_history')
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -113,6 +128,16 @@ export default function Recommend() {
     setRecommendation(null);
     setRecommendedItems([]);
     setRecommendedWishlistItems([]);
+    setHistoryMatches([]);
+
+    // Calcular similitud con historial
+    const matches = recomendarPorHistorial(
+      outfitHistory as any,
+      temperature[0],
+      weather,
+      event
+    );
+    setHistoryMatches(matches.slice(0, 3));
 
     try {
       const wardrobeSummary = items.map(i =>
@@ -261,6 +286,46 @@ export default function Recommend() {
           )}
         </Button>
       </div>
+
+      {/* History-based similarity matches */}
+      {historyMatches.length > 0 && (
+        <div className="bg-card p-6 rounded-xl shadow-card space-y-3 animate-in fade-in slide-in-from-bottom-4">
+          <h3 className="font-display font-bold text-lg text-foreground flex items-center gap-2">
+            <History className="h-5 w-5 text-primary" />
+            Outfits similares de tu historial
+          </h3>
+          <div className="space-y-3">
+            {historyMatches.map((match, idx) => {
+              const matchItems = items.filter(item =>
+                (match.recommended_item_ids || []).includes(item.id)
+              );
+              return (
+                <div key={match.id} className="p-3 rounded-lg bg-secondary/30 border border-border space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-body text-muted-foreground">
+                      #{idx + 1} · Score: {match.score.toFixed(1)} · {match.event} · {match.weather} · {match.temperature}°C
+                    </span>
+                    <span className="text-xs text-muted-foreground font-body">
+                      {new Date(match.created_at).toLocaleDateString('es-AR')}
+                    </span>
+                  </div>
+                  <p className="text-sm font-body text-foreground line-clamp-3">{match.recommendation}</p>
+                  {matchItems.length > 0 && (
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {matchItems.map((item) => (
+                        <div key={item.id} className="shrink-0 w-14 rounded-md overflow-hidden bg-secondary">
+                          <img src={item.image_url} alt={item.name} className="w-full aspect-square object-cover" />
+                          <p className="text-[10px] font-body text-center truncate px-0.5">{item.name}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {recommendation && (
         <div className="bg-card p-6 rounded-xl shadow-elevated space-y-3 animate-in fade-in slide-in-from-bottom-4">
