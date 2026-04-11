@@ -128,6 +128,16 @@ export default function Recommend() {
     setRecommendation(null);
     setRecommendedItems([]);
     setRecommendedWishlistItems([]);
+    setHistoryMatches([]);
+
+    // Calcular similitud con historial
+    const matches = recomendarPorHistorial(
+      outfitHistory as any,
+      temperature[0],
+      weather,
+      event
+    );
+    setHistoryMatches(matches.slice(0, 3));
 
     try {
       const wardrobeSummary = items.map(i =>
