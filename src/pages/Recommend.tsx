@@ -429,6 +429,36 @@ export default function Recommend() {
           ))}
         </div>
       )}
+
+      {/* Forgotten items suggestion */}
+      {forgottenSuggestions.length > 0 && recommendation && (
+        <div className="bg-card p-6 rounded-xl shadow-elevated space-y-3 animate-in fade-in slide-in-from-bottom-4 border border-dashed border-primary/30">
+          <h3 className="font-display font-bold text-lg text-foreground flex items-center gap-2">
+            <Clock className="h-5 w-5 text-amber-500" />
+            ¡Hace mucho no usás estas prendas!
+          </h3>
+          <p className="text-sm font-body text-muted-foreground">
+            Estas prendas van bien con el contexto actual y las tenés olvidadas. ¡Dales otra oportunidad!
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {forgottenSuggestions.map((item) => (
+              <div key={item.itemId} className="rounded-lg overflow-hidden bg-secondary/50 border border-border">
+                <img src={item.imageUrl} alt={item.prenda} className="w-full aspect-square object-cover" />
+                <div className="p-2 space-y-1">
+                  <p className="text-xs font-body font-medium text-foreground truncate">{item.prenda}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-body text-muted-foreground capitalize">{item.category}</span>
+                    <span className="text-[10px] font-body text-amber-600 flex items-center gap-0.5">
+                      <AlertTriangle className="h-2.5 w-2.5" />
+                      {item.ultimaVez === '—' ? 'Nunca usada' : `Última vez: ${item.ultimaVez}`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
