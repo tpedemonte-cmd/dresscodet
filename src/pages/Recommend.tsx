@@ -61,6 +61,7 @@ export default function Recommend() {
   const [recommendedItems, setRecommendedItems] = useState<any[]>([]);
   const [shoppingSuggestions, setShoppingSuggestions] = useState<ShoppingSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
+  const [historyMatches, setHistoryMatches] = useState<ScoredOutfit[]>([]);
 
   const { data: items = [] } = useQuery({
     queryKey: ['clothing_items', user?.id],
