@@ -142,6 +142,28 @@ export default function Recommend() {
     );
     setHistoryMatches(matches.slice(0, 3));
 
+    // Detect forgotten items relevant to current context
+    const allUsage = analizarUsoPrendas(outfitHistory as any, items as any, 30, 5);
+    const forgotten = allUsage.filter(u => u.estado === 'olvidada');
+
+    // Filter forgotten items by categories relevant to the season/weather
+    const coldCategories = ['campera', 'buzo'];
+    const hotCategories = ['remera', 'short', 'vestido', 'pollera'];
+    const isCold = temperature[0] < 15 || season === 'invierno';
+    const isHot = temperature[0] > 25 || season === 'verano';
+
+    const relevantForgotten = forgotten.filter(item => {
+      if (isCold && coldCategories.includes(item.category)) return true;
+      if (isHot && hotCategories.includes(item.category)) return true;
+      // Always suggest shoes/accessories and general items
+      if (['zapatillas', 'zapatos', 'accesorio'].includes(item.category)) return true;
+      // If mild weather, suggest everything
+      if (!isCold && !isHot) return true;
+      return false;
+    });
+
+    setForgottenSuggestions(relevantForgotten.slice(0, 4));
+
     try {
       const wardrobeSummary = items.map(i =>
         `- ID:${i.id} | ${i.name} (${i.category}${i.color ? ', ' + i.color : ''})${i.is_favorite ? ' ⭐ FAVORITA' : ''}`
