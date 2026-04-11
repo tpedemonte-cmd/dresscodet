@@ -132,7 +132,7 @@ export default function Recommend() {
     setRecommendedItems([]);
     setRecommendedWishlistItems([]);
     setHistoryMatches([]);
-
+    setForgottenSuggestions([]);
     // Calcular similitud con historial
     const matches = recomendarPorHistorial(
       outfitHistory as any,
