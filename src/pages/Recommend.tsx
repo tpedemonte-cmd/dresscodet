@@ -287,6 +287,46 @@ export default function Recommend() {
         </Button>
       </div>
 
+      {/* History-based similarity matches */}
+      {historyMatches.length > 0 && (
+        <div className="bg-card p-6 rounded-xl shadow-card space-y-3 animate-in fade-in slide-in-from-bottom-4">
+          <h3 className="font-display font-bold text-lg text-foreground flex items-center gap-2">
+            <History className="h-5 w-5 text-primary" />
+            Outfits similares de tu historial
+          </h3>
+          <div className="space-y-3">
+            {historyMatches.map((match, idx) => {
+              const matchItems = items.filter(item =>
+                (match.recommended_item_ids || []).includes(item.id)
+              );
+              return (
+                <div key={match.id} className="p-3 rounded-lg bg-secondary/30 border border-border space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-body text-muted-foreground">
+                      #{idx + 1} · Score: {match.score.toFixed(1)} · {match.event} · {match.weather} · {match.temperature}°C
+                    </span>
+                    <span className="text-xs text-muted-foreground font-body">
+                      {new Date(match.created_at).toLocaleDateString('es-AR')}
+                    </span>
+                  </div>
+                  <p className="text-sm font-body text-foreground line-clamp-3">{match.recommendation}</p>
+                  {matchItems.length > 0 && (
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {matchItems.map((item) => (
+                        <div key={item.id} className="shrink-0 w-14 rounded-md overflow-hidden bg-secondary">
+                          <img src={item.image_url} alt={item.name} className="w-full aspect-square object-cover" />
+                          <p className="text-[10px] font-body text-center truncate px-0.5">{item.name}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {recommendation && (
         <div className="bg-card p-6 rounded-xl shadow-elevated space-y-3 animate-in fade-in slide-in-from-bottom-4">
           <h3 className="font-display font-bold text-lg text-foreground flex items-center gap-2">
