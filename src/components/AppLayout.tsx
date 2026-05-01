@@ -35,23 +35,25 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-md border-t border-border">
-        <div className="container mx-auto px-4 flex justify-around py-2">
-          {navItems.map(({ path, icon: Icon, label }) => {
-            const isActive = location.pathname === path;
-            return (
-              <Link
-                key={path}
-                to={path}
-                className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
-                  isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="text-xs font-body font-medium">{label}</span>
-              </Link>
-            );
-          })}
+      <nav className="fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-md border-t border-border z-50">
+        <div className="overflow-x-auto scrollbar-none">
+          <div className="flex sm:justify-around min-w-max sm:min-w-0 px-2 py-2 gap-1">
+            {navItems.map(({ path, icon: Icon, label }) => {
+              const isActive = location.pathname === path;
+              return (
+                <Link
+                  key={path}
+                  to={path}
+                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors flex-shrink-0 min-w-[64px] ${
+                    isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="text-[10px] sm:text-xs font-body font-medium whitespace-nowrap">{label}</span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </nav>
     </div>
