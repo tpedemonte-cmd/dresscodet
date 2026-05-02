@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { recomendarPorHistorial, type ScoredOutfit } from '@/lib/outfitSimilarity';
 import { analizarUsoPrendas, type ItemUsage } from '@/lib/wardrobeAnalysis';
 import { Clock, AlertTriangle } from 'lucide-react';
-import { fetchCurrentWeather } from '@/lib/weather';
+import { fetchCurrentWeather, fetchWeatherFromCoords } from '@/lib/weather';
 
 const EVENTS = [
   { value: 'trabajo', label: '💼 Trabajo' },
