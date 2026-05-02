@@ -66,6 +66,31 @@ export default function Recommend() {
   const [loading, setLoading] = useState(false);
   const [historyMatches, setHistoryMatches] = useState<ScoredOutfit[]>([]);
   const [forgottenSuggestions, setForgottenSuggestions] = useState<ItemUsage[]>([]);
+  const [loadingWeather, setLoadingWeather] = useState(false);
+  const [weatherCity, setWeatherCity] = useState<string | null>(null);
+
+  const handleAutoWeather = async () => {
+    setLoadingWeather(true);
+    try {
+      const info = await fetchCurrentWeather();
+      setTemperature([info.temperature]);
+      setWeather(info.weather);
+      setSeason(info.season);
+      setWeatherCity(info.city || null);
+      toast.success(
+        info.city
+          ? `Clima de ${info.city}: ${info.temperature}°C`
+          : `Clima detectado: ${info.temperature}°C`
+      );
+    } catch (err: any) {
+      const msg = err?.code === 1
+        ? 'Permiso de ubicación denegado'
+        : err?.message || 'No pudimos obtener el clima';
+      toast.error(msg);
+    } finally {
+      setLoadingWeather(false);
+    }
+  };
 
   const { data: items = [] } = useQuery({
     queryKey: ['clothing_items', user?.id],
