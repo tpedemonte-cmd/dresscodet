@@ -69,6 +69,7 @@ export default function Recommend() {
   const handleAutoWeather = async () => {
     setLoadingWeather(true);
     setWeatherError(null);
+    setWeatherErrorDenied(false);
     try {
       const info = await fetchCurrentWeather();
       setTemperature([info.temperature]);
