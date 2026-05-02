@@ -295,47 +295,47 @@ export default function Recommend() {
               {weatherError}
             </span>
           ) : weather && season ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-8 gap-y-7">
-              <div className="flex flex-col min-w-0 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-8 gap-y-6">
+              <div className="flex flex-col min-w-0 gap-1.5">
                 <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
-                  <MapPin className="h-5 w-5" /> Ubicación
+                  <MapPin className="h-4 w-4" /> Ubicación
                 </span>
-                <span className="text-xl font-body font-semibold text-foreground truncate">
+                <span className="text-sm font-body font-semibold text-foreground truncate">
                   {weatherCity || 'Detectando...'}
                 </span>
               </div>
-              <div className="flex flex-col min-w-0 gap-2">
-                <span className="text-sm font-body text-muted-foreground">
-                  <span className="text-xl mr-1">🌡️</span> Temperatura
+              <div className="flex flex-col min-w-0 gap-1.5">
+                <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+                  <span className="text-base">🌡️</span> Temperatura
                 </span>
-                <span className="text-xl font-body font-semibold text-foreground">
+                <span className="text-sm font-body font-semibold text-foreground">
                   {temperature[0]} grados
                 </span>
               </div>
-              <div className="flex flex-col min-w-0 gap-2">
-                <span className="text-sm font-body text-muted-foreground">
-                  <span className="text-xl mr-1">{(weatherLabel || '').match(/^\p{Extended_Pictographic}/u)?.[0] || '🌤️'}</span> Clima
+              <div className="flex flex-col min-w-0 gap-1.5">
+                <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+                  <span className="text-base">{(weatherLabel || '').match(/^\p{Extended_Pictographic}/u)?.[0] || '🌤️'}</span> Clima
                 </span>
-                <span className="text-xl font-body font-semibold text-foreground truncate">
+                <span className="text-sm font-body font-semibold text-foreground truncate">
                   {(weatherLabel || weather).replace(/^\p{Extended_Pictographic}\s*/u, '')}
                 </span>
               </div>
               {windKmh !== null && (
-                <div className="flex flex-col min-w-0 gap-2">
-                  <span className="text-sm font-body text-muted-foreground">
-                    <span className="text-xl mr-1">💨</span> Viento
+                <div className="flex flex-col min-w-0 gap-1.5">
+                  <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+                    <span className="text-base">💨</span> Viento
                   </span>
-                  <span className="text-xl font-body font-semibold text-foreground">
+                  <span className="text-sm font-body font-semibold text-foreground">
                     {windKmh} km/h
                   </span>
                 </div>
               )}
               {rainProb !== null && (
-                <div className="flex flex-col min-w-0 gap-2">
-                  <span className="text-sm font-body text-muted-foreground">
-                    <span className="text-xl mr-1">🌧️</span> Lluvia
+                <div className="flex flex-col min-w-0 gap-1.5">
+                  <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+                    <span className="text-base">🌧️</span> Lluvia
                   </span>
-                  <span className="text-xl font-body font-semibold text-foreground">
+                  <span className="text-sm font-body font-semibold text-foreground">
                     {rainProb}% de probabilidad
                   </span>
                 </div>
