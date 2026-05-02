@@ -276,7 +276,7 @@ export default function Recommend() {
     new Intl.NumberFormat('es-AR', { style: 'currency', currency: currency || 'ARS', maximumFractionDigits: 0 }).format(price);
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-display font-bold text-foreground">¿Qué me pongo?</h2>
         <p className="text-muted-foreground font-body">Contanos cómo te sentís y a dónde vas</p>
@@ -295,7 +295,7 @@ export default function Recommend() {
               {weatherError}
             </span>
           ) : weather && season ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-6 gap-y-5">
               <div className="flex flex-col min-w-0 gap-1">
                 <span className="text-xs font-body text-muted-foreground flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" /> Ubicación
