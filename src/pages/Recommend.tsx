@@ -147,8 +147,12 @@ export default function Recommend() {
   };
 
   const handleRecommend = async () => {
-    if (!mood || !event || !weather || !season) {
-      toast.error('Completá todos los campos');
+    if (!mood || !event) {
+      toast.error('Elegí tu ánimo y a dónde vas');
+      return;
+    }
+    if (!weather || !season) {
+      toast.error('Necesitamos detectar el clima primero. Activá la ubicación.');
       return;
     }
     if (items.length === 0) {
