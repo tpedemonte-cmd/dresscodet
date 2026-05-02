@@ -325,6 +325,7 @@ export default function Recommend() {
                 </Button>
               )}
             </div>
+          ) : weather && season ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-8 gap-y-7">
               <div className="flex flex-col min-w-0 gap-2">
                 <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
