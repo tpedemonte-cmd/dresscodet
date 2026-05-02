@@ -46,7 +46,9 @@ ${wardrobe}${wishlistSection}
 Estado de ánimo: ${mood}
 Evento: ${event}
 Temperatura: ${temperature}°C
-Clima: ${weather}
+Clima: ${weather}${isNight ? ' (es de noche)' : ''}
+Viento: ${windKmh ?? 'N/D'} km/h
+Probabilidad de lluvia: ${rainProbability ?? 'N/D'}%
 Estación del año: ${season}
 
 ¿Qué me recomendás ponerme?`;
