@@ -56,10 +56,10 @@ function getCurrentPosition(): Promise<GeolocationPosition> {
   });
 }
 
-export async function fetchCurrentWeather(): Promise<WeatherInfo> {
-  const pos = await getCurrentPosition();
-  const { latitude, longitude } = pos.coords;
-
+// Recibe coordenadas ya obtenidas y busca clima + ciudad.
+// Útil cuando llamamos a navigator.geolocation directamente desde un click handler
+// para preservar el "user gesture" en navegadores móviles.
+export async function fetchWeatherFromCoords(latitude: number, longitude: number): Promise<WeatherInfo> {
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,is_day,wind_speed_10m,precipitation_probability&hourly=precipitation_probability&timezone=auto`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('No pudimos obtener el clima');
@@ -70,7 +70,6 @@ export async function fetchCurrentWeather(): Promise<WeatherInfo> {
   const isDay = (data?.current?.is_day ?? 1) === 1;
   const windKmh = Math.round(data?.current?.wind_speed_10m ?? 0);
 
-  // Probabilidad de precipitación: usa la actual o el máximo de las próximas horas
   let precipitationProbability = data?.current?.precipitation_probability;
   if (precipitationProbability == null && Array.isArray(data?.hourly?.precipitation_probability)) {
     const next6 = data.hourly.precipitation_probability.slice(0, 6).filter((v: any) => typeof v === 'number');
@@ -80,7 +79,6 @@ export async function fetchCurrentWeather(): Promise<WeatherInfo> {
 
   const mapped = mapWeatherCode(code, isDay);
 
-  // Reverse geocoding: probamos Open-Meteo y si falla usamos Nominatim (OSM)
   let city: string | undefined;
   try {
     const geoRes = await fetch(
@@ -130,4 +128,9 @@ export async function fetchCurrentWeather(): Promise<WeatherInfo> {
     precipitationProbability,
     isDay,
   };
+}
+
+export async function fetchCurrentWeather(): Promise<WeatherInfo> {
+  const pos = await getCurrentPosition();
+  return fetchWeatherFromCoords(pos.coords.latitude, pos.coords.longitude);
 }
