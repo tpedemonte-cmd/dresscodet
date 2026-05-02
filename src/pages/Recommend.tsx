@@ -284,11 +284,10 @@ export default function Recommend() {
 
       <div className="space-y-5 bg-card p-6 rounded-xl shadow-card">
         {/* Clima detectado automáticamente */}
-        <div className="rounded-lg border border-border bg-secondary/30 px-3 py-2.5">
+        <div className="rounded-lg border border-border bg-secondary/30 px-4 py-3">
           {loadingWeather && !weather ? (
             <span className="text-sm font-body text-muted-foreground flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-primary shrink-0" />
-              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Detectando clima...
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Detectando clima y ubicación...
             </span>
           ) : weatherError ? (
             <span className="text-sm font-body text-destructive flex items-center gap-2">
@@ -296,20 +295,43 @@ export default function Recommend() {
               {weatherError}
             </span>
           ) : weather && season ? (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
-                <MapPin className="h-4 w-4 text-primary shrink-0" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-4 gap-y-3">
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-body text-muted-foreground flex items-center gap-1">
+                  <MapPin className="h-3 w-3" /> Ubicación
+                </span>
                 <span className="text-sm font-body font-medium text-foreground truncate">
-                  {weatherCity ? `${weatherCity} · ` : ''}{temperature[0]}°C
-                </span>
-                <span className="text-sm font-body text-muted-foreground truncate">
-                  · {weatherLabel || weather} · {SEASONS.find(s => s.value === season)?.label || season}
+                  {weatherCity || 'Tu zona'}
                 </span>
               </div>
-              <div className="text-sm font-body text-muted-foreground flex items-center gap-3 ml-auto shrink-0">
-                {windKmh !== null && <span className="whitespace-nowrap">💨 {windKmh} km/h</span>}
-                {rainProb !== null && <span className="whitespace-nowrap">🌧️ {rainProb}%</span>}
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-body text-muted-foreground">🌡️ Temperatura</span>
+                <span className="text-sm font-body font-medium text-foreground">
+                  {temperature[0]} grados
+                </span>
               </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-body text-muted-foreground">Clima</span>
+                <span className="text-sm font-body font-medium text-foreground truncate">
+                  {weatherLabel || weather}
+                </span>
+              </div>
+              {windKmh !== null && (
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-body text-muted-foreground">💨 Viento</span>
+                  <span className="text-sm font-body font-medium text-foreground">
+                    {windKmh} km/h
+                  </span>
+                </div>
+              )}
+              {rainProb !== null && (
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-body text-muted-foreground">🌧️ Lluvia</span>
+                  <span className="text-sm font-body font-medium text-foreground">
+                    {rainProb}% de probabilidad
+                  </span>
+                </div>
+              )}
             </div>
           ) : (
             <span className="text-sm font-body text-muted-foreground flex items-center gap-2">
