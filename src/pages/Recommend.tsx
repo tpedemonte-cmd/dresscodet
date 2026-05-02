@@ -299,11 +299,32 @@ export default function Recommend() {
               <Loader2 className="h-4 w-4 animate-spin" /> Detectando clima y ubicación...
             </span>
           ) : weatherError ? (
-            <span className="text-base font-body text-destructive flex items-center gap-2">
-              <MapPin className="h-5 w-5 shrink-0" />
-              {weatherError}
-            </span>
-          ) : weather && season ? (
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-3">
+              <span className="text-base font-body text-destructive flex items-center gap-2">
+                <MapPin className="h-5 w-5 shrink-0" />
+                {weatherError}
+              </span>
+              {weatherErrorDenied && (
+                <Button
+                  size="sm"
+                  variant="warm"
+                  disabled={loadingWeather}
+                  onClick={() => {
+                    handleAutoWeather().then(() => {
+                      // Si sigue denegado tras el retry, guiamos al usuario
+                      setTimeout(() => {
+                        if (weatherErrorDenied) {
+                          toast.info('Si no aparece el aviso, activá la ubicación desde los ajustes del navegador para este sitio.');
+                        }
+                      }, 500);
+                    });
+                  }}
+                >
+                  {loadingWeather ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <MapPin className="h-4 w-4 mr-1" />}
+                  Activar ubicación
+                </Button>
+              )}
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-8 gap-y-7">
               <div className="flex flex-col min-w-0 gap-2">
                 <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
