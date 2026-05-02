@@ -45,7 +45,7 @@ type ShoppingSuggestion = {
 
 export default function Recommend() {
   const { user } = useAuth();
-  const [mood, setMood] = useState('');
+  
   const [event, setEvent] = useState('');
   const [temperature, setTemperature] = useState([20]);
   const [weather, setWeather] = useState('');
