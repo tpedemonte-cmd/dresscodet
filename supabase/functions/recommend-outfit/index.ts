@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { wardrobe, wishlist, mood, event, temperature, weather, season, windKmh, rainProbability, isNight } = await req.json();
+    const { wardrobe, wishlist, mood, event, formality, temperature, weather, season, windKmh, rainProbability, isNight } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -44,6 +44,7 @@ donde cada término es una búsqueda corta para Mercado Libre de una prenda que 
 ${wardrobe}${wishlistSection}
 
 Evento: ${event}
+Estilo deseado: ${formality || 'equilibrado'} (casual = relajado/informal, equilibrado = prolijo pero cómodo, formal = elegante/arreglado)
 Temperatura: ${temperature}°C
 Clima: ${weather}${isNight ? ' (es de noche)' : ''}
 Viento: ${windKmh ?? 'N/D'} km/h

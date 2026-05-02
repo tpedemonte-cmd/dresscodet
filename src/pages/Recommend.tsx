@@ -47,6 +47,7 @@ export default function Recommend() {
   const { user } = useAuth();
   
   const [event, setEvent] = useState('');
+  const [formality, setFormality] = useState('equilibrado');
   const [temperature, setTemperature] = useState([20]);
   const [weather, setWeather] = useState('');
   const [season, setSeason] = useState('');
@@ -209,7 +210,7 @@ export default function Recommend() {
 
       const weatherForAI = weather === 'despejado-noche' ? 'soleado' : weather;
       const { data, error } = await supabase.functions.invoke('recommend-outfit', {
-        body: { wardrobe: wardrobeSummary, wishlist: wishlistSummary, event, temperature: temperature[0], weather: weatherForAI, season, windKmh, rainProbability: rainProb, isNight: weather === 'despejado-noche' },
+        body: { wardrobe: wardrobeSummary, wishlist: wishlistSummary, event, formality, temperature: temperature[0], weather: weatherForAI, season, windKmh, rainProbability: rainProb, isNight: weather === 'despejado-noche' },
       });
 
       if (error) throw error;
@@ -357,6 +358,32 @@ export default function Recommend() {
             </SelectContent>
           </Select>
         </div>
+
+        {event && (
+          <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+            <label className="text-xl font-body font-semibold text-foreground">Estilo de la salida</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: 'casual', label: '😎 Casual' },
+                { value: 'equilibrado', label: '⚖️ Equilibrado' },
+                { value: 'formal', label: '🎩 Formal' },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setFormality(opt.value)}
+                  className={`h-14 rounded-lg border text-base font-body font-medium transition-colors ${
+                    formality === opt.value
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-secondary/50 text-foreground border-border hover:bg-secondary'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <Button variant="warm" className="w-full h-16 text-lg" disabled={loading || !event || !weather || !season} onClick={handleRecommend}>
           {loading ? (
