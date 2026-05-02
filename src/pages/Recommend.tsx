@@ -295,47 +295,47 @@ export default function Recommend() {
               {weatherError}
             </span>
           ) : weather && season ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-8 gap-y-6">
-              <div className="flex flex-col min-w-0 gap-1.5">
-                <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4" /> Ubicación
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-8 gap-y-7">
+              <div className="flex flex-col min-w-0 gap-2">
+                <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
+                  <MapPin className="h-5 w-5" /> Ubicación
                 </span>
-                <span className="text-sm font-body font-semibold text-foreground truncate">
+                <span className="text-xl font-body font-semibold text-foreground truncate">
                   {weatherCity || 'Detectando...'}
                 </span>
               </div>
-              <div className="flex flex-col min-w-0 gap-1.5">
-                <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
-                  <span className="text-base">🌡️</span> Temperatura
+              <div className="flex flex-col min-w-0 gap-2">
+                <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
+                  <span className="text-xl">🌡️</span> Temperatura
                 </span>
-                <span className="text-sm font-body font-semibold text-foreground">
+                <span className="text-xl font-body font-semibold text-foreground">
                   {temperature[0]} grados
                 </span>
               </div>
-              <div className="flex flex-col min-w-0 gap-1.5">
-                <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
-                  <span className="text-base">{(weatherLabel || '').match(/^\p{Extended_Pictographic}/u)?.[0] || '🌤️'}</span> Clima
+              <div className="flex flex-col min-w-0 gap-2">
+                <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
+                  <span className="text-xl">{(weatherLabel || '').match(/^\p{Extended_Pictographic}/u)?.[0] || '🌤️'}</span> Clima
                 </span>
-                <span className="text-sm font-body font-semibold text-foreground truncate">
+                <span className="text-xl font-body font-semibold text-foreground truncate">
                   {(weatherLabel || weather).replace(/^\p{Extended_Pictographic}\s*/u, '')}
                 </span>
               </div>
               {windKmh !== null && (
-                <div className="flex flex-col min-w-0 gap-1.5">
-                  <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
-                    <span className="text-base">💨</span> Viento
+                <div className="flex flex-col min-w-0 gap-2">
+                  <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
+                    <span className="text-xl">💨</span> Viento
                   </span>
-                  <span className="text-sm font-body font-semibold text-foreground">
+                  <span className="text-xl font-body font-semibold text-foreground">
                     {windKmh} km/h
                   </span>
                 </div>
               )}
               {rainProb !== null && (
-                <div className="flex flex-col min-w-0 gap-1.5">
-                  <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
-                    <span className="text-base">🌧️</span> Lluvia
+                <div className="flex flex-col min-w-0 gap-2">
+                  <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
+                    <span className="text-xl">🌧️</span> Lluvia
                   </span>
-                  <span className="text-sm font-body font-semibold text-foreground">
+                  <span className="text-xl font-body font-semibold text-foreground">
                     {rainProb}% de probabilidad
                   </span>
                 </div>
@@ -348,12 +348,12 @@ export default function Recommend() {
           )}
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-body font-medium text-foreground">Tipo de juntada</label>
+        <div className="space-y-3">
+          <label className="text-base font-body font-medium text-foreground">Tipo de juntada</label>
           <Select value={event} onValueChange={setEvent}>
-            <SelectTrigger><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
+            <SelectTrigger className="h-14 text-lg"><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
             <SelectContent>
-              {EVENTS.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
+              {EVENTS.map((e) => <SelectItem key={e.value} value={e.value} className="text-base py-3">{e.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
