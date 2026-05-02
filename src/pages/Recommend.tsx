@@ -5,11 +5,12 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Sparkles, ShoppingBag, ExternalLink, Loader2, History } from 'lucide-react';
+import { Sparkles, ShoppingBag, ExternalLink, Loader2, History, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { recomendarPorHistorial, type ScoredOutfit } from '@/lib/outfitSimilarity';
 import { analizarUsoPrendas, type ItemUsage } from '@/lib/wardrobeAnalysis';
 import { Clock, AlertTriangle } from 'lucide-react';
+import { fetchCurrentWeather } from '@/lib/weather';
 
 const MOODS = [
   { value: 'feliz', label: '😊 Feliz' },
