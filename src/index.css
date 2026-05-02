@@ -90,6 +90,12 @@
     @apply border-border;
   }
 
+  html {
+    /* Tamaño base aumentado para mejor legibilidad en toda la app.
+       Tailwind usa rem, así que todas las clases de texto escalan en proporción. */
+    font-size: 18px;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
