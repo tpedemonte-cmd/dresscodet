@@ -253,7 +253,7 @@ export default function Recommend() {
       if (user) {
         await supabase.from('outfit_history').insert({
           user_id: user.id,
-          mood, event, temperature: temperature[0], weather: weatherForAI, season,
+          event, temperature: temperature[0], weather: weatherForAI, season,
           recommendation: cleanText,
           recommended_item_ids: usedItemIds,
         } as any);
