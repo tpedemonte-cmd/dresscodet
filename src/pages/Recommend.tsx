@@ -5,11 +5,12 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Sparkles, ShoppingBag, ExternalLink, Loader2, History } from 'lucide-react';
+import { Sparkles, ShoppingBag, ExternalLink, Loader2, History, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { recomendarPorHistorial, type ScoredOutfit } from '@/lib/outfitSimilarity';
 import { analizarUsoPrendas, type ItemUsage } from '@/lib/wardrobeAnalysis';
 import { Clock, AlertTriangle } from 'lucide-react';
+import { fetchCurrentWeather } from '@/lib/weather';
 
 const MOODS = [
   { value: 'feliz', label: '😊 Feliz' },
@@ -65,6 +66,31 @@ export default function Recommend() {
   const [loading, setLoading] = useState(false);
   const [historyMatches, setHistoryMatches] = useState<ScoredOutfit[]>([]);
   const [forgottenSuggestions, setForgottenSuggestions] = useState<ItemUsage[]>([]);
+  const [loadingWeather, setLoadingWeather] = useState(false);
+  const [weatherCity, setWeatherCity] = useState<string | null>(null);
+
+  const handleAutoWeather = async () => {
+    setLoadingWeather(true);
+    try {
+      const info = await fetchCurrentWeather();
+      setTemperature([info.temperature]);
+      setWeather(info.weather);
+      setSeason(info.season);
+      setWeatherCity(info.city || null);
+      toast.success(
+        info.city
+          ? `Clima de ${info.city}: ${info.temperature}°C`
+          : `Clima detectado: ${info.temperature}°C`
+      );
+    } catch (err: any) {
+      const msg = err?.code === 1
+        ? 'Permiso de ubicación denegado'
+        : err?.message || 'No pudimos obtener el clima';
+      toast.error(msg);
+    } finally {
+      setLoadingWeather(false);
+    }
+  };
 
   const { data: items = [] } = useQuery({
     queryKey: ['clothing_items', user?.id],
@@ -248,6 +274,26 @@ export default function Recommend() {
       </div>
 
       <div className="space-y-5 bg-card p-6 rounded-xl shadow-card">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={handleAutoWeather}
+          disabled={loadingWeather}
+        >
+          {loadingWeather ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Obteniendo clima...
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              {weatherCity ? `Actualizar clima (${weatherCity})` : 'Usar mi ubicación para el clima'}
+            </span>
+          )}
+        </Button>
+
         <div className="space-y-2">
           <label className="text-sm font-body font-medium text-foreground">Estado de ánimo</label>
           <Select value={mood} onValueChange={setMood}>
