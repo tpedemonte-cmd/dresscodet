@@ -312,15 +312,6 @@ export default function Recommend() {
               <span className="text-sm font-body text-muted-foreground">Clima no disponible</span>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleAutoWeather}
-            disabled={loadingWeather}
-            className="shrink-0"
-          >
-            Actualizar
-          </Button>
         </div>
 
         <div className="space-y-2">
