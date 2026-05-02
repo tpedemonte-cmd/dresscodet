@@ -349,7 +349,7 @@ export default function Recommend() {
         </div>
 
         <div className="space-y-3">
-          <label className="text-base font-body font-medium text-foreground">Tipo de juntada</label>
+          <label className="text-xl font-body font-semibold text-foreground">Tipo de juntada</label>
           <Select value={event} onValueChange={setEvent}>
             <SelectTrigger className="h-14 text-lg"><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
             <SelectContent>
