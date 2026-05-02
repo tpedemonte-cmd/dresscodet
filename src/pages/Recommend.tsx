@@ -333,7 +333,7 @@ export default function Recommend() {
           </Select>
         </div>
 
-        <Button variant="warm" className="w-full" disabled={loading || !mood || !event || !weather || !season} onClick={handleRecommend}>
+        <Button variant="warm" className="w-full" disabled={loading || !event || !weather || !season} onClick={handleRecommend}>
           {loading ? (
             <span className="flex items-center gap-2">
               <div className="animate-spin h-4 w-4 border-2 border-accent-foreground border-t-transparent rounded-full" />
