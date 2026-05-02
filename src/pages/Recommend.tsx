@@ -12,15 +12,6 @@ import { analizarUsoPrendas, type ItemUsage } from '@/lib/wardrobeAnalysis';
 import { Clock, AlertTriangle } from 'lucide-react';
 import { fetchCurrentWeather } from '@/lib/weather';
 
-const MOODS = [
-  { value: 'feliz', label: '😊 Feliz' },
-  { value: 'relajado', label: '😌 Relajado/a' },
-  { value: 'elegante', label: '✨ Elegante' },
-  { value: 'casual', label: '😎 Casual' },
-  { value: 'energetico', label: '⚡ Energético/a' },
-  { value: 'romantico', label: '💕 Romántico/a' },
-];
-
 const EVENTS = [
   { value: 'trabajo', label: '💼 Trabajo' },
   { value: 'cita', label: '❤️ Cita' },
