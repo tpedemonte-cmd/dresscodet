@@ -69,7 +69,7 @@ export default function History() {
   }
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-display font-bold text-foreground">Historial de Outfits</h2>
         <p className="text-muted-foreground font-body">{history.length} recomendaciones</p>
