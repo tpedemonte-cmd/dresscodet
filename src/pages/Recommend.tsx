@@ -61,6 +61,7 @@ export default function Recommend() {
   const [loadingWeather, setLoadingWeather] = useState(false);
   const [weatherCity, setWeatherCity] = useState<string | null>(null);
   const [weatherError, setWeatherError] = useState<string | null>(null);
+  const [weatherErrorDenied, setWeatherErrorDenied] = useState(false);
   const [weatherLabel, setWeatherLabel] = useState<string>('');
   const [windKmh, setWindKmh] = useState<number | null>(null);
   const [rainProb, setRainProb] = useState<number | null>(null);
@@ -68,6 +69,7 @@ export default function Recommend() {
   const handleAutoWeather = async () => {
     setLoadingWeather(true);
     setWeatherError(null);
+    setWeatherErrorDenied(false);
     try {
       const info = await fetchCurrentWeather();
       setTemperature([info.temperature]);
@@ -78,10 +80,12 @@ export default function Recommend() {
       setWindKmh(info.windKmh);
       setRainProb(info.precipitationProbability);
     } catch (err: any) {
-      const msg = err?.code === 1
-        ? 'Permiso de ubicación denegado. Activalo para detectar el clima.'
+      const denied = err?.code === 1;
+      const msg = denied
+        ? 'Permiso de ubicación denegado.'
         : err?.message || 'No pudimos obtener el clima';
       setWeatherError(msg);
+      setWeatherErrorDenied(denied);
     } finally {
       setLoadingWeather(false);
     }
@@ -295,10 +299,32 @@ export default function Recommend() {
               <Loader2 className="h-4 w-4 animate-spin" /> Detectando clima y ubicación...
             </span>
           ) : weatherError ? (
-            <span className="text-base font-body text-destructive flex items-center gap-2">
-              <MapPin className="h-5 w-5 shrink-0" />
-              {weatherError}
-            </span>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-3">
+              <span className="text-base font-body text-destructive flex items-center gap-2">
+                <MapPin className="h-5 w-5 shrink-0" />
+                {weatherError}
+              </span>
+              {weatherErrorDenied && (
+                <Button
+                  size="sm"
+                  variant="warm"
+                  disabled={loadingWeather}
+                  onClick={() => {
+                    handleAutoWeather().then(() => {
+                      // Si sigue denegado tras el retry, guiamos al usuario
+                      setTimeout(() => {
+                        if (weatherErrorDenied) {
+                          toast.info('Si no aparece el aviso, activá la ubicación desde los ajustes del navegador para este sitio.');
+                        }
+                      }, 500);
+                    });
+                  }}
+                >
+                  {loadingWeather ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <MapPin className="h-4 w-4 mr-1" />}
+                  Activar ubicación
+                </Button>
+              )}
+            </div>
           ) : weather && season ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-8 gap-y-7">
               <div className="flex flex-col min-w-0 gap-2">
