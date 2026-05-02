@@ -83,7 +83,7 @@ export default function Stats() {
   };
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-display font-bold text-foreground">Estadísticas</h2>
         <p className="text-muted-foreground font-body">{history.length} outfits generados</p>
