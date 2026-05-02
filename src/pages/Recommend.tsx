@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { recomendarPorHistorial, type ScoredOutfit } from '@/lib/outfitSimilarity';
 import { analizarUsoPrendas, type ItemUsage } from '@/lib/wardrobeAnalysis';
 import { Clock, AlertTriangle } from 'lucide-react';
-import { fetchCurrentWeather } from '@/lib/weather';
+import { fetchCurrentWeather, fetchWeatherFromCoords } from '@/lib/weather';
 
 const EVENTS = [
   { value: 'trabajo', label: '💼 Trabajo' },
@@ -89,6 +89,50 @@ export default function Recommend() {
     } finally {
       setLoadingWeather(false);
     }
+  };
+
+  // Pide la ubicación llamando a navigator.geolocation DIRECTAMENTE desde el handler del click
+  // (sin await previo), para preservar el "user gesture" en navegadores móviles.
+  const handleRequestLocation = () => {
+    if (!('geolocation' in navigator)) {
+      setWeatherError('La geolocalización no está disponible en este dispositivo');
+      setWeatherErrorDenied(false);
+      return;
+    }
+    setLoadingWeather(true);
+    setWeatherError(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const info = await fetchWeatherFromCoords(pos.coords.latitude, pos.coords.longitude);
+          setTemperature([info.temperature]);
+          setWeather(info.weather);
+          setSeason(info.season);
+          setWeatherCity(info.city || null);
+          setWeatherLabel(info.weatherLabel);
+          setWindKmh(info.windKmh);
+          setRainProb(info.precipitationProbability);
+          setWeatherErrorDenied(false);
+          setWeatherError(null);
+        } catch (err: any) {
+          setWeatherError(err?.message || 'No pudimos obtener el clima');
+        } finally {
+          setLoadingWeather(false);
+        }
+      },
+      (err) => {
+        setLoadingWeather(false);
+        const denied = err?.code === 1;
+        setWeatherErrorDenied(denied);
+        if (denied) {
+          setWeatherError('Permiso de ubicación bloqueado.');
+          toast.info('Activá la ubicación para este sitio desde los ajustes del navegador y recargá la página.');
+        } else {
+          setWeatherError(err?.message || 'No pudimos obtener tu ubicación');
+        }
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 }
+    );
   };
 
   // Detectar clima al cargar y refrescar automáticamente cada 60s
@@ -304,26 +348,15 @@ export default function Recommend() {
                 <MapPin className="h-5 w-5 shrink-0" />
                 {weatherError}
               </span>
-              {weatherErrorDenied && (
-                <Button
-                  size="sm"
-                  variant="warm"
-                  disabled={loadingWeather}
-                  onClick={() => {
-                    handleAutoWeather().then(() => {
-                      // Si sigue denegado tras el retry, guiamos al usuario
-                      setTimeout(() => {
-                        if (weatherErrorDenied) {
-                          toast.info('Si no aparece el aviso, activá la ubicación desde los ajustes del navegador para este sitio.');
-                        }
-                      }, 500);
-                    });
-                  }}
-                >
-                  {loadingWeather ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <MapPin className="h-4 w-4 mr-1" />}
-                  Activar ubicación
-                </Button>
-              )}
+              <Button
+                size="sm"
+                variant="warm"
+                disabled={loadingWeather}
+                onClick={handleRequestLocation}
+              >
+                {loadingWeather ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <MapPin className="h-4 w-4 mr-1" />}
+                Activar ubicación
+              </Button>
             </div>
           ) : weather && season ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-8 gap-y-7">
