@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -68,29 +68,32 @@ export default function Recommend() {
   const [forgottenSuggestions, setForgottenSuggestions] = useState<ItemUsage[]>([]);
   const [loadingWeather, setLoadingWeather] = useState(false);
   const [weatherCity, setWeatherCity] = useState<string | null>(null);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
 
   const handleAutoWeather = async () => {
     setLoadingWeather(true);
+    setWeatherError(null);
     try {
       const info = await fetchCurrentWeather();
       setTemperature([info.temperature]);
       setWeather(info.weather);
       setSeason(info.season);
       setWeatherCity(info.city || null);
-      toast.success(
-        info.city
-          ? `Clima de ${info.city}: ${info.temperature}°C`
-          : `Clima detectado: ${info.temperature}°C`
-      );
     } catch (err: any) {
       const msg = err?.code === 1
-        ? 'Permiso de ubicación denegado'
+        ? 'Permiso de ubicación denegado. Activalo para detectar el clima.'
         : err?.message || 'No pudimos obtener el clima';
-      toast.error(msg);
+      setWeatherError(msg);
     } finally {
       setLoadingWeather(false);
     }
   };
+
+  // Detectar clima automáticamente al cargar la página
+  useEffect(() => {
+    handleAutoWeather();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { data: items = [] } = useQuery({
     queryKey: ['clothing_items', user?.id],
@@ -144,8 +147,12 @@ export default function Recommend() {
   };
 
   const handleRecommend = async () => {
-    if (!mood || !event || !weather || !season) {
-      toast.error('Completá todos los campos');
+    if (!mood || !event) {
+      toast.error('Elegí tu ánimo y a dónde vas');
+      return;
+    }
+    if (!weather || !season) {
+      toast.error('Necesitamos detectar el clima primero. Activá la ubicación.');
       return;
     }
     if (items.length === 0) {
@@ -274,25 +281,40 @@ export default function Recommend() {
       </div>
 
       <div className="space-y-5 bg-card p-6 rounded-xl shadow-card">
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          onClick={handleAutoWeather}
-          disabled={loadingWeather}
-        >
-          {loadingWeather ? (
-            <span className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Obteniendo clima...
-            </span>
-          ) : (
-            <span className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              {weatherCity ? `Actualizar clima (${weatherCity})` : 'Usar mi ubicación para el clima'}
-            </span>
-          )}
-        </Button>
+        {/* Clima detectado automáticamente */}
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <MapPin className="h-4 w-4 text-primary shrink-0" />
+            {loadingWeather ? (
+              <span className="text-sm font-body text-muted-foreground flex items-center gap-2">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Detectando clima...
+              </span>
+            ) : weatherError ? (
+              <span className="text-sm font-body text-destructive truncate">{weatherError}</span>
+            ) : weather && season ? (
+              <div className="text-sm font-body text-foreground truncate">
+                <span className="font-medium">
+                  {weatherCity ? `${weatherCity} · ` : ''}{temperature[0]}°C
+                </span>
+                <span className="text-muted-foreground">
+                  {' · '}{WEATHER.find(w => w.value === weather)?.label || weather}
+                  {' · '}{SEASONS.find(s => s.value === season)?.label || season}
+                </span>
+              </div>
+            ) : (
+              <span className="text-sm font-body text-muted-foreground">Clima no disponible</span>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleAutoWeather}
+            disabled={loadingWeather}
+            className="shrink-0"
+          >
+            Actualizar
+          </Button>
+        </div>
 
         <div className="space-y-2">
           <label className="text-sm font-body font-medium text-foreground">Estado de ánimo</label>
@@ -310,36 +332,6 @@ export default function Recommend() {
             <SelectTrigger><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
             <SelectContent>
               {EVENTS.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-3">
-          <label className="text-sm font-body font-medium text-foreground">
-            Temperatura: {temperature[0]}°C
-          </label>
-          <Slider value={temperature} onValueChange={setTemperature} min={-5} max={45} step={1} />
-          <div className="flex justify-between text-xs text-muted-foreground font-body">
-            <span>🥶 -5°C</span><span>🔥 45°C</span>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-body font-medium text-foreground">Clima</label>
-          <Select value={weather} onValueChange={setWeather}>
-            <SelectTrigger><SelectValue placeholder="¿Cómo está el clima?" /></SelectTrigger>
-            <SelectContent>
-              {WEATHER.map((w) => <SelectItem key={w.value} value={w.value}>{w.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-body font-medium text-foreground">Estación del año</label>
-          <Select value={season} onValueChange={setSeason}>
-            <SelectTrigger><SelectValue placeholder="¿En qué estación estamos?" /></SelectTrigger>
-            <SelectContent>
-              {SEASONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
