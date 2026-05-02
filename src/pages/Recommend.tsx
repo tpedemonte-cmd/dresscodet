@@ -288,24 +288,29 @@ export default function Recommend() {
 
       <div className="space-y-5 bg-card p-6 rounded-xl shadow-card">
         {/* Clima detectado automáticamente */}
-        <div className="rounded-lg border border-border bg-secondary/30 p-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <MapPin className="h-4 w-4 text-primary shrink-0" />
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 flex items-start justify-between gap-3">
+          <div className="flex items-start gap-2 min-w-0 flex-1">
+            <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
             {loadingWeather ? (
               <span className="text-sm font-body text-muted-foreground flex items-center gap-2">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" /> Detectando clima...
               </span>
             ) : weatherError ? (
-              <span className="text-sm font-body text-destructive truncate">{weatherError}</span>
+              <span className="text-sm font-body text-destructive">{weatherError}</span>
             ) : weather && season ? (
-              <div className="text-sm font-body text-foreground truncate">
-                <span className="font-medium">
-                  {weatherCity ? `${weatherCity} · ` : ''}{temperature[0]}°C
-                </span>
-                <span className="text-muted-foreground">
-                  {' · '}{WEATHER.find(w => w.value === weather)?.label || weather}
-                  {' · '}{SEASONS.find(s => s.value === season)?.label || season}
-                </span>
+              <div className="text-sm font-body text-foreground min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  <span className="font-medium">
+                    {weatherCity ? `${weatherCity} · ` : ''}{temperature[0]}°C
+                  </span>
+                  <span className="text-muted-foreground">
+                    · {weatherLabel || weather} · {SEASONS.find(s => s.value === season)?.label || season}
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+                  {windKmh !== null && <span>💨 Viento {windKmh} km/h</span>}
+                  {rainProb !== null && <span>🌧️ Lluvia {rainProb}%</span>}
+                </div>
               </div>
             ) : (
               <span className="text-sm font-body text-muted-foreground">Clima no disponible</span>
