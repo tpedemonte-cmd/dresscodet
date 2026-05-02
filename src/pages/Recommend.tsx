@@ -281,25 +281,40 @@ export default function Recommend() {
       </div>
 
       <div className="space-y-5 bg-card p-6 rounded-xl shadow-card">
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          onClick={handleAutoWeather}
-          disabled={loadingWeather}
-        >
-          {loadingWeather ? (
-            <span className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Obteniendo clima...
-            </span>
-          ) : (
-            <span className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              {weatherCity ? `Actualizar clima (${weatherCity})` : 'Usar mi ubicación para el clima'}
-            </span>
-          )}
-        </Button>
+        {/* Clima detectado automáticamente */}
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <MapPin className="h-4 w-4 text-primary shrink-0" />
+            {loadingWeather ? (
+              <span className="text-sm font-body text-muted-foreground flex items-center gap-2">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Detectando clima...
+              </span>
+            ) : weatherError ? (
+              <span className="text-sm font-body text-destructive truncate">{weatherError}</span>
+            ) : weather && season ? (
+              <div className="text-sm font-body text-foreground truncate">
+                <span className="font-medium">
+                  {weatherCity ? `${weatherCity} · ` : ''}{temperature[0]}°C
+                </span>
+                <span className="text-muted-foreground">
+                  {' · '}{WEATHER.find(w => w.value === weather)?.label || weather}
+                  {' · '}{SEASONS.find(s => s.value === season)?.label || season}
+                </span>
+              </div>
+            ) : (
+              <span className="text-sm font-body text-muted-foreground">Clima no disponible</span>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleAutoWeather}
+            disabled={loadingWeather}
+            className="shrink-0"
+          >
+            Actualizar
+          </Button>
+        </div>
 
         <div className="space-y-2">
           <label className="text-sm font-body font-medium text-foreground">Estado de ánimo</label>
@@ -317,36 +332,6 @@ export default function Recommend() {
             <SelectTrigger><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
             <SelectContent>
               {EVENTS.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-3">
-          <label className="text-sm font-body font-medium text-foreground">
-            Temperatura: {temperature[0]}°C
-          </label>
-          <Slider value={temperature} onValueChange={setTemperature} min={-5} max={45} step={1} />
-          <div className="flex justify-between text-xs text-muted-foreground font-body">
-            <span>🥶 -5°C</span><span>🔥 45°C</span>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-body font-medium text-foreground">Clima</label>
-          <Select value={weather} onValueChange={setWeather}>
-            <SelectTrigger><SelectValue placeholder="¿Cómo está el clima?" /></SelectTrigger>
-            <SelectContent>
-              {WEATHER.map((w) => <SelectItem key={w.value} value={w.value}>{w.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-body font-medium text-foreground">Estación del año</label>
-          <Select value={season} onValueChange={setSeason}>
-            <SelectTrigger><SelectValue placeholder="¿En qué estación estamos?" /></SelectTrigger>
-            <SelectContent>
-              {SEASONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
