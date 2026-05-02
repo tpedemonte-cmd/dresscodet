@@ -80,7 +80,7 @@ export async function fetchCurrentWeather(): Promise<WeatherInfo> {
 
   const mapped = mapWeatherCode(code, isDay);
 
-  // Reverse geocoding opcional
+  // Reverse geocoding: probamos Open-Meteo y si falla usamos Nominatim (OSM)
   let city: string | undefined;
   try {
     const geoRes = await fetch(
@@ -88,10 +88,36 @@ export async function fetchCurrentWeather(): Promise<WeatherInfo> {
     );
     if (geoRes.ok) {
       const geo = await geoRes.json();
-      city = geo?.results?.[0]?.name;
+      const r = geo?.results?.[0];
+      if (r?.name) city = r.name;
     }
   } catch {
     // ignorar
+  }
+
+  if (!city) {
+    try {
+      const osmRes = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=es&zoom=12`,
+        { headers: { 'Accept': 'application/json' } }
+      );
+      if (osmRes.ok) {
+        const osm = await osmRes.json();
+        const a = osm?.address || {};
+        city =
+          a.city ||
+          a.town ||
+          a.village ||
+          a.suburb ||
+          a.city_district ||
+          a.municipality ||
+          a.county ||
+          a.state_district ||
+          a.state;
+      }
+    } catch {
+      // ignorar
+    }
   }
 
   return {

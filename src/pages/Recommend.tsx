@@ -301,7 +301,7 @@ export default function Recommend() {
                   <MapPin className="h-3 w-3" /> Ubicación
                 </span>
                 <span className="text-sm font-body font-medium text-foreground truncate">
-                  {weatherCity || 'Tu zona'}
+                  {weatherCity || 'Detectando...'}
                 </span>
               </div>
               <div className="flex flex-col min-w-0">
