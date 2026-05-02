@@ -5,6 +5,9 @@ import { Sparkles, Trash2, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+const FORMALITY_LABELS: Record<string, string> = {
+  casual: '😎 Casual', equilibrado: '⚖️ Equilibrado', formal: '🎩 Formal',
+};
 const MOOD_LABELS: Record<string, string> = {
   feliz: '😊 Feliz', relajado: '😌 Relajado/a', elegante: '✨ Elegante',
   casual: '😎 Casual', energetico: '⚡ Energético/a', romantico: '💕 Romántico/a',
@@ -100,14 +103,39 @@ export default function History() {
                       <span className="text-sm font-body font-medium text-foreground">
                         {EVENT_LABELS[entry.event] || entry.event}
                       </span>
-                      <span className="text-xs text-muted-foreground">•</span>
-                      <span className="text-sm text-muted-foreground">
-                        {MOOD_LABELS[entry.mood] || entry.mood}
-                      </span>
+                      {entry.formality && (
+                        <>
+                          <span className="text-xs text-muted-foreground">•</span>
+                          <span className="text-sm text-muted-foreground">
+                            {FORMALITY_LABELS[entry.formality] || entry.formality}
+                          </span>
+                        </>
+                      )}
+                      {!entry.formality && entry.mood && (
+                        <>
+                          <span className="text-xs text-muted-foreground">•</span>
+                          <span className="text-sm text-muted-foreground">
+                            {MOOD_LABELS[entry.mood] || entry.mood}
+                          </span>
+                        </>
+                      )}
                       <span className="text-xs text-muted-foreground">•</span>
                       <span className="text-sm text-muted-foreground">
                         {entry.temperature}°C {WEATHER_LABELS[entry.weather] || ''} {SEASON_LABELS[entry.season] || ''}
+                        {entry.is_night ? ' 🌙' : ''}
                       </span>
+                      {entry.wind_kmh != null && (
+                        <>
+                          <span className="text-xs text-muted-foreground">•</span>
+                          <span className="text-sm text-muted-foreground">💨 {entry.wind_kmh} km/h</span>
+                        </>
+                      )}
+                      {entry.rain_probability != null && (
+                        <>
+                          <span className="text-xs text-muted-foreground">•</span>
+                          <span className="text-sm text-muted-foreground">🌧️ {entry.rain_probability}%</span>
+                        </>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 font-body">
                       {date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
