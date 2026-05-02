@@ -274,6 +274,26 @@ export default function Recommend() {
       </div>
 
       <div className="space-y-5 bg-card p-6 rounded-xl shadow-card">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={handleAutoWeather}
+          disabled={loadingWeather}
+        >
+          {loadingWeather ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Obteniendo clima...
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              {weatherCity ? `Actualizar clima (${weatherCity})` : 'Usar mi ubicación para el clima'}
+            </span>
+          )}
+        </Button>
+
         <div className="space-y-2">
           <label className="text-sm font-body font-medium text-foreground">Estado de ánimo</label>
           <Select value={mood} onValueChange={setMood}>
