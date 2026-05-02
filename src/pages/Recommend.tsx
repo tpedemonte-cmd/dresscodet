@@ -212,8 +212,9 @@ export default function Recommend() {
         ? wishlistItems.map((w: any) => `- ID:${w.id} | ${w.title} ($${w.price} ${w.currency})`).join('\n')
         : '';
 
+      const weatherForAI = weather === 'despejado-noche' ? 'soleado' : weather;
       const { data, error } = await supabase.functions.invoke('recommend-outfit', {
-        body: { wardrobe: wardrobeSummary, wishlist: wishlistSummary, mood, event, temperature: temperature[0], weather, season },
+        body: { wardrobe: wardrobeSummary, wishlist: wishlistSummary, mood, event, temperature: temperature[0], weather: weatherForAI, season, windKmh, rainProbability: rainProb, isNight: weather === 'despejado-noche' },
       });
 
       if (error) throw error;
