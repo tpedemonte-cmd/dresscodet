@@ -78,10 +78,12 @@ export default function Recommend() {
       setWindKmh(info.windKmh);
       setRainProb(info.precipitationProbability);
     } catch (err: any) {
-      const msg = err?.code === 1
-        ? 'Permiso de ubicación denegado. Activalo para detectar el clima.'
+      const denied = err?.code === 1;
+      const msg = denied
+        ? 'Permiso de ubicación denegado.'
         : err?.message || 'No pudimos obtener el clima';
       setWeatherError(msg);
+      setWeatherErrorDenied(denied);
     } finally {
       setLoadingWeather(false);
     }
