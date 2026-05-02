@@ -65,7 +65,7 @@ export function analizarUsoPrendas(
       imageUrl: item.image_url,
       category: item.category,
       usos,
-      ultimaVez: ultimaVez ? ultimaVez.split('T')[0] : '—',
+      ultimaVez: ultimaVez || '',
       estado,
     };
   });
