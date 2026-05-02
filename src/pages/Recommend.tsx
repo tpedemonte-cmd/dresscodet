@@ -296,8 +296,8 @@ export default function Recommend() {
               {weatherError}
             </span>
           ) : weather && season ? (
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-2 min-w-0">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
                 <MapPin className="h-4 w-4 text-primary shrink-0" />
                 <span className="text-sm font-body font-medium text-foreground truncate">
                   {weatherCity ? `${weatherCity} · ` : ''}{temperature[0]}°C
@@ -306,9 +306,9 @@ export default function Recommend() {
                   · {weatherLabel || weather} · {SEASONS.find(s => s.value === season)?.label || season}
                 </span>
               </div>
-              <div className="text-xs text-muted-foreground flex items-center gap-3 ml-auto">
-                {windKmh !== null && <span>💨 {windKmh} km/h</span>}
-                {rainProb !== null && <span>🌧️ {rainProb}%</span>}
+              <div className="text-sm font-body text-muted-foreground flex items-center gap-3 ml-auto shrink-0">
+                {windKmh !== null && <span className="whitespace-nowrap">💨 {windKmh} km/h</span>}
+                {rainProb !== null && <span className="whitespace-nowrap">🌧️ {rainProb}%</span>}
               </div>
             </div>
           ) : (
