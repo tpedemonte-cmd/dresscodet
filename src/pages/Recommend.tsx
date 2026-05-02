@@ -47,6 +47,7 @@ export default function Recommend() {
   const { user } = useAuth();
   
   const [event, setEvent] = useState('');
+  const [formality, setFormality] = useState('equilibrado');
   const [temperature, setTemperature] = useState([20]);
   const [weather, setWeather] = useState('');
   const [season, setSeason] = useState('');
