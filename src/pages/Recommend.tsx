@@ -276,7 +276,7 @@ export default function Recommend() {
     new Intl.NumberFormat('es-AR', { style: 'currency', currency: currency || 'ARS', maximumFractionDigits: 0 }).format(price);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-display font-bold text-foreground">¿Qué me pongo?</h2>
         <p className="text-muted-foreground font-body">Contanos cómo te sentís y a dónde vas</p>
@@ -313,9 +313,11 @@ export default function Recommend() {
                 </span>
               </div>
               <div className="flex flex-col min-w-0 gap-2">
-                <span className="text-base font-body text-muted-foreground">Clima</span>
+                <span className="text-base font-body text-muted-foreground">
+                  <span className="text-xl mr-1">{(weatherLabel || '').match(/^\p{Extended_Pictographic}/u)?.[0] || '🌤️'}</span> Clima
+                </span>
                 <span className="text-xl font-body font-semibold text-foreground truncate">
-                  {weatherLabel || weather}
+                  {(weatherLabel || weather).replace(/^\p{Extended_Pictographic}\s*/u, '')}
                 </span>
               </div>
               {windKmh !== null && (
