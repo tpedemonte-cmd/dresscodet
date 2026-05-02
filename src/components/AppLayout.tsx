@@ -21,7 +21,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <h1 className="text-xl font-display font-bold text-foreground">Mi Placard</h1>
@@ -35,7 +35,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-md border-t border-border z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-md border-t border-border z-50 max-w-full">
         <div className="overflow-x-auto scrollbar-none">
           <div className="flex sm:justify-around min-w-max sm:min-w-0 px-2 py-2 gap-1">
             {navItems.map(({ path, icon: Icon, label }) => {
