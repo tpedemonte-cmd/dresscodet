@@ -297,7 +297,7 @@ export default function Recommend() {
           ) : weather && season ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-8 gap-y-7">
               <div className="flex flex-col min-w-0 gap-2">
-                <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
+                <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
                   <MapPin className="h-5 w-5" /> Ubicación
                 </span>
                 <span className="text-xl font-body font-semibold text-foreground truncate">
@@ -305,7 +305,7 @@ export default function Recommend() {
                 </span>
               </div>
               <div className="flex flex-col min-w-0 gap-2">
-                <span className="text-base font-body text-muted-foreground">
+                <span className="text-sm font-body text-muted-foreground">
                   <span className="text-xl mr-1">🌡️</span> Temperatura
                 </span>
                 <span className="text-xl font-body font-semibold text-foreground">
@@ -313,7 +313,7 @@ export default function Recommend() {
                 </span>
               </div>
               <div className="flex flex-col min-w-0 gap-2">
-                <span className="text-base font-body text-muted-foreground">
+                <span className="text-sm font-body text-muted-foreground">
                   <span className="text-xl mr-1">{(weatherLabel || '').match(/^\p{Extended_Pictographic}/u)?.[0] || '🌤️'}</span> Clima
                 </span>
                 <span className="text-xl font-body font-semibold text-foreground truncate">
@@ -322,7 +322,7 @@ export default function Recommend() {
               </div>
               {windKmh !== null && (
                 <div className="flex flex-col min-w-0 gap-2">
-                  <span className="text-base font-body text-muted-foreground">
+                  <span className="text-sm font-body text-muted-foreground">
                     <span className="text-xl mr-1">💨</span> Viento
                   </span>
                   <span className="text-xl font-body font-semibold text-foreground">
@@ -332,7 +332,7 @@ export default function Recommend() {
               )}
               {rainProb !== null && (
                 <div className="flex flex-col min-w-0 gap-2">
-                  <span className="text-base font-body text-muted-foreground">
+                  <span className="text-sm font-body text-muted-foreground">
                     <span className="text-xl mr-1">🌧️</span> Lluvia
                   </span>
                   <span className="text-xl font-body font-semibold text-foreground">
