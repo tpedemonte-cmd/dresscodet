@@ -137,7 +137,7 @@ export default function Stats() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-body font-medium text-foreground truncate">{u.prenda}</p>
                         <p className="text-xs text-muted-foreground">
-                          {u.usos} uso{u.usos !== 1 ? 's' : ''} · última vez: {u.ultimaVez}
+                          {u.usos} uso{u.usos !== 1 ? 's' : ''} · última vez: {u.ultimaVez ? new Date(u.ultimaVez).toLocaleString('es-AR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
                         </p>
                       </div>
                       <span className={`flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${style.bg} ${style.color}`}>
