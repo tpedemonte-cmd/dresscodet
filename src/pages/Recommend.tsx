@@ -61,6 +61,7 @@ export default function Recommend() {
   const [loadingWeather, setLoadingWeather] = useState(false);
   const [weatherCity, setWeatherCity] = useState<string | null>(null);
   const [weatherError, setWeatherError] = useState<string | null>(null);
+  const [weatherErrorDenied, setWeatherErrorDenied] = useState(false);
   const [weatherLabel, setWeatherLabel] = useState<string>('');
   const [windKmh, setWindKmh] = useState<number | null>(null);
   const [rainProb, setRainProb] = useState<number | null>(null);
