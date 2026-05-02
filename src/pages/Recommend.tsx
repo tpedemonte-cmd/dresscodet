@@ -277,9 +277,9 @@ export default function Recommend() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div className="text-center">
+      <div>
         <h2 className="text-2xl font-display font-bold text-foreground">¿Qué me pongo?</h2>
-        <p className="text-muted-foreground font-body">Contanos a dónde vas</p>
+        <p className="text-muted-foreground font-body text-center">Contanos a dónde vas</p>
       </div>
 
       <div className="space-y-5 bg-card p-6 rounded-xl shadow-card">
