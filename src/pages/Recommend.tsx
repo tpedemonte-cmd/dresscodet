@@ -284,51 +284,57 @@ export default function Recommend() {
 
       <div className="space-y-5 bg-card p-6 rounded-xl shadow-card">
         {/* Clima detectado automáticamente */}
-        <div className="rounded-xl border border-border bg-secondary/30 px-5 py-5">
+        <div className="rounded-2xl border border-border bg-secondary/30 px-6 py-7">
           {loadingWeather && !weather ? (
-            <span className="text-sm font-body text-muted-foreground flex items-center gap-2">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Detectando clima y ubicación...
+            <span className="text-base font-body text-muted-foreground flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" /> Detectando clima y ubicación...
             </span>
           ) : weatherError ? (
-            <span className="text-sm font-body text-destructive flex items-center gap-2">
-              <MapPin className="h-4 w-4 shrink-0" />
+            <span className="text-base font-body text-destructive flex items-center gap-2">
+              <MapPin className="h-5 w-5 shrink-0" />
               {weatherError}
             </span>
           ) : weather && season ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-6 gap-y-5">
-              <div className="flex flex-col min-w-0 gap-1">
-                <span className="text-xs font-body text-muted-foreground flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" /> Ubicación
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-8 gap-y-7">
+              <div className="flex flex-col min-w-0 gap-2">
+                <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
+                  <MapPin className="h-5 w-5" /> Ubicación
                 </span>
-                <span className="text-base font-body font-semibold text-foreground truncate">
+                <span className="text-xl font-body font-semibold text-foreground truncate">
                   {weatherCity || 'Detectando...'}
                 </span>
               </div>
-              <div className="flex flex-col min-w-0 gap-1">
-                <span className="text-xs font-body text-muted-foreground">🌡️ Temperatura</span>
-                <span className="text-base font-body font-semibold text-foreground">
+              <div className="flex flex-col min-w-0 gap-2">
+                <span className="text-base font-body text-muted-foreground">
+                  <span className="text-xl mr-1">🌡️</span> Temperatura
+                </span>
+                <span className="text-xl font-body font-semibold text-foreground">
                   {temperature[0]} grados
                 </span>
               </div>
-              <div className="flex flex-col min-w-0 gap-1">
-                <span className="text-xs font-body text-muted-foreground">Clima</span>
-                <span className="text-base font-body font-semibold text-foreground truncate">
+              <div className="flex flex-col min-w-0 gap-2">
+                <span className="text-base font-body text-muted-foreground">Clima</span>
+                <span className="text-xl font-body font-semibold text-foreground truncate">
                   {weatherLabel || weather}
                 </span>
               </div>
               {windKmh !== null && (
-                <div className="flex flex-col min-w-0 gap-1">
-                  <span className="text-xs font-body text-muted-foreground">💨 Viento</span>
-                  <span className="text-base font-body font-semibold text-foreground">
+                <div className="flex flex-col min-w-0 gap-2">
+                  <span className="text-base font-body text-muted-foreground">
+                    <span className="text-xl mr-1">💨</span> Viento
+                  </span>
+                  <span className="text-xl font-body font-semibold text-foreground">
                     {windKmh} km/h
                   </span>
                 </div>
               )}
               {rainProb !== null && (
-                <div className="flex flex-col min-w-0 gap-1">
-                  <span className="text-xs font-body text-muted-foreground">🌧️ Lluvia</span>
-                  <span className="text-base font-body font-semibold text-foreground">
-                    {rainProb}% probable
+                <div className="flex flex-col min-w-0 gap-2">
+                  <span className="text-base font-body text-muted-foreground">
+                    <span className="text-xl mr-1">🌧️</span> Lluvia
+                  </span>
+                  <span className="text-xl font-body font-semibold text-foreground">
+                    {rainProb}% de probabilidad
                   </span>
                 </div>
               )}
