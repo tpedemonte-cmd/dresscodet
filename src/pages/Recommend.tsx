@@ -358,15 +358,15 @@ export default function Recommend() {
           </Select>
         </div>
 
-        <Button variant="warm" className="w-full" disabled={loading || !event || !weather || !season} onClick={handleRecommend}>
+        <Button variant="warm" className="w-full h-16 text-lg" disabled={loading || !event || !weather || !season} onClick={handleRecommend}>
           {loading ? (
             <span className="flex items-center gap-2">
-              <div className="animate-spin h-4 w-4 border-2 border-accent-foreground border-t-transparent rounded-full" />
+              <div className="animate-spin h-5 w-5 border-2 border-accent-foreground border-t-transparent rounded-full" />
               Pensando...
             </span>
           ) : (
             <span className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" /> Recomendame un outfit
+              <Sparkles className="h-5 w-5" /> Recomendame un outfit
             </span>
           )}
         </Button>
