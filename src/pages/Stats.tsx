@@ -20,7 +20,7 @@ export default function Stats() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('outfit_history' as any)
-        .select('recommended_item_ids')
+        .select('recommended_item_ids, created_at')
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data as any[];
