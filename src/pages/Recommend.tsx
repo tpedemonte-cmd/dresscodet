@@ -348,26 +348,15 @@ export default function Recommend() {
                 <MapPin className="h-5 w-5 shrink-0" />
                 {weatherError}
               </span>
-              {weatherErrorDenied && (
-                <Button
-                  size="sm"
-                  variant="warm"
-                  disabled={loadingWeather}
-                  onClick={() => {
-                    handleAutoWeather().then(() => {
-                      // Si sigue denegado tras el retry, guiamos al usuario
-                      setTimeout(() => {
-                        if (weatherErrorDenied) {
-                          toast.info('Si no aparece el aviso, activá la ubicación desde los ajustes del navegador para este sitio.');
-                        }
-                      }, 500);
-                    });
-                  }}
-                >
-                  {loadingWeather ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <MapPin className="h-4 w-4 mr-1" />}
-                  Activar ubicación
-                </Button>
-              )}
+              <Button
+                size="sm"
+                variant="warm"
+                disabled={loadingWeather}
+                onClick={handleRequestLocation}
+              >
+                {loadingWeather ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <MapPin className="h-4 w-4 mr-1" />}
+                Activar ubicación
+              </Button>
             </div>
           ) : weather && season ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-8 gap-y-7">
