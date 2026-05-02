@@ -91,6 +91,50 @@ export default function Recommend() {
     }
   };
 
+  // Pide la ubicación llamando a navigator.geolocation DIRECTAMENTE desde el handler del click
+  // (sin await previo), para preservar el "user gesture" en navegadores móviles.
+  const handleRequestLocation = () => {
+    if (!('geolocation' in navigator)) {
+      setWeatherError('La geolocalización no está disponible en este dispositivo');
+      setWeatherErrorDenied(false);
+      return;
+    }
+    setLoadingWeather(true);
+    setWeatherError(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const info = await fetchWeatherFromCoords(pos.coords.latitude, pos.coords.longitude);
+          setTemperature([info.temperature]);
+          setWeather(info.weather);
+          setSeason(info.season);
+          setWeatherCity(info.city || null);
+          setWeatherLabel(info.weatherLabel);
+          setWindKmh(info.windKmh);
+          setRainProb(info.precipitationProbability);
+          setWeatherErrorDenied(false);
+          setWeatherError(null);
+        } catch (err: any) {
+          setWeatherError(err?.message || 'No pudimos obtener el clima');
+        } finally {
+          setLoadingWeather(false);
+        }
+      },
+      (err) => {
+        setLoadingWeather(false);
+        const denied = err?.code === 1;
+        setWeatherErrorDenied(denied);
+        if (denied) {
+          setWeatherError('Permiso de ubicación bloqueado.');
+          toast.info('Activá la ubicación para este sitio desde los ajustes del navegador y recargá la página.');
+        } else {
+          setWeatherError(err?.message || 'No pudimos obtener tu ubicación');
+        }
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
   // Detectar clima al cargar y refrescar automáticamente cada 60s
   useEffect(() => {
     handleAutoWeather();
