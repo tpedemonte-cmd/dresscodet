@@ -324,16 +324,6 @@ export default function Recommend() {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-body font-medium text-foreground">Estado de ánimo</label>
-          <Select value={mood} onValueChange={setMood}>
-            <SelectTrigger><SelectValue placeholder="¿Cómo te sentís?" /></SelectTrigger>
-            <SelectContent>
-              {MOODS.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
           <label className="text-sm font-body font-medium text-foreground">Tipo de juntada</label>
           <Select value={event} onValueChange={setEvent}>
             <SelectTrigger><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
