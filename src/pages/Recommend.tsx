@@ -69,6 +69,9 @@ export default function Recommend() {
   const [loadingWeather, setLoadingWeather] = useState(false);
   const [weatherCity, setWeatherCity] = useState<string | null>(null);
   const [weatherError, setWeatherError] = useState<string | null>(null);
+  const [weatherLabel, setWeatherLabel] = useState<string>('');
+  const [windKmh, setWindKmh] = useState<number | null>(null);
+  const [rainProb, setRainProb] = useState<number | null>(null);
 
   const handleAutoWeather = async () => {
     setLoadingWeather(true);
@@ -79,6 +82,9 @@ export default function Recommend() {
       setWeather(info.weather);
       setSeason(info.season);
       setWeatherCity(info.city || null);
+      setWeatherLabel(info.weatherLabel);
+      setWindKmh(info.windKmh);
+      setRainProb(info.precipitationProbability);
     } catch (err: any) {
       const msg = err?.code === 1
         ? 'Permiso de ubicación denegado. Activalo para detectar el clima.'
