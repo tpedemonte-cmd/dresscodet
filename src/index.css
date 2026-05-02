@@ -92,17 +92,25 @@
 
   html {
     /* Tamaño base aumentado para mejor legibilidad en toda la app.
-       Tailwind usa rem, así que todas las clases de texto escalan en proporción. */
+       Tailwind usa rem, así que padding, gaps, alturas y radios escalan en proporción. */
     font-size: 18px;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+    line-height: 1.55;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
+    line-height: 1.2;
+  }
+
+  /* Inputs, selects y textareas heredan la familia y tamaño legible */
+  input, select, textarea, button {
+    font-family: inherit;
   }
 }
 
