@@ -19,7 +19,7 @@ const EVENTS = [
   { value: 'familia', label: '👨‍👩‍👧 Familia' },
   { value: 'fiesta', label: '🎉 Fiesta' },
   { value: 'gym', label: '🏋️ Gym / Deporte' },
-  { value: 'casual', label: '🏠 Día casual' },
+  
   { value: 'universidad', label: '📚 Universidad' },
 ];
 
