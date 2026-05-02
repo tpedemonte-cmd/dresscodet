@@ -210,7 +210,7 @@ export default function Recommend() {
 
       const weatherForAI = weather === 'despejado-noche' ? 'soleado' : weather;
       const { data, error } = await supabase.functions.invoke('recommend-outfit', {
-        body: { wardrobe: wardrobeSummary, wishlist: wishlistSummary, event, temperature: temperature[0], weather: weatherForAI, season, windKmh, rainProbability: rainProb, isNight: weather === 'despejado-noche' },
+        body: { wardrobe: wardrobeSummary, wishlist: wishlistSummary, event, formality, temperature: temperature[0], weather: weatherForAI, season, windKmh, rainProbability: rainProb, isNight: weather === 'despejado-noche' },
       });
 
       if (error) throw error;
