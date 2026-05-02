@@ -313,9 +313,11 @@ export default function Recommend() {
                 </span>
               </div>
               <div className="flex flex-col min-w-0 gap-2">
-                <span className="text-base font-body text-muted-foreground">Clima</span>
+                <span className="text-base font-body text-muted-foreground">
+                  <span className="text-xl mr-1">{(weatherLabel || '').match(/^\p{Extended_Pictographic}/u)?.[0] || '🌤️'}</span> Clima
+                </span>
                 <span className="text-xl font-body font-semibold text-foreground truncate">
-                  {weatherLabel || weather}
+                  {(weatherLabel || weather).replace(/^\p{Extended_Pictographic}\s*/u, '')}
                 </span>
               </div>
               {windKmh !== null && (
