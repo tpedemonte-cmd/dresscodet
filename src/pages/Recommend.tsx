@@ -348,12 +348,12 @@ export default function Recommend() {
           )}
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-body font-medium text-foreground">Tipo de juntada</label>
+        <div className="space-y-3">
+          <label className="text-base font-body font-medium text-foreground">Tipo de juntada</label>
           <Select value={event} onValueChange={setEvent}>
-            <SelectTrigger><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
+            <SelectTrigger className="h-14 text-lg"><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
             <SelectContent>
-              {EVENTS.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
+              {EVENTS.map((e) => <SelectItem key={e.value} value={e.value} className="text-base py-3">{e.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
