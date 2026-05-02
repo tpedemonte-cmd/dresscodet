@@ -277,7 +277,7 @@ export default function Recommend() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div>
+      <div className="inline-block">
         <h2 className="text-2xl font-display font-bold text-foreground">¿Qué me pongo?</h2>
         <p className="text-muted-foreground font-body text-center">Contanos a dónde vas</p>
       </div>
