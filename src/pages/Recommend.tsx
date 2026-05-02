@@ -12,15 +12,6 @@ import { analizarUsoPrendas, type ItemUsage } from '@/lib/wardrobeAnalysis';
 import { Clock, AlertTriangle } from 'lucide-react';
 import { fetchCurrentWeather } from '@/lib/weather';
 
-const MOODS = [
-  { value: 'feliz', label: '😊 Feliz' },
-  { value: 'relajado', label: '😌 Relajado/a' },
-  { value: 'elegante', label: '✨ Elegante' },
-  { value: 'casual', label: '😎 Casual' },
-  { value: 'energetico', label: '⚡ Energético/a' },
-  { value: 'romantico', label: '💕 Romántico/a' },
-];
-
 const EVENTS = [
   { value: 'trabajo', label: '💼 Trabajo' },
   { value: 'cita', label: '❤️ Cita' },
@@ -54,7 +45,7 @@ type ShoppingSuggestion = {
 
 export default function Recommend() {
   const { user } = useAuth();
-  const [mood, setMood] = useState('');
+  
   const [event, setEvent] = useState('');
   const [temperature, setTemperature] = useState([20]);
   const [weather, setWeather] = useState('');
@@ -95,9 +86,13 @@ export default function Recommend() {
     }
   };
 
-  // Detectar clima automáticamente al cargar la página
+  // Detectar clima al cargar y refrescar automáticamente cada 60s
   useEffect(() => {
     handleAutoWeather();
+    const interval = setInterval(() => {
+      handleAutoWeather();
+    }, 60000);
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -153,8 +148,8 @@ export default function Recommend() {
   };
 
   const handleRecommend = async () => {
-    if (!mood || !event) {
-      toast.error('Elegí tu ánimo y a dónde vas');
+    if (!event) {
+      toast.error('Elegí a dónde vas');
       return;
     }
     if (!weather || !season) {
@@ -214,7 +209,7 @@ export default function Recommend() {
 
       const weatherForAI = weather === 'despejado-noche' ? 'soleado' : weather;
       const { data, error } = await supabase.functions.invoke('recommend-outfit', {
-        body: { wardrobe: wardrobeSummary, wishlist: wishlistSummary, mood, event, temperature: temperature[0], weather: weatherForAI, season, windKmh, rainProbability: rainProb, isNight: weather === 'despejado-noche' },
+        body: { wardrobe: wardrobeSummary, wishlist: wishlistSummary, event, temperature: temperature[0], weather: weatherForAI, season, windKmh, rainProbability: rainProb, isNight: weather === 'despejado-noche' },
       });
 
       if (error) throw error;
@@ -258,7 +253,7 @@ export default function Recommend() {
       if (user) {
         await supabase.from('outfit_history').insert({
           user_id: user.id,
-          mood, event, temperature: temperature[0], weather: weatherForAI, season,
+          event, temperature: temperature[0], weather: weatherForAI, season,
           recommendation: cleanText,
           recommended_item_ids: usedItemIds,
         } as any);
@@ -329,16 +324,6 @@ export default function Recommend() {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-body font-medium text-foreground">Estado de ánimo</label>
-          <Select value={mood} onValueChange={setMood}>
-            <SelectTrigger><SelectValue placeholder="¿Cómo te sentís?" /></SelectTrigger>
-            <SelectContent>
-              {MOODS.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
           <label className="text-sm font-body font-medium text-foreground">Tipo de juntada</label>
           <Select value={event} onValueChange={setEvent}>
             <SelectTrigger><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
@@ -348,7 +333,7 @@ export default function Recommend() {
           </Select>
         </div>
 
-        <Button variant="warm" className="w-full" disabled={loading || !mood || !event || !weather || !season} onClick={handleRecommend}>
+        <Button variant="warm" className="w-full" disabled={loading || !event || !weather || !season} onClick={handleRecommend}>
           {loading ? (
             <span className="flex items-center gap-2">
               <div className="animate-spin h-4 w-4 border-2 border-accent-foreground border-t-transparent rounded-full" />

@@ -43,7 +43,6 @@ donde cada término es una búsqueda corta para Mercado Libre de una prenda que 
     const userPrompt = `Mi guardarropas:
 ${wardrobe}${wishlistSection}
 
-Estado de ánimo: ${mood}
 Evento: ${event}
 Temperatura: ${temperature}°C
 Clima: ${weather}${isNight ? ' (es de noche)' : ''}
