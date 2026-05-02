@@ -276,7 +276,7 @@ export default function Recommend() {
     new Intl.NumberFormat('es-AR', { style: 'currency', currency: currency || 'ARS', maximumFractionDigits: 0 }).format(price);
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-display font-bold text-foreground">¿Qué me pongo?</h2>
         <p className="text-muted-foreground font-body">Contanos cómo te sentís y a dónde vas</p>
