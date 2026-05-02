@@ -1,27 +1,35 @@
 // Obtiene clima actual usando Open-Meteo (sin API key)
 // https://open-meteo.com/
 
+export type WeatherCondition = 'soleado' | 'despejado-noche' | 'nublado' | 'lluvia' | 'tormenta';
+
 export type WeatherInfo = {
   temperature: number;
-  weather: 'soleado' | 'nublado' | 'lluvia' | 'tormenta';
+  weather: WeatherCondition;
+  weatherLabel: string; // etiqueta amigable con emoji
   season: 'verano' | 'otoño' | 'invierno' | 'primavera';
   city?: string;
+  windKmh: number;
+  precipitationProbability: number; // 0-100
+  isDay: boolean;
 };
 
 // WMO Weather interpretation codes -> nuestras categorías
-function mapWeatherCode(code: number): WeatherInfo['weather'] {
-  if ([0, 1].includes(code)) return 'soleado';
-  if ([2, 3, 45, 48].includes(code)) return 'nublado';
-  if ([95, 96, 99].includes(code)) return 'tormenta';
-  // 51-67 llovizna/lluvia, 71-86 nieve (la tratamos como lluvia para el outfit)
-  return 'lluvia';
+function mapWeatherCode(code: number, isDay: boolean): { value: WeatherCondition; label: string } {
+  if ([0, 1].includes(code)) {
+    return isDay
+      ? { value: 'soleado', label: '☀️ Soleado' }
+      : { value: 'despejado-noche', label: '🌙 Despejado' };
+  }
+  if ([2, 3, 45, 48].includes(code)) return { value: 'nublado', label: '☁️ Nublado' };
+  if ([95, 96, 99].includes(code)) return { value: 'tormenta', label: '⛈️ Tormenta' };
+  return { value: 'lluvia', label: '🌧️ Lluvia' };
 }
 
 // Estación según hemisferio y mes
 function getSeason(latitude: number, date = new Date()): WeatherInfo['season'] {
-  const month = date.getMonth() + 1; // 1-12
+  const month = date.getMonth() + 1;
   const south = latitude < 0;
-  // Hemisferio sur (Argentina): invierno jun-ago, primavera sep-nov, verano dic-feb, otoño mar-may
   if (south) {
     if ([12, 1, 2].includes(month)) return 'verano';
     if ([3, 4, 5].includes(month)) return 'otoño';
@@ -52,15 +60,27 @@ export async function fetchCurrentWeather(): Promise<WeatherInfo> {
   const pos = await getCurrentPosition();
   const { latitude, longitude } = pos.coords;
 
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,is_day,wind_speed_10m,precipitation_probability&hourly=precipitation_probability&timezone=auto`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('No pudimos obtener el clima');
   const data = await res.json();
 
   const temperature = Math.round(data?.current?.temperature_2m ?? 20);
   const code = data?.current?.weather_code ?? 0;
+  const isDay = (data?.current?.is_day ?? 1) === 1;
+  const windKmh = Math.round(data?.current?.wind_speed_10m ?? 0);
 
-  // Reverse geocoding opcional para mostrar ciudad
+  // Probabilidad de precipitación: usa la actual o el máximo de las próximas horas
+  let precipitationProbability = data?.current?.precipitation_probability;
+  if (precipitationProbability == null && Array.isArray(data?.hourly?.precipitation_probability)) {
+    const next6 = data.hourly.precipitation_probability.slice(0, 6).filter((v: any) => typeof v === 'number');
+    precipitationProbability = next6.length ? Math.max(...next6) : 0;
+  }
+  precipitationProbability = Math.round(precipitationProbability ?? 0);
+
+  const mapped = mapWeatherCode(code, isDay);
+
+  // Reverse geocoding opcional
   let city: string | undefined;
   try {
     const geoRes = await fetch(
@@ -71,13 +91,17 @@ export async function fetchCurrentWeather(): Promise<WeatherInfo> {
       city = geo?.results?.[0]?.name;
     }
   } catch {
-    // ignorar, no es crítico
+    // ignorar
   }
 
   return {
     temperature,
-    weather: mapWeatherCode(code),
+    weather: mapped.value,
+    weatherLabel: mapped.label,
     season: getSeason(latitude),
     city,
+    windKmh,
+    precipitationProbability,
+    isDay,
   };
 }
