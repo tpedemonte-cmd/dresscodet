@@ -51,38 +51,50 @@ export type Database = {
         Row: {
           created_at: string
           event: string
+          formality: string | null
           id: string
-          mood: string
+          is_night: boolean | null
+          mood: string | null
+          rain_probability: number | null
           recommendation: string
           recommended_item_ids: string[] | null
           season: string
           temperature: number
           user_id: string
           weather: string
+          wind_kmh: number | null
         }
         Insert: {
           created_at?: string
           event: string
+          formality?: string | null
           id?: string
-          mood: string
+          is_night?: boolean | null
+          mood?: string | null
+          rain_probability?: number | null
           recommendation: string
           recommended_item_ids?: string[] | null
           season: string
           temperature: number
           user_id: string
           weather: string
+          wind_kmh?: number | null
         }
         Update: {
           created_at?: string
           event?: string
+          formality?: string | null
           id?: string
-          mood?: string
+          is_night?: boolean | null
+          mood?: string | null
+          rain_probability?: number | null
           recommendation?: string
           recommended_item_ids?: string[] | null
           season?: string
           temperature?: number
           user_id?: string
           weather?: string
+          wind_kmh?: number | null
         }
         Relationships: []
       }

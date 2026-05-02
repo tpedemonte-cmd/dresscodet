@@ -257,6 +257,10 @@ export default function Recommend() {
           event, temperature: temperature[0], weather: weatherForAI, season,
           recommendation: cleanText,
           recommended_item_ids: usedItemIds,
+          formality,
+          wind_kmh: windKmh,
+          rain_probability: rainProb,
+          is_night: weather === 'despejado-noche',
         } as any);
       }
     } catch (err: any) {

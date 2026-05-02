@@ -1,0 +1,9 @@
+
+ALTER TABLE public.outfit_history
+  ADD COLUMN IF NOT EXISTS formality TEXT,
+  ADD COLUMN IF NOT EXISTS wind_kmh NUMERIC,
+  ADD COLUMN IF NOT EXISTS rain_probability NUMERIC,
+  ADD COLUMN IF NOT EXISTS is_night BOOLEAN DEFAULT false;
+
+ALTER TABLE public.outfit_history
+  ALTER COLUMN mood DROP NOT NULL;
