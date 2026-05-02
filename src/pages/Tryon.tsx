@@ -171,7 +171,7 @@ export default function Tryon() {
       <div className="space-y-2">
         <p className="text-sm font-body font-medium text-foreground">1. Tu foto</p>
         {selfie ? (
-          <div className="relative w-full max-w-xs mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card">
+          <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card">
             <img src={resultImage || selfie} alt="Tu foto" className="w-full h-full object-cover" />
             {resultImage && (
               <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-body font-medium px-2 py-1 rounded-full">
@@ -183,7 +183,7 @@ export default function Tryon() {
             </button>
           </div>
         ) : (
-          <div className="max-w-xs mx-auto aspect-[3/4] bg-secondary rounded-xl flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border">
+          <div className="max-w-sm mx-auto aspect-[3/4] bg-secondary rounded-xl flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border">
             <p className="text-muted-foreground font-body text-sm text-center px-4">
               Subí una foto de cuerpo entero o medio cuerpo
             </p>
