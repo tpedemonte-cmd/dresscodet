@@ -86,9 +86,13 @@ export default function Recommend() {
     }
   };
 
-  // Detectar clima automáticamente al cargar la página
+  // Detectar clima al cargar y refrescar automáticamente cada 60s
   useEffect(() => {
     handleAutoWeather();
+    const interval = setInterval(() => {
+      handleAutoWeather();
+    }, 60000);
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
