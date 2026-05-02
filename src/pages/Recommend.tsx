@@ -68,29 +68,32 @@ export default function Recommend() {
   const [forgottenSuggestions, setForgottenSuggestions] = useState<ItemUsage[]>([]);
   const [loadingWeather, setLoadingWeather] = useState(false);
   const [weatherCity, setWeatherCity] = useState<string | null>(null);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
 
   const handleAutoWeather = async () => {
     setLoadingWeather(true);
+    setWeatherError(null);
     try {
       const info = await fetchCurrentWeather();
       setTemperature([info.temperature]);
       setWeather(info.weather);
       setSeason(info.season);
       setWeatherCity(info.city || null);
-      toast.success(
-        info.city
-          ? `Clima de ${info.city}: ${info.temperature}°C`
-          : `Clima detectado: ${info.temperature}°C`
-      );
     } catch (err: any) {
       const msg = err?.code === 1
-        ? 'Permiso de ubicación denegado'
+        ? 'Permiso de ubicación denegado. Activalo para detectar el clima.'
         : err?.message || 'No pudimos obtener el clima';
-      toast.error(msg);
+      setWeatherError(msg);
     } finally {
       setLoadingWeather(false);
     }
   };
+
+  // Detectar clima automáticamente al cargar la página
+  useEffect(() => {
+    handleAutoWeather();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { data: items = [] } = useQuery({
     queryKey: ['clothing_items', user?.id],
