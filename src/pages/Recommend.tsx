@@ -148,8 +148,8 @@ export default function Recommend() {
   };
 
   const handleRecommend = async () => {
-    if (!mood || !event) {
-      toast.error('Elegí tu ánimo y a dónde vas');
+    if (!event) {
+      toast.error('Elegí a dónde vas');
       return;
     }
     if (!weather || !season) {
