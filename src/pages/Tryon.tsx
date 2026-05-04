@@ -25,6 +25,35 @@ export default function Tryon() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [photoMode, setPhotoMode] = useState<'photo' | 'avatar'>('photo');
+  const [avatarData, setAvatarData] = useState({ height: '', weight: '', age: '', gender: 'femenino' });
+  const [generatingAvatar, setGeneratingAvatar] = useState(false);
+
+  const handleGenerateAvatar = async () => {
+    const { height, weight, age, gender } = avatarData;
+    if (!height || !weight || !age) {
+      toast.error('Completá altura, peso y edad');
+      return;
+    }
+    setGeneratingAvatar(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-avatar', {
+        body: { height: Number(height), weight: Number(weight), age: Number(age), gender },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.image) {
+        setSelfie(data.image);
+        setResultImage(null);
+        toast.success('¡Modelo generado!');
+      }
+    } catch (err: any) {
+      console.error('Avatar error:', err);
+      toast.error(err.message || 'Error al generar el modelo');
+    } finally {
+      setGeneratingAvatar(false);
+    }
+  };
 
   const { data: items = [] } = useQuery({
     queryKey: ['clothing_items', user?.id],
