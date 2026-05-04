@@ -28,6 +28,7 @@ export default function History() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [eventFilter, setEventFilter] = useState<string>('todos');
 
   const { data: history = [], isLoading } = useQuery({
     queryKey: ['outfit_history', user?.id],
