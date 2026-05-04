@@ -196,9 +196,31 @@ export default function Tryon() {
         <p className="text-muted-foreground font-body">Subí tu foto, elegí las prendas y armá tu outfit completo</p>
       </div>
 
-      {/* Step 1: Selfie */}
+      {/* Step 1: Selfie or Avatar */}
       <div className="space-y-2">
-        <p className="text-sm font-body font-medium text-foreground">1. Tu foto</p>
+        <p className="text-sm font-body font-medium text-foreground">1. Tu foto o modelo</p>
+
+        {!selfie && (
+          <div className="flex gap-2 mb-2">
+            <button
+              onClick={() => setPhotoMode('photo')}
+              className={`flex-1 text-xs font-body px-3 py-2 rounded-lg transition-colors ${
+                photoMode === 'photo' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              📸 Usar mi foto
+            </button>
+            <button
+              onClick={() => setPhotoMode('avatar')}
+              className={`flex-1 text-xs font-body px-3 py-2 rounded-lg transition-colors ${
+                photoMode === 'avatar' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              🧍 Generar modelo
+            </button>
+          </div>
+        )}
+
         {selfie ? (
           <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card">
             <img src={resultImage || selfie} alt="Tu foto" className="w-full h-full object-cover" />
@@ -211,7 +233,7 @@ export default function Tryon() {
               <RotateCcw className="h-4 w-4 text-foreground" />
             </button>
           </div>
-        ) : (
+        ) : photoMode === 'photo' ? (
           <div className="max-w-sm mx-auto aspect-[3/4] bg-secondary rounded-xl flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border">
             <p className="text-muted-foreground font-body text-sm text-center px-4">
               Subí una foto de cuerpo entero o medio cuerpo
@@ -224,6 +246,62 @@ export default function Tryon() {
                 <Upload className="h-4 w-4 mr-1" /> Galería
               </Button>
             </div>
+          </div>
+        ) : (
+          <div className="max-w-sm mx-auto bg-secondary rounded-xl p-4 border-2 border-dashed border-border space-y-3">
+            <p className="text-muted-foreground font-body text-xs text-center">
+              Generamos un modelo realista con tus medidas para probarte la ropa
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs font-body text-foreground">Altura (cm)</label>
+                <input
+                  type="number"
+                  value={avatarData.height}
+                  onChange={e => setAvatarData(d => ({ ...d, height: e.target.value }))}
+                  placeholder="170"
+                  className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-body text-foreground">Peso (kg)</label>
+                <input
+                  type="number"
+                  value={avatarData.weight}
+                  onChange={e => setAvatarData(d => ({ ...d, weight: e.target.value }))}
+                  placeholder="65"
+                  className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-body text-foreground">Edad</label>
+                <input
+                  type="number"
+                  value={avatarData.age}
+                  onChange={e => setAvatarData(d => ({ ...d, age: e.target.value }))}
+                  placeholder="28"
+                  className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-body text-foreground">Género</label>
+                <select
+                  value={avatarData.gender}
+                  onChange={e => setAvatarData(d => ({ ...d, gender: e.target.value }))}
+                  className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                >
+                  <option value="femenino">Femenino</option>
+                  <option value="masculino">Masculino</option>
+                </select>
+              </div>
+            </div>
+            <Button variant="warm" size="sm" className="w-full" disabled={generatingAvatar} onClick={handleGenerateAvatar}>
+              {generatingAvatar ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando modelo...</>
+              ) : (
+                <><Sparkles className="h-4 w-4 mr-2" /> Generar mi modelo</>
+              )}
+            </Button>
           </div>
         )}
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
