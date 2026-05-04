@@ -28,6 +28,7 @@ export default function History() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [eventFilter, setEventFilter] = useState<string>('todos');
 
   const { data: history = [], isLoading } = useQuery({
     queryKey: ['outfit_history', user?.id],
@@ -78,14 +79,55 @@ export default function History() {
         <p className="text-muted-foreground font-body">{history.length} recomendaciones</p>
       </div>
 
+      {history.length > 0 && (() => {
+        const availableEvents = Array.from(new Set(history.map((h: any) => h.event)));
+        return (
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
+            <button
+              onClick={() => setEventFilter('todos')}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-body transition-colors ${
+                eventFilter === 'todos'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              }`}
+            >
+              Todos
+            </button>
+            {availableEvents.map((ev) => (
+              <button
+                key={ev}
+                onClick={() => setEventFilter(ev)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-body transition-colors ${
+                  eventFilter === ev
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+              >
+                {EVENT_LABELS[ev] || ev}
+              </button>
+            ))}
+          </div>
+        );
+      })()}
+
       {history.length === 0 ? (
         <div className="text-center py-16 space-y-2">
           <p className="text-4xl">📋</p>
           <p className="text-muted-foreground font-body">Todavía no pediste ninguna recomendación.</p>
         </div>
-      ) : (
+      ) : (() => {
+        const filtered = eventFilter === 'todos' ? history : history.filter((h: any) => h.event === eventFilter);
+        if (filtered.length === 0) {
+          return (
+            <div className="text-center py-12 space-y-2">
+              <p className="text-3xl">🔍</p>
+              <p className="text-muted-foreground font-body text-sm">No hay recomendaciones para este tipo de salida.</p>
+            </div>
+          );
+        }
+        return (
         <div className="space-y-3">
-          {history.map((entry: any) => {
+          {filtered.map((entry: any) => {
             const isExpanded = expandedId === entry.id;
             const entryItems = items.filter((i) =>
               (entry.recommended_item_ids || []).includes(i.id)
@@ -174,7 +216,8 @@ export default function History() {
             );
           })}
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
