@@ -212,20 +212,6 @@ export default function Tryon() {
               <RotateCcw className="h-4 w-4 text-foreground" />
             </button>
           </div>
-        ) : photoMode === 'photo' ? (
-          <div className="max-w-sm mx-auto aspect-[3/4] bg-secondary rounded-xl flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border">
-            <p className="text-muted-foreground font-body text-sm text-center px-4">
-              Subí una foto de cuerpo entero o medio cuerpo
-            </p>
-            <div className="flex gap-3">
-              <Button variant="outline" size="sm" onClick={() => cameraInputRef.current?.click()}>
-                <Camera className="h-4 w-4 mr-1" /> Cámara
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                <Upload className="h-4 w-4 mr-1" /> Galería
-              </Button>
-            </div>
-          </div>
         ) : (
           <div className="max-w-sm mx-auto bg-secondary rounded-xl p-4 border-2 border-dashed border-border space-y-3">
             <p className="text-muted-foreground font-body text-xs text-center">
