@@ -193,33 +193,12 @@ export default function Tryon() {
           <Sparkles className="h-6 w-6 text-primary" />
           Probador Virtual
         </h2>
-        <p className="text-muted-foreground font-body">Subí tu foto, elegí las prendas y armá tu outfit completo</p>
+        <p className="text-muted-foreground font-body">Elegí las prendas y armá tu outfit completo</p>
       </div>
 
       {/* Step 1: Selfie or Avatar */}
       <div className="space-y-2">
-        <p className="text-sm font-body font-medium text-foreground">1. Tu foto o modelo</p>
-
-        {!selfie && (
-          <div className="flex gap-2 mb-2">
-            <button
-              onClick={() => setPhotoMode('photo')}
-              className={`flex-1 text-xs font-body px-3 py-2 rounded-lg transition-colors ${
-                photoMode === 'photo' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              📸 Usar mi foto
-            </button>
-            <button
-              onClick={() => setPhotoMode('avatar')}
-              className={`flex-1 text-xs font-body px-3 py-2 rounded-lg transition-colors ${
-                photoMode === 'avatar' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              🧍 Generar modelo
-            </button>
-          </div>
-        )}
+        <p className="text-sm font-body font-medium text-foreground">1. Tu modelo</p>
 
         {selfie ? (
           <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card">
@@ -232,20 +211,6 @@ export default function Tryon() {
             <button onClick={reset} className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full p-1.5">
               <RotateCcw className="h-4 w-4 text-foreground" />
             </button>
-          </div>
-        ) : photoMode === 'photo' ? (
-          <div className="max-w-sm mx-auto aspect-[3/4] bg-secondary rounded-xl flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border">
-            <p className="text-muted-foreground font-body text-sm text-center px-4">
-              Subí una foto de cuerpo entero o medio cuerpo
-            </p>
-            <div className="flex gap-3">
-              <Button variant="outline" size="sm" onClick={() => cameraInputRef.current?.click()}>
-                <Camera className="h-4 w-4 mr-1" /> Cámara
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                <Upload className="h-4 w-4 mr-1" /> Galería
-              </Button>
-            </div>
           </div>
         ) : (
           <div className="max-w-sm mx-auto bg-secondary rounded-xl p-4 border-2 border-dashed border-border space-y-3">
