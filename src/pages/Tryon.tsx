@@ -193,33 +193,12 @@ export default function Tryon() {
           <Sparkles className="h-6 w-6 text-primary" />
           Probador Virtual
         </h2>
-        <p className="text-muted-foreground font-body">Subí tu foto, elegí las prendas y armá tu outfit completo</p>
+        <p className="text-muted-foreground font-body">Elegí las prendas y armá tu outfit completo</p>
       </div>
 
       {/* Step 1: Selfie or Avatar */}
       <div className="space-y-2">
-        <p className="text-sm font-body font-medium text-foreground">1. Tu foto o modelo</p>
-
-        {!selfie && (
-          <div className="flex gap-2 mb-2">
-            <button
-              onClick={() => setPhotoMode('photo')}
-              className={`flex-1 text-xs font-body px-3 py-2 rounded-lg transition-colors ${
-                photoMode === 'photo' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              📸 Usar mi foto
-            </button>
-            <button
-              onClick={() => setPhotoMode('avatar')}
-              className={`flex-1 text-xs font-body px-3 py-2 rounded-lg transition-colors ${
-                photoMode === 'avatar' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              🧍 Generar modelo
-            </button>
-          </div>
-        )}
+        <p className="text-sm font-body font-medium text-foreground">1. Tu modelo</p>
 
         {selfie ? (
           <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card">
