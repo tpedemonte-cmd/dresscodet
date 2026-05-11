@@ -494,6 +494,28 @@ export default function Plan() {
                         </div>
                       )}
 
+                      {usedWishlist.length > 0 && (
+                        <div className="space-y-2 pt-2 border-t border-border">
+                          <p className="text-sm font-body font-medium text-muted-foreground">🛒 De tu wishlist (todavía no lo tenés):</p>
+                          <div className="flex gap-2 overflow-x-auto pb-1">
+                            {usedWishlist.map((w: any) => (
+                              <a
+                                key={w.id}
+                                href={w.permalink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-shrink-0 w-20 text-center group"
+                              >
+                                <div className="aspect-square rounded-lg overflow-hidden bg-secondary/50 border border-dashed border-primary/30 group-hover:border-primary transition-colors">
+                                  <img src={w.image || w.thumbnail} alt={w.title} className="w-full h-full object-contain" />
+                                </div>
+                                <p className="text-[10px] mt-1 truncate">{w.title}</p>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {Array.isArray(p.shopping_suggestions) && p.shopping_suggestions.length > 0 && (
                         <div className="space-y-2 pt-2 border-t border-border">
                           <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
