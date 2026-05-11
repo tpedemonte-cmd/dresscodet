@@ -35,7 +35,7 @@ WISHLIST_USADOS: id1, id2, id3
 donde los IDs son los de los productos de la WISHLIST que mencionaste o recomendaste para ESTA ocasión específica. Si no mencionaste ninguno (porque ninguno encajaba con la ocasión), poné WISHLIST_USADOS: ninguno. NO incluyas IDs de productos que no mencionaste en el texto.
 
 COMPRAR: término1 | término2 | término3
-donde cada término es una búsqueda corta para Mercado Libre de una prenda que le falta al usuario y completaría el outfit (ej: "campera de cuero negra", "zapatillas blancas casual"). Si el outfit está completo con lo que tiene, poné COMPRAR: nada`;
+donde cada término es una búsqueda corta para Mercado Libre de CUALQUIER prenda que le falte al usuario para completar el outfit, incluyendo básicos como ropa interior (calzones/bóxers/bombachas), medias o calzado si no los tiene en el placard (ej: "medias deportivas blancas", "bóxer algodón negro", "campera de cuero negra", "zapatillas blancas casual"). Listá TODO lo que falte, no solo lo "principal". Si realmente no falta nada, poné COMPRAR: nada`;
 
     let wishlistSection = '';
     if (wishlist && wishlist.trim()) {
