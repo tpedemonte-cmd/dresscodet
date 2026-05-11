@@ -484,6 +484,31 @@ export default function Plan() {
                           ))}
                         </div>
                       )}
+
+                      {Array.isArray(p.shopping_suggestions) && p.shopping_suggestions.length > 0 && (
+                        <div className="space-y-2 pt-2 border-t border-border">
+                          <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                            <ShoppingBag className="h-4 w-4 text-primary" />
+                            Te recomendamos comprar
+                          </div>
+                          <div className="grid sm:grid-cols-2 gap-2">
+                            {p.shopping_suggestions.map((s: any, i: number) => (
+                              <a
+                                key={i}
+                                href={s.searchUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-secondary/40 border border-border hover:border-primary/40 hover:bg-secondary/60 transition-all group"
+                              >
+                                <span className="text-sm font-body text-foreground">{s.query}</span>
+                                <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0 group-hover:text-primary transition-colors">
+                                  Buscar <ExternalLink className="h-3 w-3" />
+                                </span>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
