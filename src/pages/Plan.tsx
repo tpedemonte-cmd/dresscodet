@@ -219,6 +219,7 @@ export default function Plan() {
         is_night: forecast.weather === 'despejado-noche',
         recommendation: cleanText,
         recommended_item_ids: usedItemIds,
+        recommended_wishlist_ids: usedWishlistIds,
         shopping_suggestions: shoppingSuggestions,
       });
       if (insertError) throw insertError;
