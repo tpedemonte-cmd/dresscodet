@@ -176,6 +176,13 @@ export default function Plan() {
         usedItemIds = itemsMatch[1].split(',').map(s => s.trim()).filter(Boolean);
       }
 
+      // Parse WISHLIST_USADOS
+      let usedWishlistIds: string[] = [];
+      const wishlistMatch = fullText.match(/WISHLIST_USADOS:\s*(.+)/i);
+      if (wishlistMatch && wishlistMatch[1].trim().toLowerCase() !== 'ninguno') {
+        usedWishlistIds = wishlistMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+      }
+
       // Parse COMPRAR y resolver URLs de Mercado Libre
       let shoppingSuggestions: { query: string; searchUrl: string }[] = [];
       const buyMatch = fullText.match(/COMPRAR:\s*(.+)/i);
@@ -212,6 +219,7 @@ export default function Plan() {
         is_night: forecast.weather === 'despejado-noche',
         recommendation: cleanText,
         recommended_item_ids: usedItemIds,
+        recommended_wishlist_ids: usedWishlistIds,
         shopping_suggestions: shoppingSuggestions,
       });
       if (insertError) throw insertError;
@@ -450,6 +458,7 @@ export default function Plan() {
               <div className="space-y-3">
                 {dayPlans.map((p) => {
                   const usedItems = (items as any[]).filter(i => (p.recommended_item_ids || []).includes(i.id));
+                  const usedWishlist = (wishlistItems as any[]).filter((w: any) => (p.recommended_wishlist_ids || []).includes(w.id));
                   const eventLabel = EVENTS.find(e => e.value === p.event)?.label || p.event;
                   return (
                     <div key={p.id} className="bg-card p-5 rounded-xl shadow-card space-y-3">
@@ -482,6 +491,28 @@ export default function Plan() {
                               <p className="text-[10px] mt-1 truncate">{it.name}</p>
                             </div>
                           ))}
+                        </div>
+                      )}
+
+                      {usedWishlist.length > 0 && (
+                        <div className="space-y-2 pt-2 border-t border-border">
+                          <p className="text-sm font-body font-medium text-muted-foreground">🛒 De tu wishlist (todavía no lo tenés):</p>
+                          <div className="flex gap-2 overflow-x-auto pb-1">
+                            {usedWishlist.map((w: any) => (
+                              <a
+                                key={w.id}
+                                href={w.permalink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-shrink-0 w-20 text-center group"
+                              >
+                                <div className="aspect-square rounded-lg overflow-hidden bg-secondary/50 border border-dashed border-primary/30 group-hover:border-primary transition-colors">
+                                  <img src={w.image || w.thumbnail} alt={w.title} className="w-full h-full object-contain" />
+                                </div>
+                                <p className="text-[10px] mt-1 truncate">{w.title}</p>
+                              </a>
+                            ))}
+                          </div>
                         </div>
                       )}
 
