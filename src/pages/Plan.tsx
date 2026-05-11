@@ -458,6 +458,7 @@ export default function Plan() {
               <div className="space-y-3">
                 {dayPlans.map((p) => {
                   const usedItems = (items as any[]).filter(i => (p.recommended_item_ids || []).includes(i.id));
+                  const usedWishlist = (wishlistItems as any[]).filter((w: any) => (p.recommended_wishlist_ids || []).includes(w.id));
                   const eventLabel = EVENTS.find(e => e.value === p.event)?.label || p.event;
                   return (
                     <div key={p.id} className="bg-card p-5 rounded-xl shadow-card space-y-3">
