@@ -303,7 +303,7 @@ export default function Recommend() {
 
       // Save to history
       if (user) {
-        await supabase.from('outfit_history').insert({
+        const { data: inserted } = await supabase.from('outfit_history').insert({
           user_id: user.id,
           event, temperature: temperature[0], weather: weatherForAI, season,
           recommendation: cleanText,
@@ -312,7 +312,8 @@ export default function Recommend() {
           wind_kmh: windKmh,
           rain_probability: rainProb,
           is_night: weather === 'despejado-noche',
-        } as any);
+        } as any).select('id').single();
+        if (inserted?.id) setRecommendationId(inserted.id);
       }
     } catch (err: any) {
       if (err?.message?.includes('429') || err?.status === 429) {
