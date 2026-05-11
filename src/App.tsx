@@ -16,6 +16,7 @@ import Marketplace from "./pages/Marketplace";
 import Wishlist from "./pages/Wishlist";
 import Looks from "./pages/Looks";
 import Plan from "./pages/Plan";
+import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
