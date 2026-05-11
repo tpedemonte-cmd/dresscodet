@@ -48,6 +48,7 @@ export default function Plan() {
   const [showForm, setShowForm] = useState(false);
   const [planDate, setPlanDate] = useState(todayISO());
   const [planTime, setPlanTime] = useState('');
+  const [showExactTime, setShowExactTime] = useState(false);
   const [event, setEvent] = useState('');
   const [formality, setFormality] = useState('equilibrado');
   const [cityQuery, setCityQuery] = useState('');
@@ -251,41 +252,91 @@ export default function Plan() {
             </div>
             <div className="space-y-2">
               <Label>Hora (opcional)</Label>
-              <div className="flex gap-2 items-center">
-                <Select
-                  value={planTime ? planTime.split(':')[0] : ''}
-                  onValueChange={(h) => {
-                    const m = planTime ? planTime.split(':')[1] : '00';
-                    setPlanTime(`${h}:${m}`);
-                  }}
-                >
-                  <SelectTrigger className="flex-1"><SelectValue placeholder="Hora" /></SelectTrigger>
-                  <SelectContent className="max-h-64">
-                    {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')).map((h) => (
-                      <SelectItem key={h} value={h}>{h} hs</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={planTime ? planTime.split(':')[1] : ''}
-                  onValueChange={(m) => {
-                    const h = planTime ? planTime.split(':')[0] : '12';
-                    setPlanTime(`${h}:${m}`);
-                  }}
-                  disabled={!planTime}
-                >
-                  <SelectTrigger className="flex-1"><SelectValue placeholder="Min" /></SelectTrigger>
-                  <SelectContent>
-                    {['00', '15', '30', '45'].map((m) => (
-                      <SelectItem key={m} value={m}>:{m}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {planTime && (
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setPlanTime('')}>Limpiar</Button>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">Sirve para ajustar el clima a esa hora del día.</p>
+              {(() => {
+                const QUICK = [
+                  { key: 'ahora', label: 'Ahora', getTime: () => {
+                    const d = new Date();
+                    return `${String(d.getHours()).padStart(2, '0')}:${String(Math.floor(d.getMinutes() / 15) * 15).padStart(2, '0')}`;
+                  }},
+                  { key: 'manana', label: 'Mañana', time: '10:00' },
+                  { key: 'tarde', label: 'Tarde', time: '16:00' },
+                  { key: 'noche', label: 'Noche', time: '21:00' },
+                ] as const;
+                const isQuickActive = (q: any) => {
+                  if (!planTime || showExactTime) return false;
+                  const t = q.time ?? q.getTime();
+                  return planTime === t;
+                };
+                return (
+                  <>
+                    <div className="flex flex-wrap gap-2">
+                      {QUICK.map((q: any) => (
+                        <Button
+                          key={q.key}
+                          type="button"
+                          size="sm"
+                          variant={isQuickActive(q) ? 'default' : 'outline'}
+                          onClick={() => {
+                            setShowExactTime(false);
+                            setPlanTime(q.time ?? q.getTime());
+                          }}
+                        >
+                          {q.label}
+                        </Button>
+                      ))}
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={showExactTime ? 'default' : 'outline'}
+                        onClick={() => setShowExactTime((v) => !v)}
+                      >
+                        Hora exacta
+                      </Button>
+                      {planTime && (
+                        <Button type="button" size="sm" variant="ghost" onClick={() => { setPlanTime(''); setShowExactTime(false); }}>
+                          Limpiar
+                        </Button>
+                      )}
+                    </div>
+                    {showExactTime && (
+                      <div className="flex gap-2 items-center pt-2">
+                        <Select
+                          value={planTime ? planTime.split(':')[0] : ''}
+                          onValueChange={(h) => {
+                            const m = planTime ? planTime.split(':')[1] : '00';
+                            setPlanTime(`${h}:${m}`);
+                          }}
+                        >
+                          <SelectTrigger className="flex-1"><SelectValue placeholder="Hora" /></SelectTrigger>
+                          <SelectContent className="max-h-64">
+                            {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')).map((h) => (
+                              <SelectItem key={h} value={h}>{h} hs</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select
+                          value={planTime ? planTime.split(':')[1] : ''}
+                          onValueChange={(m) => {
+                            const h = planTime ? planTime.split(':')[0] : '12';
+                            setPlanTime(`${h}:${m}`);
+                          }}
+                          disabled={!planTime}
+                        >
+                          <SelectTrigger className="flex-1"><SelectValue placeholder="Min" /></SelectTrigger>
+                          <SelectContent>
+                            {['00', '15', '30', '45'].map((m) => (
+                              <SelectItem key={m} value={m}>:{m}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    {planTime && (
+                      <p className="text-xs text-muted-foreground">Hora seleccionada: <span className="font-semibold">{planTime} hs</span> · ajusta el clima a ese momento.</p>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
 
