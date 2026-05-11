@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar, ExternalLink, Loader2, MapPin, Plus, Search, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchForecastForDate, searchCity, type GeoResult } from '@/lib/weather';
+import OutfitFeedback from '@/components/OutfitFeedback';
 
 const EVENTS = [
   { value: 'trabajo', label: '💼 Trabajo' },
@@ -540,6 +541,14 @@ export default function Plan() {
                           </div>
                         </div>
                       )}
+
+                      <OutfitFeedback
+                        table="weekly_plans"
+                        recordId={p.id}
+                        initialFeedback={(p.feedback ?? null) as any}
+                        initialFavorite={!!p.is_favorite}
+                        onChange={() => qc.invalidateQueries({ queryKey: ['weekly_plans', user?.id] })}
+                      />
                     </div>
                   );
                 })}
