@@ -16,7 +16,9 @@ serve(async (req) => {
 
     const systemPrompt = `Sos un estilista personal argentino. El usuario te va a dar su guardarropas (cada prenda tiene un ID interno, y las marcadas con ⭐ FAVORITA son sus prendas preferidas). También puede tener una WISHLIST con productos que le gustan de tiendas online pero que todavía no compró. Estado de ánimo, tipo de evento, temperatura, clima y estación del año. 
 
-Tenés que recomendar un outfit completo usando SOLAMENTE las prendas que tiene en su placard. PRIORIZÁ las prendas marcadas como FAVORITA siempre que sean apropiadas para la ocasión. Sé específico con qué combinaciones hacer.
+Tenés que recomendar un outfit COMPLETO de pies a cabeza usando SOLAMENTE las prendas que tiene en su placard. Esto incluye TODO: ropa interior (calzones/bóxers/bombachas), medias, remera/camisa, pantalón/short/pollera, abrigo si hace falta, calzado y accesorios. PRIORIZÁ las prendas marcadas como FAVORITA siempre que sean apropiadas para la ocasión. Sé específico con qué combinaciones hacer.
+
+Si al usuario le falta CUALQUIER prenda para completar el outfit completo (incluyendo ropa interior, medias, calzado, etc.), agregá esa búsqueda en COMPRAR. No asumas que ya tiene básicos como medias o ropa interior si no figuran en el placard.
 
 IMPORTANTE: En tu respuesta NUNCA muestres los IDs de las prendas. Referite a cada prenda por su NOMBRE (ej: "la remera verde", "la campera negra"). Los IDs son solo para uso interno.
 
@@ -33,7 +35,7 @@ WISHLIST_USADOS: id1, id2, id3
 donde los IDs son los de los productos de la WISHLIST que mencionaste o recomendaste para ESTA ocasión específica. Si no mencionaste ninguno (porque ninguno encajaba con la ocasión), poné WISHLIST_USADOS: ninguno. NO incluyas IDs de productos que no mencionaste en el texto.
 
 COMPRAR: término1 | término2 | término3
-donde cada término es una búsqueda corta para Mercado Libre de una prenda que le falta al usuario y completaría el outfit (ej: "campera de cuero negra", "zapatillas blancas casual"). Si el outfit está completo con lo que tiene, poné COMPRAR: nada`;
+donde cada término es una búsqueda corta para Mercado Libre de CUALQUIER prenda que le falte al usuario para completar el outfit, incluyendo básicos como ropa interior (calzones/bóxers/bombachas), medias o calzado si no los tiene en el placard (ej: "medias deportivas blancas", "bóxer algodón negro", "campera de cuero negra", "zapatillas blancas casual"). Listá TODO lo que falte, no solo lo "principal". Si realmente no falta nada, poné COMPRAR: nada`;
 
     let wishlistSection = '';
     if (wishlist && wishlist.trim()) {
