@@ -541,6 +541,14 @@ export default function Plan() {
                           </div>
                         </div>
                       )}
+
+                      <OutfitFeedback
+                        table="weekly_plans"
+                        recordId={p.id}
+                        initialFeedback={(p.feedback ?? null) as any}
+                        initialFavorite={!!p.is_favorite}
+                        onChange={() => qc.invalidateQueries({ queryKey: ['weekly_plans', user?.id] })}
+                      />
                     </div>
                   );
                 })}
