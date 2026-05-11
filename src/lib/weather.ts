@@ -139,19 +139,48 @@ export type GeoResult = { name: string; admin1?: string; country?: string; latit
 
 export async function searchCity(query: string): Promise<GeoResult[]> {
   if (!query.trim()) return [];
-  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=es&format=json&countryCode=AR`;
-  const res = await fetch(url);
+  // Usamos Nominatim (OSM) restringido a Argentina: reconoce barrios, localidades y ciudades.
+  const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&countrycodes=ar&accept-language=es&q=${encodeURIComponent(query)}`;
+  const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
   if (!res.ok) return [];
   const data = await res.json();
-  return (data?.results || [])
-    .filter((r: any) => r.country_code === 'AR' || r.country === 'Argentina')
-    .map((r: any) => ({
-      name: r.name,
-      admin1: r.admin1,
-      country: r.country,
-      latitude: r.latitude,
-      longitude: r.longitude,
-    }));
+  if (!Array.isArray(data)) return [];
+
+  const seen = new Set<string>();
+  const results: GeoResult[] = [];
+  for (const r of data) {
+    const a = r.address || {};
+    const name =
+      a.suburb ||
+      a.neighbourhood ||
+      a.quarter ||
+      a.city_district ||
+      a.city ||
+      a.town ||
+      a.village ||
+      a.hamlet ||
+      a.municipality ||
+      r.name ||
+      (r.display_name?.split(',')[0]);
+    if (!name) continue;
+    const admin1 =
+      a.city ||
+      a.town ||
+      a.state_district ||
+      a.state ||
+      a.province;
+    const key = `${name}|${admin1 || ''}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    results.push({
+      name,
+      admin1: admin1 && admin1 !== name ? admin1 : undefined,
+      country: 'Argentina',
+      latitude: parseFloat(r.lat),
+      longitude: parseFloat(r.lon),
+    });
+  }
+  return results;
 }
 
 // Devuelve el clima previsto para una fecha específica (YYYY-MM-DD) en una ubicación.
