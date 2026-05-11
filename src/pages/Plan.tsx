@@ -253,15 +253,16 @@ export default function Plan() {
             <div className="space-y-2">
               <Label>Hora (opcional)</Label>
               {(() => {
+                const isToday = planDate === todayISO();
                 const QUICK = [
-                  { key: 'ahora', label: 'Ahora', getTime: () => {
+                  ...(isToday ? [{ key: 'ahora', label: 'Ahora', getTime: () => {
                     const d = new Date();
                     return `${String(d.getHours()).padStart(2, '0')}:${String(Math.floor(d.getMinutes() / 15) * 15).padStart(2, '0')}`;
-                  }},
+                  }}] : []),
                   { key: 'manana', label: 'Mañana', time: '10:00' },
                   { key: 'tarde', label: 'Tarde', time: '16:00' },
                   { key: 'noche', label: 'Noche', time: '21:00' },
-                ] as const;
+                ] as any[];
                 const isQuickActive = (q: any) => {
                   if (!planTime || showExactTime) return false;
                   const t = q.time ?? q.getTime();
