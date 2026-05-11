@@ -176,6 +176,13 @@ export default function Plan() {
         usedItemIds = itemsMatch[1].split(',').map(s => s.trim()).filter(Boolean);
       }
 
+      // Parse WISHLIST_USADOS
+      let usedWishlistIds: string[] = [];
+      const wishlistMatch = fullText.match(/WISHLIST_USADOS:\s*(.+)/i);
+      if (wishlistMatch && wishlistMatch[1].trim().toLowerCase() !== 'ninguno') {
+        usedWishlistIds = wishlistMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+      }
+
       // Parse COMPRAR y resolver URLs de Mercado Libre
       let shoppingSuggestions: { query: string; searchUrl: string }[] = [];
       const buyMatch = fullText.match(/COMPRAR:\s*(.+)/i);
