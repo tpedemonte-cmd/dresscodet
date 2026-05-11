@@ -325,6 +325,16 @@ export default function Plan() {
             )}
           </div>
 
+          <div className="space-y-2">
+            <Label>Lugar específico <span className="text-muted-foreground font-normal">(opcional)</span></Label>
+            <Input
+              placeholder="Ej: Bar en Palermo Soho, casa de Juan..."
+              value={specificPlace}
+              onChange={(e) => setSpecificPlace(e.target.value)}
+              maxLength={120}
+            />
+          </div>
+
           <div className="flex gap-2">
             <Button onClick={handleCreate} disabled={submitting} className="gap-2 flex-1">
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
