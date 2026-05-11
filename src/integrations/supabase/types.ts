@@ -140,6 +140,7 @@ export type Database = {
           rain_probability: number | null
           recommendation: string | null
           recommended_item_ids: string[] | null
+          recommended_wishlist_ids: string[] | null
           season: string | null
           shopping_suggestions: Json | null
           temperature: number | null
@@ -163,6 +164,7 @@ export type Database = {
           rain_probability?: number | null
           recommendation?: string | null
           recommended_item_ids?: string[] | null
+          recommended_wishlist_ids?: string[] | null
           season?: string | null
           shopping_suggestions?: Json | null
           temperature?: number | null
@@ -186,6 +188,7 @@ export type Database = {
           rain_probability?: number | null
           recommendation?: string | null
           recommended_item_ids?: string[] | null
+          recommended_wishlist_ids?: string[] | null
           season?: string | null
           shopping_suggestions?: Json | null
           temperature?: number | null

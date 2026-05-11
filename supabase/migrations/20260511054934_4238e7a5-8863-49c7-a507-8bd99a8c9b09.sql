@@ -1,0 +1,1 @@
+ALTER TABLE public.weekly_plans ADD COLUMN IF NOT EXISTS recommended_wishlist_ids uuid[] DEFAULT '{}'::uuid[];
