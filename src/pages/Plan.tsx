@@ -251,7 +251,41 @@ export default function Plan() {
             </div>
             <div className="space-y-2">
               <Label>Hora (opcional)</Label>
-              <Input type="time" value={planTime} onChange={(e) => setPlanTime(e.target.value)} />
+              <div className="flex gap-2 items-center">
+                <Select
+                  value={planTime ? planTime.split(':')[0] : ''}
+                  onValueChange={(h) => {
+                    const m = planTime ? planTime.split(':')[1] : '00';
+                    setPlanTime(`${h}:${m}`);
+                  }}
+                >
+                  <SelectTrigger className="flex-1"><SelectValue placeholder="Hora" /></SelectTrigger>
+                  <SelectContent className="max-h-64">
+                    {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')).map((h) => (
+                      <SelectItem key={h} value={h}>{h} hs</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={planTime ? planTime.split(':')[1] : ''}
+                  onValueChange={(m) => {
+                    const h = planTime ? planTime.split(':')[0] : '12';
+                    setPlanTime(`${h}:${m}`);
+                  }}
+                  disabled={!planTime}
+                >
+                  <SelectTrigger className="flex-1"><SelectValue placeholder="Min" /></SelectTrigger>
+                  <SelectContent>
+                    {['00', '15', '30', '45'].map((m) => (
+                      <SelectItem key={m} value={m}>:{m}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {planTime && (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setPlanTime('')}>Limpiar</Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">Sirve para ajustar el clima a esa hora del día.</p>
             </div>
           </div>
 
