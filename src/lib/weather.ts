@@ -134,3 +134,77 @@ export async function fetchCurrentWeather(): Promise<WeatherInfo> {
   const pos = await getCurrentPosition();
   return fetchWeatherFromCoords(pos.coords.latitude, pos.coords.longitude);
 }
+
+export type GeoResult = { name: string; admin1?: string; country?: string; latitude: number; longitude: number };
+
+export async function searchCity(query: string): Promise<GeoResult[]> {
+  if (!query.trim()) return [];
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=es&format=json`;
+  const res = await fetch(url);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data?.results || []).map((r: any) => ({
+    name: r.name,
+    admin1: r.admin1,
+    country: r.country,
+    latitude: r.latitude,
+    longitude: r.longitude,
+  }));
+}
+
+// Devuelve el clima previsto para una fecha específica (YYYY-MM-DD) en una ubicación.
+// Toma el promedio del día y, si hay hora, prioriza la hora indicada.
+export async function fetchForecastForDate(
+  latitude: number,
+  longitude: number,
+  date: string,
+  timeHHmm?: string
+): Promise<WeatherInfo & { date: string }> {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,weather_code,is_day,wind_speed_10m,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,wind_speed_10m_max&start_date=${date}&end_date=${date}&timezone=auto`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('No pudimos obtener el pronóstico para esa fecha');
+  const data = await res.json();
+
+  let temperature: number;
+  let code: number;
+  let isDay = true;
+  let windKmh = 0;
+  let precipitationProbability = 0;
+
+  const hourly = data?.hourly;
+  if (hourly && Array.isArray(hourly.time)) {
+    const targetHour = timeHHmm ? parseInt(timeHHmm.split(':')[0], 10) : 12;
+    const idx = hourly.time.findIndex((t: string) => t.startsWith(date) && new Date(t).getHours() === targetHour);
+    const i = idx >= 0 ? idx : hourly.time.findIndex((t: string) => t.startsWith(date));
+    if (i >= 0) {
+      temperature = Math.round(hourly.temperature_2m[i] ?? 20);
+      code = hourly.weather_code[i] ?? 0;
+      isDay = (hourly.is_day[i] ?? 1) === 1;
+      windKmh = Math.round(hourly.wind_speed_10m[i] ?? 0);
+      precipitationProbability = Math.round(hourly.precipitation_probability[i] ?? 0);
+    } else {
+      temperature = Math.round(data?.daily?.temperature_2m_max?.[0] ?? 20);
+      code = data?.daily?.weather_code?.[0] ?? 0;
+      windKmh = Math.round(data?.daily?.wind_speed_10m_max?.[0] ?? 0);
+      precipitationProbability = Math.round(data?.daily?.precipitation_probability_max?.[0] ?? 0);
+    }
+  } else {
+    temperature = Math.round(data?.daily?.temperature_2m_max?.[0] ?? 20);
+    code = data?.daily?.weather_code?.[0] ?? 0;
+    windKmh = Math.round(data?.daily?.wind_speed_10m_max?.[0] ?? 0);
+    precipitationProbability = Math.round(data?.daily?.precipitation_probability_max?.[0] ?? 0);
+  }
+
+  const mapped = mapWeatherCode(code, isDay);
+
+  return {
+    temperature,
+    weather: mapped.value,
+    weatherLabel: mapped.label,
+    season: getSeason(latitude, new Date(date)),
+    windKmh,
+    precipitationProbability,
+    isDay,
+    date,
+  };
+}

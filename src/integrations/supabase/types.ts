@@ -125,6 +125,75 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_plans: {
+        Row: {
+          created_at: string
+          event: string
+          formality: string | null
+          id: string
+          is_night: boolean | null
+          latitude: number
+          location_name: string
+          longitude: number
+          plan_date: string
+          plan_time: string | null
+          rain_probability: number | null
+          recommendation: string | null
+          recommended_item_ids: string[] | null
+          season: string | null
+          temperature: number | null
+          updated_at: string
+          user_id: string
+          weather: string | null
+          weather_label: string | null
+          wind_kmh: number | null
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          formality?: string | null
+          id?: string
+          is_night?: boolean | null
+          latitude: number
+          location_name: string
+          longitude: number
+          plan_date: string
+          plan_time?: string | null
+          rain_probability?: number | null
+          recommendation?: string | null
+          recommended_item_ids?: string[] | null
+          season?: string | null
+          temperature?: number | null
+          updated_at?: string
+          user_id: string
+          weather?: string | null
+          weather_label?: string | null
+          wind_kmh?: number | null
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          formality?: string | null
+          id?: string
+          is_night?: boolean | null
+          latitude?: number
+          location_name?: string
+          longitude?: number
+          plan_date?: string
+          plan_time?: string | null
+          rain_probability?: number | null
+          recommendation?: string | null
+          recommended_item_ids?: string[] | null
+          season?: string | null
+          temperature?: number | null
+          updated_at?: string
+          user_id?: string
+          weather?: string | null
+          weather_label?: string | null
+          wind_kmh?: number | null
+        }
+        Relationships: []
+      }
       wishlist: {
         Row: {
           created_at: string
