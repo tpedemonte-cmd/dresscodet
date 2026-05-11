@@ -143,13 +143,15 @@ export async function searchCity(query: string): Promise<GeoResult[]> {
   const res = await fetch(url);
   if (!res.ok) return [];
   const data = await res.json();
-  return (data?.results || []).map((r: any) => ({
-    name: r.name,
-    admin1: r.admin1,
-    country: r.country,
-    latitude: r.latitude,
-    longitude: r.longitude,
-  }));
+  return (data?.results || [])
+    .filter((r: any) => r.country_code === 'AR' || r.country === 'Argentina')
+    .map((r: any) => ({
+      name: r.name,
+      admin1: r.admin1,
+      country: r.country,
+      latitude: r.latitude,
+      longitude: r.longitude,
+    }));
 }
 
 // Devuelve el clima previsto para una fecha específica (YYYY-MM-DD) en una ubicación.
