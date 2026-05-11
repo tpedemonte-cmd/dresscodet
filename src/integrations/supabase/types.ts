@@ -51,8 +51,10 @@ export type Database = {
         Row: {
           created_at: string
           event: string
+          feedback: string | null
           formality: string | null
           id: string
+          is_favorite: boolean
           is_night: boolean | null
           mood: string | null
           rain_probability: number | null
@@ -67,8 +69,10 @@ export type Database = {
         Insert: {
           created_at?: string
           event: string
+          feedback?: string | null
           formality?: string | null
           id?: string
+          is_favorite?: boolean
           is_night?: boolean | null
           mood?: string | null
           rain_probability?: number | null
@@ -83,8 +87,10 @@ export type Database = {
         Update: {
           created_at?: string
           event?: string
+          feedback?: string | null
           formality?: string | null
           id?: string
+          is_favorite?: boolean
           is_night?: boolean | null
           mood?: string | null
           rain_probability?: number | null
@@ -129,8 +135,10 @@ export type Database = {
         Row: {
           created_at: string
           event: string
+          feedback: string | null
           formality: string | null
           id: string
+          is_favorite: boolean
           is_night: boolean | null
           latitude: number
           location_name: string
@@ -153,8 +161,10 @@ export type Database = {
         Insert: {
           created_at?: string
           event: string
+          feedback?: string | null
           formality?: string | null
           id?: string
+          is_favorite?: boolean
           is_night?: boolean | null
           latitude: number
           location_name: string
@@ -177,8 +187,10 @@ export type Database = {
         Update: {
           created_at?: string
           event?: string
+          feedback?: string | null
           formality?: string | null
           id?: string
+          is_favorite?: boolean
           is_night?: boolean | null
           latitude?: number
           location_name?: string
