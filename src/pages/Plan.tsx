@@ -48,6 +48,7 @@ export default function Plan() {
   const [showForm, setShowForm] = useState(false);
   const [planDate, setPlanDate] = useState(todayISO());
   const [planTime, setPlanTime] = useState('');
+  const [showExactTime, setShowExactTime] = useState(false);
   const [event, setEvent] = useState('');
   const [formality, setFormality] = useState('equilibrado');
   const [cityQuery, setCityQuery] = useState('');
