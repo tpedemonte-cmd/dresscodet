@@ -176,6 +176,22 @@ export default function Plan() {
         usedItemIds = itemsMatch[1].split(',').map(s => s.trim()).filter(Boolean);
       }
 
+      // Parse COMPRAR y resolver URLs de Mercado Libre
+      let shoppingSuggestions: { query: string; searchUrl: string }[] = [];
+      const buyMatch = fullText.match(/COMPRAR:\s*(.+)/i);
+      if (buyMatch && buyMatch[1].trim().toLowerCase() !== 'nada') {
+        const queries = buyMatch[1].split('|').map(q => q.trim()).filter(Boolean);
+        const results = await Promise.all(queries.map(async (q) => {
+          try {
+            const { data: sd } = await supabase.functions.invoke('search-marketplace', { body: { query: q } });
+            return { query: q, searchUrl: sd?.searchUrl || `https://listado.mercadolibre.com.ar/${encodeURIComponent(q.replace(/ /g, '-'))}` };
+          } catch {
+            return { query: q, searchUrl: `https://listado.mercadolibre.com.ar/${encodeURIComponent(q.replace(/ /g, '-'))}` };
+          }
+        }));
+        shoppingSuggestions = results;
+      }
+
       // 3. Guardar
       const cityLabel = [selectedCity.name, selectedCity.admin1].filter(Boolean).join(', ');
       const { error: insertError } = await supabase.from('weekly_plans' as any).insert({
@@ -196,6 +212,7 @@ export default function Plan() {
         is_night: forecast.weather === 'despejado-noche',
         recommendation: cleanText,
         recommended_item_ids: usedItemIds,
+        shopping_suggestions: shoppingSuggestions,
       });
       if (insertError) throw insertError;
 
