@@ -86,10 +86,13 @@ export default function StyleRecommendationsWidget({ compact = false }: Props) {
 
       {styleResult && (
         <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4">
-          {!compact && (
-            <div className="bg-secondary/50 rounded-lg p-3">
-              <p className="text-sm font-body text-foreground">
-                <span className="font-medium">Tu estilo:</span> {styleResult.style_profile}
+          {styleResult.style_profile && (
+            <div className="bg-gradient-to-br from-primary/10 to-secondary/40 border border-primary/20 rounded-lg p-3 space-y-1">
+              <p className="text-xs font-body font-semibold text-primary uppercase tracking-wide flex items-center gap-1">
+                <Sparkles className="h-3 w-3" /> Tu onda
+              </p>
+              <p className="text-sm font-body text-foreground leading-relaxed">
+                {styleResult.style_profile}
               </p>
             </div>
           )}
