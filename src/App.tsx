@@ -16,6 +16,7 @@ import Marketplace from "./pages/Marketplace";
 import Wishlist from "./pages/Wishlist";
 import Looks from "./pages/Looks";
 import Plan from "./pages/Plan";
+import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const AppRoutes = () => {
       <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
       <Route path="/looks" element={<ProtectedRoute><Looks /></ProtectedRoute>} />
       <Route path="/plan" element={<ProtectedRoute><Plan /></ProtectedRoute>} />
+      <Route path="/favoritos" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
