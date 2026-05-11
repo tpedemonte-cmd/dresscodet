@@ -23,16 +23,18 @@ serve(async (req) => {
     if (authError || !user) throw new Error("Unauthorized");
 
     // Fetch user data in parallel
-    const [itemsRes, looksRes, historyRes, wishlistRes] = await Promise.all([
+    const [itemsRes, looksRes, historyRes, plansRes, wishlistRes] = await Promise.all([
       supabase.from("clothing_items").select("*").eq("user_id", user.id),
       supabase.from("saved_looks").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
-      supabase.from("outfit_history").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(30),
+      supabase.from("outfit_history").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
+      supabase.from("weekly_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
       supabase.from("wishlist").select("*").eq("user_id", user.id),
     ]);
 
     const items = itemsRes.data || [];
     const looks = looksRes.data || [];
     const history = historyRes.data || [];
+    const plans = plansRes.data || [];
     const wishlist = wishlistRes.data || [];
 
     if (items.length === 0) {
@@ -55,14 +57,42 @@ serve(async (req) => {
 
     const lookNotes = looks.filter(l => l.note).map(l => l.note).join("\n");
 
-    const historyContext = history.map(h =>
-      `Evento: ${h.event}, Ánimo: ${h.mood}, Estación: ${h.season} → ${h.recommendation.substring(0, 150)}...`
-    ).join("\n");
+    // Combine outfit_history + weekly_plans into a single feedback corpus
+    const allOutfits = [
+      ...history.map((h: any) => ({ ...h, source: "historial" })),
+      ...plans.map((p: any) => ({ ...p, source: "plan", event: p.event, recommendation: p.recommendation || "" })),
+    ];
 
-    // Track which items are used most in recommendations
+    const lovedOutfits = allOutfits.filter((o: any) =>
+      o.is_favorite || o.feedback === "liked" || o.feedback === "used"
+    );
+    const dislikedOutfits = allOutfits.filter((o: any) =>
+      o.feedback === "disliked" || o.feedback === "not_used"
+    );
+
+    const lovedContext = lovedOutfits.slice(0, 15).map((o: any) => {
+      const tags = [
+        o.is_favorite ? "⭐FAVORITO" : "",
+        o.feedback === "liked" ? "👍 le gustó" : "",
+        o.feedback === "used" ? "✅ lo usó" : "",
+      ].filter(Boolean).join(" ");
+      return `[${tags}] ${o.event} (${o.weather || "?"}, ${o.temperature ?? "?"}°C) → ${(o.recommendation || "").substring(0, 200)}`;
+    }).join("\n");
+
+    const dislikedContext = dislikedOutfits.slice(0, 10).map((o: any) => {
+      const tag = o.feedback === "disliked" ? "👎 no le gustó" : "❌ no lo usaría";
+      return `[${tag}] ${o.event} → ${(o.recommendation || "").substring(0, 150)}`;
+    }).join("\n");
+
+    // Track which items are used most across loved outfits (highest signal)
     const itemUsage: Record<string, number> = {};
-    history.forEach(h => {
-      (h.recommended_item_ids || []).forEach((id: string) => {
+    lovedOutfits.forEach((o: any) => {
+      (o.recommended_item_ids || []).forEach((id: string) => {
+        itemUsage[id] = (itemUsage[id] || 0) + 2; // weight loved more
+      });
+    });
+    allOutfits.forEach((o: any) => {
+      (o.recommended_item_ids || []).forEach((id: string) => {
         itemUsage[id] = (itemUsage[id] || 0) + 1;
       });
     });
@@ -79,30 +109,32 @@ serve(async (req) => {
       ? wishlist.map(w => `${w.title} ($${w.price})`).join("\n")
       : "No tiene wishlist";
 
-    const systemPrompt = `Sos un personal shopper argentino experto en moda. Analizás el estilo de un usuario basándote en su guardarropas, los looks que armó, y su historial de outfits para entender sus gustos y recomendarle prendas NUEVAS que no tiene.
+    const systemPrompt = `Sos un personal shopper argentino experto en moda. Analizás el estilo de un usuario basándote en su guardarropas, su historial de outfits y, sobre todo, en el FEEDBACK explícito que dejó (favoritos, "me gustó", "lo usé", "no me gustó", "no lo usaría") para entender realmente qué onda le va.
 
-Tu objetivo: Recomendar 3-5 prendas o accesorios que el usuario NO tiene pero que le encantarían según su estilo, y que combinen con lo que ya usa.
+Tu objetivo:
+1. Describir CON ONDA el estilo del usuario (vibe, estética, paleta, vibe social) en 2-3 oraciones cálidas y específicas, no genéricas.
+2. Recomendar 3-5 prendas o accesorios que NO tiene pero que le encantarían según ese estilo y los outfits que más le gustaron.
 
 Responde EXCLUSIVAMENTE en formato JSON válido con esta estructura:
 {
-  "style_profile": "breve descripción del estilo del usuario en 1-2 oraciones",
+  "style_profile": "descripción de la onda/estilo del usuario en 2-3 oraciones, específica y con personalidad",
   "recommendations": [
     {
       "item": "nombre descriptivo de la prenda",
-      "reason": "por qué le queda bien según su estilo, max 2 oraciones",
+      "reason": "por qué le queda bien según los outfits que le gustaron y su estilo, max 2 oraciones",
       "search_query": "término de búsqueda para Mercado Libre Argentina, específico y corto"
     }
   ]
 }
 
 Reglas:
-- NO recomiendes cosas que ya tiene (revisá bien el guardarropas)
-- Basate en colores, categorías y combinaciones que usa seguido
-- Si tiene muchas remeras pero pocos accesorios, sugeri accesorios
-- Los search_query deben ser específicos: "cinturón cuero marrón hombre" no "cinturón"
-- Priorizá prendas que complementen sus favoritas
-- Máximo 5 recomendaciones
-- Hablá en argentino casual`;
+- Priorizá los outfits marcados como FAVORITOS, "lo usó" o "le gustó" para entender qué le funciona.
+- EVITÁ recomendar cosas parecidas a los outfits con feedback negativo ("no me gustó", "no lo usaría").
+- NO recomiendes cosas que ya tiene (revisá bien el guardarropas).
+- Basate en colores, categorías y combinaciones que aparecen en sus outfits favoritos.
+- Los search_query deben ser específicos: "cinturón cuero marrón hombre" no "cinturón".
+- Máximo 5 recomendaciones.
+- Hablá en argentino casual, sin clichés.`;
 
     const userPrompt = `GUARDARROPAS:
 ${wardrobeSummary}
@@ -110,19 +142,23 @@ ${wardrobeSummary}
 DISTRIBUCIÓN POR CATEGORÍA:
 ${Object.entries(categoryCounts).map(([k, v]) => `${k}: ${v}`).join(", ")}
 
-PRENDAS MÁS USADAS EN OUTFITS:
+PRENDAS MÁS USADAS EN OUTFITS QUE LE GUSTARON:
 ${mostUsedItems || "Sin datos aún"}
+
+OUTFITS QUE LE ENCANTARON (favoritos / le gustaron / los usó):
+${lovedContext || "Todavía no marcó favoritos ni dejó feedback positivo"}
+
+OUTFITS QUE NO LE GUSTARON (evitar este tipo de propuestas):
+${dislikedContext || "Sin feedback negativo"}
 
 NOTAS DE LOOKS GUARDADOS:
 ${lookNotes || "Sin notas"}
 
-HISTORIAL DE OUTFITS RECIENTES:
-${historyContext || "Sin historial aún"}
-
 WISHLIST (cosas que le gustan):
 ${wishlistContext}
 
-Analizá todo y recomendá prendas nuevas que le encantarían.`;
+Analizá todo (priorizando el feedback explícito y los favoritos) y devolveme la onda de su estilo + prendas nuevas que le encantarían.`;
+
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
