@@ -11,6 +11,7 @@ import { recomendarPorHistorial, type ScoredOutfit } from '@/lib/outfitSimilarit
 import { analizarUsoPrendas, type ItemUsage } from '@/lib/wardrobeAnalysis';
 import { Clock, AlertTriangle } from 'lucide-react';
 import { fetchCurrentWeather, fetchWeatherFromCoords } from '@/lib/weather';
+import OutfitFeedback from '@/components/OutfitFeedback';
 
 const EVENTS = [
   { value: 'trabajo', label: '💼 Trabajo' },
