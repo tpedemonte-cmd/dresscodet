@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Loader2, MapPin, Plus, Search, Sparkles, Trash2, X } from 'lucide-react';
+import { Calendar, ExternalLink, Loader2, MapPin, Plus, Search, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchForecastForDate, searchCity, type GeoResult } from '@/lib/weather';
 
@@ -176,6 +176,22 @@ export default function Plan() {
         usedItemIds = itemsMatch[1].split(',').map(s => s.trim()).filter(Boolean);
       }
 
+      // Parse COMPRAR y resolver URLs de Mercado Libre
+      let shoppingSuggestions: { query: string; searchUrl: string }[] = [];
+      const buyMatch = fullText.match(/COMPRAR:\s*(.+)/i);
+      if (buyMatch && buyMatch[1].trim().toLowerCase() !== 'nada') {
+        const queries = buyMatch[1].split('|').map(q => q.trim()).filter(Boolean);
+        const results = await Promise.all(queries.map(async (q) => {
+          try {
+            const { data: sd } = await supabase.functions.invoke('search-marketplace', { body: { query: q } });
+            return { query: q, searchUrl: sd?.searchUrl || `https://listado.mercadolibre.com.ar/${encodeURIComponent(q.replace(/ /g, '-'))}` };
+          } catch {
+            return { query: q, searchUrl: `https://listado.mercadolibre.com.ar/${encodeURIComponent(q.replace(/ /g, '-'))}` };
+          }
+        }));
+        shoppingSuggestions = results;
+      }
+
       // 3. Guardar
       const cityLabel = [selectedCity.name, selectedCity.admin1].filter(Boolean).join(', ');
       const { error: insertError } = await supabase.from('weekly_plans' as any).insert({
@@ -196,6 +212,7 @@ export default function Plan() {
         is_night: forecast.weather === 'despejado-noche',
         recommendation: cleanText,
         recommended_item_ids: usedItemIds,
+        shopping_suggestions: shoppingSuggestions,
       });
       if (insertError) throw insertError;
 
@@ -465,6 +482,31 @@ export default function Plan() {
                               <p className="text-[10px] mt-1 truncate">{it.name}</p>
                             </div>
                           ))}
+                        </div>
+                      )}
+
+                      {Array.isArray(p.shopping_suggestions) && p.shopping_suggestions.length > 0 && (
+                        <div className="space-y-2 pt-2 border-t border-border">
+                          <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                            <ShoppingBag className="h-4 w-4 text-primary" />
+                            Te recomendamos comprar
+                          </div>
+                          <div className="grid sm:grid-cols-2 gap-2">
+                            {p.shopping_suggestions.map((s: any, i: number) => (
+                              <a
+                                key={i}
+                                href={s.searchUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-secondary/40 border border-border hover:border-primary/40 hover:bg-secondary/60 transition-all group"
+                              >
+                                <span className="text-sm font-body text-foreground">{s.query}</span>
+                                <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0 group-hover:text-primary transition-colors">
+                                  Buscar <ExternalLink className="h-3 w-3" />
+                                </span>
+                              </a>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
