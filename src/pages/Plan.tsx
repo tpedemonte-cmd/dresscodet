@@ -54,6 +54,7 @@ export default function Plan() {
   const [cityResults, setCityResults] = useState<GeoResult[]>([]);
   const [searchingCity, setSearchingCity] = useState(false);
   const [selectedCity, setSelectedCity] = useState<GeoResult | null>(null);
+  const [specificPlace, setSpecificPlace] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const debounceRef = useRef<number | null>(null);
 
@@ -119,6 +120,7 @@ export default function Plan() {
     setCityQuery('');
     setCityResults([]);
     setSelectedCity(null);
+    setSpecificPlace('');
   };
 
   const handleCreate = async () => {
@@ -175,14 +177,15 @@ export default function Plan() {
       }
 
       // 3. Guardar
-      const cityLabel = [selectedCity.name, selectedCity.admin1, selectedCity.country].filter(Boolean).join(', ');
+      const cityLabel = [selectedCity.name, selectedCity.admin1].filter(Boolean).join(', ');
+      const fullLocation = specificPlace.trim() ? `${specificPlace.trim()} — ${cityLabel}` : cityLabel;
       const { error: insertError } = await supabase.from('weekly_plans' as any).insert({
         user_id: user.id,
         plan_date: planDate,
         plan_time: planTime || null,
         event,
         formality,
-        location_name: cityLabel,
+        location_name: fullLocation,
         latitude: selectedCity.latitude,
         longitude: selectedCity.longitude,
         temperature: forecast.temperature,
@@ -320,6 +323,16 @@ export default function Plan() {
                 )}
               </div>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label>Lugar específico <span className="text-muted-foreground font-normal">(opcional)</span></Label>
+            <Input
+              placeholder="Ej: Bar en Palermo Soho, casa de Juan..."
+              value={specificPlace}
+              onChange={(e) => setSpecificPlace(e.target.value)}
+              maxLength={120}
+            />
           </div>
 
           <div className="flex gap-2">
