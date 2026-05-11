@@ -547,6 +547,9 @@ export default function Recommend() {
               </div>
             </div>
           )}
+          {recommendationId && (
+            <OutfitFeedback table="outfit_history" recordId={recommendationId} />
+          )}
         </div>
       )}
 
