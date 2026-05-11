@@ -141,6 +141,7 @@ export type Database = {
           recommendation: string | null
           recommended_item_ids: string[] | null
           season: string | null
+          shopping_suggestions: Json | null
           temperature: number | null
           updated_at: string
           user_id: string
@@ -163,6 +164,7 @@ export type Database = {
           recommendation?: string | null
           recommended_item_ids?: string[] | null
           season?: string | null
+          shopping_suggestions?: Json | null
           temperature?: number | null
           updated_at?: string
           user_id: string
@@ -185,6 +187,7 @@ export type Database = {
           recommendation?: string | null
           recommended_item_ids?: string[] | null
           season?: string | null
+          shopping_suggestions?: Json | null
           temperature?: number | null
           updated_at?: string
           user_id?: string
