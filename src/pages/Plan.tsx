@@ -120,6 +120,7 @@ export default function Plan() {
     setCityQuery('');
     setCityResults([]);
     setSelectedCity(null);
+    setSpecificPlace('');
   };
 
   const handleCreate = async () => {
