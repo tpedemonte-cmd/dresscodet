@@ -324,7 +324,7 @@ export default function Tryon() {
               </button>
             </div>
 
-            {!activeModelId && (
+            {(!activeModelId || resultImage) && (
               <Button
                 variant="outline"
                 className="w-full max-w-sm mx-auto"
@@ -334,10 +334,11 @@ export default function Tryon() {
                 {savingModel ? (
                   <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando modelo...</>
                 ) : (
-                  <><Save className="h-4 w-4 mr-2" /> Guardar este modelo</>
+                  <><Save className="h-4 w-4 mr-2" /> {resultImage ? 'Guardar modelo con esta ropa' : 'Guardar este modelo'}</>
                 )}
               </Button>
             )}
+
           </div>
         ) : (
           <div className="space-y-4">
