@@ -83,13 +83,22 @@ export default function Tryon() {
 
   const saveModelMutation = useMutation({
     mutationFn: async () => {
-      if (!selfie || !user) throw new Error('No hay modelo para guardar');
+      // Guardamos la imagen que se está viendo: si hay resultado de IA (con la ropa puesta), esa
+      const source = resultImage || selfie;
+      if (!source || !user) throw new Error('No hay modelo para guardar');
       setSavingModel(true);
 
-      // Descargar la imagen generada y subirla a Storage
-      const response = await fetch(selfie);
-      if (!response.ok) throw new Error('No se pudo descargar la imagen del modelo');
-      const blob = await response.blob();
+      let blob: Blob;
+      if (source.startsWith('data:')) {
+        const base64Data = source.split(',')[1];
+        const bytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+        blob = new Blob([bytes], { type: 'image/png' });
+      } else {
+        const response = await fetch(source);
+        if (!response.ok) throw new Error('No se pudo descargar la imagen del modelo');
+        blob = await response.blob();
+      }
+
 
       const fileName = `${user.id}/model-${Date.now()}.png`;
       const { error: uploadError } = await supabase.storage
@@ -315,7 +324,7 @@ export default function Tryon() {
               </button>
             </div>
 
-            {!activeModelId && (
+            {(!activeModelId || resultImage) && (
               <Button
                 variant="outline"
                 className="w-full max-w-sm mx-auto"
@@ -325,10 +334,11 @@ export default function Tryon() {
                 {savingModel ? (
                   <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando modelo...</>
                 ) : (
-                  <><Save className="h-4 w-4 mr-2" /> Guardar este modelo</>
+                  <><Save className="h-4 w-4 mr-2" /> {resultImage ? 'Guardar modelo con esta ropa' : 'Guardar este modelo'}</>
                 )}
               </Button>
             )}
+
           </div>
         ) : (
           <div className="space-y-4">
