@@ -15,14 +15,10 @@ type StyleResult = {
   recommendations: StyleRecommendation[];
 };
 
-interface Props {
-  compact?: boolean;
-}
-
 const getMLUrl = (query: string) =>
   `https://listado.mercadolibre.com.ar/${encodeURIComponent(query.replace(/ /g, '-'))}`;
 
-export default function StyleRecommendationsWidget({ compact = false }: Props) {
+export default function StyleRecommendationsWidget() {
   const [styleResult, setStyleResult] = useState<StyleResult | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -48,18 +44,14 @@ export default function StyleRecommendationsWidget({ compact = false }: Props) {
     }
   };
 
-  const displayedRecs = compact && styleResult
-    ? styleResult.recommendations.slice(0, 3)
-    : styleResult?.recommendations || [];
+  const displayedRecs = styleResult?.recommendations || [];
 
   return (
     <div className="bg-card rounded-xl p-5 shadow-card space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ShoppingBag className="h-5 w-5 text-primary" />
-          <h3 className="font-display font-bold text-foreground">
-            {compact ? 'Recomendaciones' : 'Recomendado para vos'}
-          </h3>
+          <h3 className="font-display font-bold text-foreground">Recomendado para vos</h3>
         </div>
         <Button variant="warm" size="sm" onClick={handleAnalyze} disabled={loading}>
           {loading ? (
@@ -78,9 +70,7 @@ export default function StyleRecommendationsWidget({ compact = false }: Props) {
 
       {!styleResult && !loading && (
         <p className="text-sm text-muted-foreground font-body">
-          {compact
-            ? 'Descubrí qué prendas te faltan según tu estilo 🛍️'
-            : 'Analizamos tus looks, outfits y prendas favoritas para recomendarte qué te falta y dónde comprarlo 🛍️'}
+          Analizamos tus looks, outfits y prendas favoritas para recomendarte qué te falta y dónde comprarlo 🛍️
         </p>
       )}
 
@@ -109,9 +99,7 @@ export default function StyleRecommendationsWidget({ compact = false }: Props) {
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-0.5 flex-1">
                     <p className="text-sm font-body font-medium text-foreground">{rec.item}</p>
-                    {!compact && (
-                      <p className="text-xs text-muted-foreground font-body">{rec.reason}</p>
-                    )}
+                    <p className="text-xs text-muted-foreground font-body">{rec.reason}</p>
                   </div>
                   <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0 group-hover:text-primary transition-colors pt-0.5">
                     Buscar <ExternalLink className="h-3 w-3" />
