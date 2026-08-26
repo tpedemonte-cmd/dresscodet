@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, Loader2, Sparkles, RotateCcw, ChevronLeft, ChevronRight, X, Save } from 'lucide-react';
+import { Loader2, Sparkles, RotateCcw, ChevronLeft, ChevronRight, X, Save, Trash2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 const CATEGORIES: Record<string, string> = {
@@ -15,19 +15,44 @@ const CATEGORIES: Record<string, string> = {
 export default function Tryon() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const [selfie, setSelfie] = useState<string | null>(null);
+  const [activeModelId, setActiveModelId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<any[]>([]);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingModel, setSavingModel] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [photoMode, setPhotoMode] = useState<'photo' | 'avatar'>('photo');
   const [avatarData, setAvatarData] = useState({ height: '', weight: '', age: '', gender: 'femenino' });
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
+
+  const { data: items = [] } = useQuery({
+    queryKey: ['clothing_items', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clothing_items')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: savedModels = [] } = useQuery({
+    queryKey: ['user_models', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_models')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
 
   const handleGenerateAvatar = async () => {
     const { height, weight, age, gender } = avatarData;
@@ -44,8 +69,9 @@ export default function Tryon() {
       if (data?.error) throw new Error(data.error);
       if (data?.image) {
         setSelfie(data.image);
+        setActiveModelId(null);
         setResultImage(null);
-        toast.success('¡Modelo generado!');
+        toast.success('¡Modelo generado! Ahora podés guardarlo.');
       }
     } catch (err: any) {
       console.error('Avatar error:', err);
@@ -55,29 +81,104 @@ export default function Tryon() {
     }
   };
 
-  const { data: items = [] } = useQuery({
-    queryKey: ['clothing_items', user?.id],
-    queryFn: async () => {
+  const saveModelMutation = useMutation({
+    mutationFn: async () => {
+      if (!selfie || !user) throw new Error('No hay modelo para guardar');
+      setSavingModel(true);
+
+      // Descargar la imagen generada y subirla a Storage
+      const response = await fetch(selfie);
+      if (!response.ok) throw new Error('No se pudo descargar la imagen del modelo');
+      const blob = await response.blob();
+
+      const fileName = `${user.id}/model-${Date.now()}.png`;
+      const { error: uploadError } = await supabase.storage
+        .from('look-images')
+        .upload(fileName, blob, { contentType: 'image/png' });
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from('look-images').getPublicUrl(fileName);
+
       const { data, error } = await supabase
-        .from('clothing_items')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from('user_models')
+        .insert({
+          user_id: user.id,
+          image_url: urlData.publicUrl,
+          height: Number(avatarData.height),
+          weight: Number(avatarData.weight),
+          age: Number(avatarData.age),
+          gender: avatarData.gender,
+          is_active: true,
+        })
+        .select()
+        .single();
       if (error) throw error;
+
+      // Desactivar otros modelos
+      await supabase
+        .from('user_models')
+        .update({ is_active: false })
+        .neq('id', data.id)
+        .eq('user_id', user.id);
+
       return data;
     },
-    enabled: !!user,
+    onSuccess: (data) => {
+      setActiveModelId(data.id);
+      queryClient.invalidateQueries({ queryKey: ['user_models'] });
+      toast.success('¡Modelo guardado!');
+    },
+    onError: (err: any) => {
+      console.error('Save model error:', err);
+      toast.error(err.message || 'Error al guardar el modelo');
+    },
+    onSettled: () => setSavingModel(false),
   });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setSelfie(reader.result as string);
+  const selectModelMutation = useMutation({
+    mutationFn: async (model: any) => {
+      if (!user) throw new Error('No hay usuario');
+      await supabase
+        .from('user_models')
+        .update({ is_active: false })
+        .eq('user_id', user.id);
+      await supabase
+        .from('user_models')
+        .update({ is_active: true })
+        .eq('id', model.id)
+        .eq('user_id', user.id);
+      return model;
+    },
+    onSuccess: (model) => {
+      setSelfie(model.image_url);
+      setActiveModelId(model.id);
+      setAvatarData({
+        height: String(model.height),
+        weight: String(model.weight),
+        age: String(model.age),
+        gender: model.gender,
+      });
       setResultImage(null);
-    };
-    reader.readAsDataURL(f);
-  };
+      queryClient.invalidateQueries({ queryKey: ['user_models'] });
+    },
+    onError: () => toast.error('Error al seleccionar el modelo'),
+  });
+
+  const deleteModelMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('user_models').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_, id) => {
+      if (activeModelId === id) {
+        setSelfie(null);
+        setActiveModelId(null);
+      }
+      queryClient.invalidateQueries({ queryKey: ['user_models'] });
+      toast.success('Modelo eliminado');
+    },
+    onError: () => toast.error('Error al eliminar el modelo'),
+  });
 
   const toggleItem = (item: any) => {
     setResultImage(null);
@@ -95,7 +196,7 @@ export default function Tryon() {
 
   const handleTryon = async () => {
     if (!selfie || selectedItems.length === 0) {
-      toast.error('Subí tu foto y elegí al menos una prenda');
+      toast.error('Generá o seleccioná un modelo y elegí al menos una prenda');
       return;
     }
 
@@ -136,7 +237,6 @@ export default function Tryon() {
     setSaving(true);
 
     try {
-      // Convert base64 to blob
       const base64Data = resultImage.startsWith('data:')
         ? resultImage.split(',')[1]
         : resultImage;
@@ -182,6 +282,7 @@ export default function Tryon() {
 
   const reset = () => {
     setSelfie(null);
+    setActiveModelId(null);
     setSelectedItems([]);
     setResultImage(null);
   };
@@ -196,81 +297,135 @@ export default function Tryon() {
         <p className="text-muted-foreground font-body">Elegí las prendas y armá tu outfit completo</p>
       </div>
 
-      {/* Step 1: Selfie or Avatar */}
-      <div className="space-y-2">
+      {/* Step 1: Model */}
+      <div className="space-y-3">
         <p className="text-sm font-body font-medium text-foreground">1. Tu modelo</p>
 
         {selfie ? (
-          <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card">
-            <img src={resultImage || selfie} alt="Tu foto" className="w-full h-full object-cover" />
-            {resultImage && (
-              <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-body font-medium px-2 py-1 rounded-full">
-                ✨ Resultado IA
-              </div>
+          <div className="space-y-3">
+            <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card">
+              <img src={resultImage || selfie} alt="Tu modelo" className="w-full h-full object-cover" />
+              {resultImage && (
+                <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-body font-medium px-2 py-1 rounded-full">
+                  ✨ Resultado IA
+                </div>
+              )}
+              <button onClick={reset} className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full p-1.5">
+                <RotateCcw className="h-4 w-4 text-foreground" />
+              </button>
+            </div>
+
+            {!activeModelId && (
+              <Button
+                variant="outline"
+                className="w-full max-w-sm mx-auto"
+                disabled={savingModel}
+                onClick={() => saveModelMutation.mutate()}
+              >
+                {savingModel ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando modelo...</>
+                ) : (
+                  <><Save className="h-4 w-4 mr-2" /> Guardar este modelo</>
+                )}
+              </Button>
             )}
-            <button onClick={reset} className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full p-1.5">
-              <RotateCcw className="h-4 w-4 text-foreground" />
-            </button>
           </div>
         ) : (
-          <div className="max-w-sm mx-auto bg-secondary rounded-xl p-4 border-2 border-dashed border-border space-y-3">
-            <p className="text-muted-foreground font-body text-xs text-center">
-              Generamos un modelo realista con tus medidas para probarte la ropa
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-xs font-body text-foreground">Altura (cm)</label>
-                <input
-                  type="number"
-                  value={avatarData.height}
-                  onChange={e => setAvatarData(d => ({ ...d, height: e.target.value }))}
-                  placeholder="170"
-                  className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
-                />
+          <div className="space-y-4">
+            {/* Generate new model */}
+            <div className="max-w-sm mx-auto bg-secondary rounded-xl p-4 border-2 border-dashed border-border space-y-3">
+              <p className="text-muted-foreground font-body text-xs text-center">
+                Generamos un modelo realista con tus medidas para probarte la ropa
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs font-body text-foreground">Altura (cm)</label>
+                  <input
+                    type="number"
+                    value={avatarData.height}
+                    onChange={e => setAvatarData(d => ({ ...d, height: e.target.value }))}
+                    placeholder="170"
+                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-body text-foreground">Peso (kg)</label>
+                  <input
+                    type="number"
+                    value={avatarData.weight}
+                    onChange={e => setAvatarData(d => ({ ...d, weight: e.target.value }))}
+                    placeholder="65"
+                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-body text-foreground">Edad</label>
+                  <input
+                    type="number"
+                    value={avatarData.age}
+                    onChange={e => setAvatarData(d => ({ ...d, age: e.target.value }))}
+                    placeholder="28"
+                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-body text-foreground">Género</label>
+                  <select
+                    value={avatarData.gender}
+                    onChange={e => setAvatarData(d => ({ ...d, gender: e.target.value }))}
+                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                  >
+                    <option value="femenino">Femenino</option>
+                    <option value="masculino">Masculino</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="text-xs font-body text-foreground">Peso (kg)</label>
-                <input
-                  type="number"
-                  value={avatarData.weight}
-                  onChange={e => setAvatarData(d => ({ ...d, weight: e.target.value }))}
-                  placeholder="65"
-                  className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-body text-foreground">Edad</label>
-                <input
-                  type="number"
-                  value={avatarData.age}
-                  onChange={e => setAvatarData(d => ({ ...d, age: e.target.value }))}
-                  placeholder="28"
-                  className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-body text-foreground">Género</label>
-                <select
-                  value={avatarData.gender}
-                  onChange={e => setAvatarData(d => ({ ...d, gender: e.target.value }))}
-                  className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
-                >
-                  <option value="femenino">Femenino</option>
-                  <option value="masculino">Masculino</option>
-                </select>
-              </div>
+              <Button variant="warm" size="sm" className="w-full" disabled={generatingAvatar} onClick={handleGenerateAvatar}>
+                {generatingAvatar ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando modelo...</>
+                ) : (
+                  <><Sparkles className="h-4 w-4 mr-2" /> Generar mi modelo</>
+                )}
+              </Button>
             </div>
-            <Button variant="warm" size="sm" className="w-full" disabled={generatingAvatar} onClick={handleGenerateAvatar}>
-              {generatingAvatar ? (
-                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando modelo...</>
-              ) : (
-                <><Sparkles className="h-4 w-4 mr-2" /> Generar mi modelo</>
-              )}
-            </Button>
+
+            {/* Saved models */}
+            {savedModels.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-body font-medium text-muted-foreground text-center">O elegí uno de tus modelos guardados</p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  {savedModels.map((model) => (
+                    <div
+                      key={model.id}
+                      className={`relative w-24 rounded-xl overflow-hidden cursor-pointer transition-all ${
+                        activeModelId === model.id ? 'ring-2 ring-primary scale-105' : 'shadow-card hover:shadow-elevated'
+                      }`}
+                      onClick={() => selectModelMutation.mutate(model)}
+                    >
+                      <div className="aspect-[3/4]">
+                        <img src={model.image_url} alt="Modelo guardado" className="w-full h-full object-cover" loading="lazy" />
+                      </div>
+                      {model.is_active && (
+                        <div className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center">
+                          <Check className="h-2.5 w-2.5" />
+                        </div>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteModelMutation.mutate(model.id);
+                        }}
+                        className="absolute bottom-1 right-1 bg-background/80 backdrop-blur-sm rounded-full p-1"
+                      >
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
-        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-        <input ref={cameraInputRef} type="file" accept="image/*" capture="user" className="hidden" onChange={handleFileChange} />
       </div>
 
       {/* Step 2: Select items */}
