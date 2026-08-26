@@ -131,6 +131,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_models: {
+        Row: {
+          age: number
+          created_at: string
+          gender: string
+          height: number
+          id: string
+          image_url: string
+          is_active: boolean
+          updated_at: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          age: number
+          created_at?: string
+          gender: string
+          height: number
+          id?: string
+          image_url: string
+          is_active?: boolean
+          updated_at?: string
+          user_id: string
+          weight: number
+        }
+        Update: {
+          age?: number
+          created_at?: string
+          gender?: string
+          height?: number
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          updated_at?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
       weekly_plans: {
         Row: {
           created_at: string
