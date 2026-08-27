@@ -38,22 +38,41 @@ export default function OutfitFeedback({ table, recordId, initialFeedback = null
     return true;
   };
 
+  const canFavorite = feedback === 'liked' || feedback === 'used';
+
   const handleFeedback = async (val: Exclude<FeedbackValue, null>) => {
     const next = feedback === val ? null : val;
     const prev = feedback;
+    const prevFav = favorite;
+    const allows = next === 'liked' || next === 'used';
     setFeedback(next);
-    const ok = await update({ feedback: next });
-    if (!ok) setFeedback(prev);
-    else if (next) toast.success('¡Gracias por tu feedback!');
+    const patch: Record<string, any> = { feedback: next };
+    if (!allows && favorite) {
+      patch.is_favorite = false;
+      setFavorite(false);
+    }
+    const ok = await update(patch);
+    if (!ok) {
+      setFeedback(prev);
+      setFavorite(prevFav);
+    } else if (next) {
+      toast.success('¡Gracias por tu feedback!');
+      if (!allows && prevFav) toast.info('Se quitó de favoritos');
+    }
   };
 
   const handleFavorite = async () => {
+    if (!canFavorite) {
+      toast.info('Marcá "Me gustó" o "Lo usé" para guardarlo como favorito');
+      return;
+    }
     const next = !favorite;
     setFavorite(next);
     const ok = await update({ is_favorite: next });
     if (!ok) setFavorite(!next);
     else toast.success(next ? 'Guardado en favoritos ⭐' : 'Quitado de favoritos');
   };
+
 
   return (
     <div className="pt-3 border-t border-border space-y-2">
