@@ -98,10 +98,11 @@ export default function OutfitFeedback({ table, recordId, initialFeedback = null
         })}
         <button
           type="button"
-          disabled={busy}
+          disabled={busy || !canFavorite}
+          title={!canFavorite ? 'Marcá "Me gustó" o "Lo usé" para guardarlo como favorito' : undefined}
           onClick={handleFavorite}
           className={cn(
-            'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-body font-medium transition-colors disabled:opacity-50',
+            'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-body font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
             favorite
               ? 'bg-amber-400/20 border-amber-500 text-amber-600'
               : 'bg-background border-border text-foreground hover:bg-secondary',
