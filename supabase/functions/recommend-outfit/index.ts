@@ -44,8 +44,17 @@ donde cada término es una búsqueda corta para Mercado Libre de CUALQUIER prend
       wishlistSection = `\n\nMi wishlist (productos que me gustan pero no compré todavía):\n${wishlist}`;
     }
 
+    let feedbackSection = '';
+    if (likedOutfits && String(likedOutfits).trim()) {
+      feedbackSection += `\n\nOUTFITS QUE LE GUSTARON (repetir este estilo):\n${likedOutfits}`;
+    }
+    if (dislikedOutfits && String(dislikedOutfits).trim()) {
+      feedbackSection += `\n\nOUTFITS QUE NO LE GUSTARON (evitar):\n${dislikedOutfits}`;
+    }
+
     const userPrompt = `Mi guardarropas:
-${wardrobe}${wishlistSection}
+${wardrobe}${wishlistSection}${feedbackSection}
+
 
 Evento: ${event}
 Estilo deseado: ${formality || 'equilibrado'} (casual = relajado/informal, equilibrado = prolijo pero cómodo, formal = elegante/arreglado)
