@@ -5,7 +5,6 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles, RotateCcw, ChevronLeft, ChevronRight, X, Save, Trash2, Check } from 'lucide-react';
 import { toast } from 'sonner';
-import Avatar3D from '@/components/Avatar3D';
 
 const CATEGORIES: Record<string, string> = {
   remera: '👕', pantalon: '👖', campera: '🧥', buzo: '🧶',
@@ -26,7 +25,7 @@ export default function Tryon() {
   const [saving, setSaving] = useState(false);
   const [savingModel, setSavingModel] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [avatarData, setAvatarData] = useState({ height: '170', weight: '65', age: '', gender: 'femenino', chest: '', waist: '', hips: '' });
+  const [avatarData, setAvatarData] = useState({ height: '170', weight: '65', age: '', gender: 'femenino' });
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
 
   const { data: items = [] } = useQuery({
@@ -64,12 +63,7 @@ export default function Tryon() {
     setGeneratingAvatar(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-avatar', {
-        body: {
-          height: Number(height), weight: Number(weight), age: Number(age), gender,
-          chest: Number(avatarData.chest) || undefined,
-          waist: Number(avatarData.waist) || undefined,
-          hips: Number(avatarData.hips) || undefined,
-        },
+        body: { height: Number(height), weight: Number(weight), age: Number(age), gender },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -172,9 +166,6 @@ export default function Tryon() {
         weight: String(model.weight),
         age: String(model.age),
         gender: model.gender,
-        chest: '',
-        waist: '',
-        hips: '',
       });
       setResultImage(null);
       queryClient.invalidateQueries({ queryKey: ['user_models'] });
@@ -354,19 +345,8 @@ export default function Tryon() {
             {/* Generate new model */}
             <div className="max-w-sm mx-auto bg-secondary rounded-xl p-4 border-2 border-dashed border-border space-y-3">
               <p className="text-muted-foreground font-body text-xs text-center">
-                Ajustá tus medidas y mirá el avatar 3D actualizarse en vivo antes de probarte las prendas
+                Completá tus datos para generar un modelo realista con IA
               </p>
-
-              <Avatar3D
-                measures={{
-                  height: Number(avatarData.height) || 170,
-                  weight: Number(avatarData.weight) || 65,
-                  gender: avatarData.gender,
-                  chest: Number(avatarData.chest) || undefined,
-                  waist: Number(avatarData.waist) || undefined,
-                  hips: Number(avatarData.hips) || undefined,
-                }}
-              />
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -409,24 +389,6 @@ export default function Tryon() {
                     <option value="femenino">Femenino</option>
                     <option value="masculino">Masculino</option>
                   </select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-xs font-body text-muted-foreground">Medidas opcionales (mejoran la silueta)</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {([['chest', 'Pecho', '90'], ['waist', 'Cintura', '75'], ['hips', 'Cadera', '95']] as const).map(([key, label, ph]) => (
-                    <div key={key}>
-                      <label className="text-xs font-body text-foreground">{label} (cm)</label>
-                      <input
-                        type="number"
-                        value={(avatarData as any)[key]}
-                        onChange={e => setAvatarData(d => ({ ...d, [key]: e.target.value }))}
-                        placeholder={ph}
-                        className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
-                      />
-                    </div>
-                  ))}
                 </div>
               </div>
 
