@@ -135,7 +135,7 @@ export default function Avatar3D({ measures, className = '' }: { measures: BodyM
 
   return (
     <div className={`relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-secondary ${className}`}>
-      <Canvas shadows camera={{ position: [0, 0.1, h * 1.5], fov: 42 }} dpr={[1, 2]}>
+      <Canvas shadows camera={{ position: [0, 0.1, h * 1.72], fov: 42 }} dpr={[1, 2]}>
         <color attach="background" args={['#efe7df']} />
         <ambientLight intensity={0.55} />
         <directionalLight
