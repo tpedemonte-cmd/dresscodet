@@ -260,9 +260,26 @@ export default function Recommend() {
         : '';
 
       const weatherForAI = weather === 'despejado-noche' ? 'soleado' : weather;
+
+      // Build feedback summary from past outfits (liked / used / favorite / disliked)
+      const itemName = (id: string) => items.find(i => i.id === id)?.name;
+      const namesOf = (ids: string[] | null) => (ids || []).map(itemName).filter(Boolean).join(', ');
+      const positive = (outfitHistory as any[])
+        .filter(h => h.is_favorite || h.feedback === 'liked' || h.feedback === 'used')
+        .slice(0, 12)
+        .map(h => `- ${h.event} (${h.temperature}°C, ${h.weather}): ${namesOf(h.recommended_item_ids) || 'sin prendas'}${h.is_favorite ? ' [FAVORITO]' : ''}${h.feedback === 'used' ? ' [LO USÓ]' : ''}${h.feedback === 'liked' ? ' [LE GUSTÓ]' : ''}`)
+        .filter(l => l.length > 0)
+        .join('\n');
+      const negative = (outfitHistory as any[])
+        .filter(h => h.feedback === 'disliked' || h.feedback === 'not_used')
+        .slice(0, 12)
+        .map(h => `- ${h.event} (${h.temperature}°C, ${h.weather}): ${namesOf(h.recommended_item_ids) || 'sin prendas'}${h.feedback === 'disliked' ? ' [NO LE GUSTÓ]' : ' [NO LO USARÍA]'}`)
+        .join('\n');
+
       const { data, error } = await supabase.functions.invoke('recommend-outfit', {
-        body: { wardrobe: wardrobeSummary, wishlist: wishlistSummary, event, formality, temperature: temperature[0], weather: weatherForAI, season, windKmh, rainProbability: rainProb, isNight: weather === 'despejado-noche' },
+        body: { wardrobe: wardrobeSummary, wishlist: wishlistSummary, event, formality, temperature: temperature[0], weather: weatherForAI, season, windKmh, rainProbability: rainProb, isNight: weather === 'despejado-noche', likedOutfits: positive, dislikedOutfits: negative },
       });
+
 
       if (error) throw error;
 
