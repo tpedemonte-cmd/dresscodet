@@ -88,7 +88,7 @@ export default function History() {
         return (
           <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
             <button
-              onClick={() => setEventFilter('todos')}
+              onClick={() => { setEventFilter('todos'); setPage(1); }}
               className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-body transition-colors ${
                 eventFilter === 'todos'
                   ? 'bg-primary text-primary-foreground'
@@ -100,7 +100,7 @@ export default function History() {
             {availableEvents.map((ev) => (
               <button
                 key={ev}
-                onClick={() => setEventFilter(ev)}
+                onClick={() => { setEventFilter(ev); setPage(1); }}
                 className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-body transition-colors ${
                   eventFilter === ev
                     ? 'bg-primary text-primary-foreground'
