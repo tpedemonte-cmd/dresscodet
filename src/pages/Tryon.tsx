@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles, RotateCcw, ChevronLeft, ChevronRight, X, Save, Trash2, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import Avatar3D from '@/components/Avatar3D';
 
 const CATEGORIES: Record<string, string> = {
   remera: '👕', pantalon: '👖', campera: '🧥', buzo: '🧶',
