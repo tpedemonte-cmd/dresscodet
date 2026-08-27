@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { wardrobe, wishlist, mood, event, formality, temperature, weather, season, windKmh, rainProbability, isNight } = await req.json();
+    const { wardrobe, wishlist, mood, event, formality, temperature, weather, season, windKmh, rainProbability, isNight, likedOutfits, dislikedOutfits } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -23,6 +23,8 @@ Si al usuario le falta CUALQUIER prenda para completar el outfit completo (inclu
 IMPORTANTE: En tu respuesta NUNCA muestres los IDs de las prendas. Referite a cada prenda por su NOMBRE (ej: "la remera verde", "la campera negra"). Los IDs son solo para uso interno.
 
 SOBRE LA WISHLIST (REGLA ESTRICTA): Solo mencioná productos de la WISHLIST si son REALMENTE apropiados y específicos para la ocasión, evento, clima y estilo solicitado. Por ejemplo: si va al gimnasio, NO menciones jeans, camisas formales ni nada que no sea ropa deportiva; si va a una salida formal, NO menciones ropa deportiva. Si NINGÚN producto de la wishlist encaja perfecto con esta ocasión específica, NO menciones la wishlist en absoluto, ni siquiera de pasada. Mejor no decir nada que forzar una recomendación que no tiene sentido. Solo recomendá de la wishlist cuando realmente complemente el outfit para ESTA ocasión.
+
+APRENDÉ DEL FEEDBACK DEL USUARIO (MUY IMPORTANTE): puede que te pasen dos listas de outfits pasados. En OUTFITS QUE LE GUSTARON están los que marcó como "me gustó", "lo usé" o guardó como favorito: repetí y priorizá esas prendas, combinaciones y ese estilo cuando la ocasión y el clima sean parecidos. En OUTFITS QUE NO LE GUSTARON están los que marcó como "no me gustó" o "no lo usaría": EVITÁ repetir esas combinaciones y prendas en contextos similares. El peso es: favorito > lo usé > me gustó, y en lo negativo: no me gustó > no lo usaría. No le menciones al usuario que estás usando su feedback, simplemente aplicalo.
 
 Respondé en español argentino, de manera amigable y con onda. Si no tiene prendas adecuadas, sugerí qué podría agregar. Mantené la respuesta corta y concisa (máximo 3-4 párrafos).
 
@@ -42,8 +44,17 @@ donde cada término es una búsqueda corta para Mercado Libre de CUALQUIER prend
       wishlistSection = `\n\nMi wishlist (productos que me gustan pero no compré todavía):\n${wishlist}`;
     }
 
+    let feedbackSection = '';
+    if (likedOutfits && String(likedOutfits).trim()) {
+      feedbackSection += `\n\nOUTFITS QUE LE GUSTARON (repetir este estilo):\n${likedOutfits}`;
+    }
+    if (dislikedOutfits && String(dislikedOutfits).trim()) {
+      feedbackSection += `\n\nOUTFITS QUE NO LE GUSTARON (evitar):\n${dislikedOutfits}`;
+    }
+
     const userPrompt = `Mi guardarropas:
-${wardrobe}${wishlistSection}
+${wardrobe}${wishlistSection}${feedbackSection}
+
 
 Evento: ${event}
 Estilo deseado: ${formality || 'equilibrado'} (casual = relajado/informal, equilibrado = prolijo pero cómodo, formal = elegante/arreglado)
