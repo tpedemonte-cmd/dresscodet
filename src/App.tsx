@@ -17,7 +17,6 @@ import Wishlist from "./pages/Wishlist";
 import Looks from "./pages/Looks";
 import Plan from "./pages/Plan";
 import Favorites from "./pages/Favorites";
-import AvatarTest from './pages/__AvatarTest';
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,7 +47,6 @@ const AppRoutes = () => {
       <Route path="/looks" element={<ProtectedRoute><Looks /></ProtectedRoute>} />
       <Route path="/plan" element={<ProtectedRoute><Plan /></ProtectedRoute>} />
       <Route path="/favoritos" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
-      <Route path="/__avatar" element={<AvatarTest />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
