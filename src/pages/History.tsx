@@ -1,9 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { Sparkles, Trash2, ChevronDown, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, Trash2, ChevronDown, Star, ChevronLeft, ChevronRight, CalendarIcon, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { format, isSameDay, isWithinInterval, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import OutfitFeedback from '@/components/OutfitFeedback';
 
 
