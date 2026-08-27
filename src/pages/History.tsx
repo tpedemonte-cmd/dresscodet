@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { Sparkles, Trash2, ChevronDown } from 'lucide-react';
+import { Sparkles, Trash2, ChevronDown, Star } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import OutfitFeedback from '@/components/OutfitFeedback';
+
 
 const FORMALITY_LABELS: Record<string, string> = {
   casual: '😎 Casual', equilibrado: '⚖️ Equilibrado', formal: '🎩 Formal',
