@@ -291,8 +291,18 @@ export default function Recommend() {
         .replace(/\n?ITEMS_USADOS:.+/i, '')
         .replace(/\n?WISHLIST_USADOS:.+/i, '')
         .replace(/\n?COMPRAR:.+/i, '')
+        .replace(/\n?POR_QUE:[\s\S]+/i, '')
         .trim();
       setRecommendation(cleanText);
+
+      // Parse POR_QUE (explicación de la elección)
+      const whyMatch = fullText.match(/POR_QUE:\s*(.+)/i);
+      setReasons(
+        whyMatch
+          ? whyMatch[1].split('|').map((r: string) => r.trim()).filter(Boolean)
+          : []
+      );
+
 
       let usedItemIds: string[] = [];
       if (itemsMatch && itemsMatch[1].trim() !== 'ninguno') {
