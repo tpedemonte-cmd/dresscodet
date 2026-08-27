@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Wardrobe from "./pages/Wardrobe";
 import AddItem from "./pages/AddItem";
 import Tryon from "./pages/Tryon";
+import Av3dTest from "./pages/Av3dTest";
 import Recommend from "./pages/Recommend";
 import History from "./pages/History";
 import Stats from "./pages/Stats";
@@ -47,6 +48,7 @@ const AppRoutes = () => {
       <Route path="/looks" element={<ProtectedRoute><Looks /></ProtectedRoute>} />
       <Route path="/plan" element={<ProtectedRoute><Plan /></ProtectedRoute>} />
       <Route path="/favoritos" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
+      <Route path="/_av3d" element={<Av3dTest />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
