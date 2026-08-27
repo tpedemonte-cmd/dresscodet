@@ -88,8 +88,8 @@ function Figure({ measures }: { measures: BodyMeasures }) {
         {mat}
       </mesh>
       {/* hombros */}
-      <mesh position={[0, shoulderY, 0]} castShadow>
-        <capsuleGeometry args={[b.chestR * 0.55, b.shoulderW - b.chestR, 8, 20]} rotation={[0, 0, Math.PI / 2]} />
+      <mesh position={[0, shoulderY, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
+        <capsuleGeometry args={[b.chestR * 0.55, b.shoulderW - b.chestR, 8, 20]} />
         {mat}
       </mesh>
 
