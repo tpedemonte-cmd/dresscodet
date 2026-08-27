@@ -54,6 +54,8 @@ export default function Recommend() {
   const [season, setSeason] = useState('');
   const [recommendation, setRecommendation] = useState<string | null>(null);
   const [recommendationId, setRecommendationId] = useState<string | null>(null);
+  const [reasons, setReasons] = useState<string[]>([]);
+
   const [recommendedWishlistItems, setRecommendedWishlistItems] = useState<any[]>([]);
   const [recommendedItems, setRecommendedItems] = useState<any[]>([]);
   const [shoppingSuggestions, setShoppingSuggestions] = useState<ShoppingSuggestion[]>([]);
