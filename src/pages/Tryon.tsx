@@ -175,12 +175,13 @@ export default function Tryon() {
     onSuccess: (model) => {
       setSelfie(model.image_url);
       setActiveModelId(model.id);
-      setAvatarData({
+      setAvatarData(d => ({
+        ...d,
         height: String(model.height),
         weight: String(model.weight),
         age: String(model.age),
         gender: model.gender,
-      });
+      }));
       setResultImage(null);
       queryClient.invalidateQueries({ queryKey: ['user_models'] });
     },
