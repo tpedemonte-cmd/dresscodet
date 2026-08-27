@@ -28,7 +28,7 @@ APRENDÉ DEL FEEDBACK DEL USUARIO (MUY IMPORTANTE): puede que te pasen dos lista
 
 Respondé en español argentino, de manera amigable y con onda. Si no tiene prendas adecuadas, sugerí qué podría agregar. Mantené la respuesta corta y concisa (máximo 3-4 párrafos).
 
-Al final de tu respuesta, agregá TRES líneas separadas con el formato exacto (estas líneas NO se muestran al usuario, son para el sistema):
+Al final de tu respuesta, agregá CUATRO líneas separadas con el formato exacto (estas líneas NO se muestran al usuario, son para el sistema):
 
 ITEMS_USADOS: id1, id2, id3
 donde los IDs son los de las prendas del placard que recomendaste usar. Si no usaste ninguna, poné ITEMS_USADOS: ninguno
@@ -37,7 +37,10 @@ WISHLIST_USADOS: id1, id2, id3
 donde los IDs son los de los productos de la WISHLIST que mencionaste o recomendaste para ESTA ocasión específica. Si no mencionaste ninguno (porque ninguno encajaba con la ocasión), poné WISHLIST_USADOS: ninguno. NO incluyas IDs de productos que no mencionaste en el texto.
 
 COMPRAR: término1 | término2 | término3
-donde cada término es una búsqueda corta para Mercado Libre de CUALQUIER prenda que le falte al usuario para completar el outfit, incluyendo básicos como ropa interior (calzones/bóxers/bombachas), medias o calzado si no los tiene en el placard (ej: "medias deportivas blancas", "bóxer algodón negro", "campera de cuero negra", "zapatillas blancas casual"). Listá TODO lo que falte, no solo lo "principal". Si realmente no falta nada, poné COMPRAR: nada`;
+donde cada término es una búsqueda corta para Mercado Libre de CUALQUIER prenda que le falte al usuario para completar el outfit, incluyendo básicos como ropa interior (calzones/bóxers/bombachas), medias o calzado si no los tiene en el placard (ej: "medias deportivas blancas", "bóxer algodón negro", "campera de cuero negra", "zapatillas blancas casual"). Listá TODO lo que falte, no solo lo "principal". Si realmente no falta nada, poné COMPRAR: nada
+
+POR_QUE: motivo1 | motivo2 | motivo3
+donde cada motivo es una frase corta (máximo 12 palabras) en segunda persona que explique POR QUÉ elegiste este outfit. Incluí al menos: (1) cómo influyó el clima/temperatura/lluvia/viento, (2) por qué esas prendas (favoritas, apropiadas para el evento, formalidad elegida), y (3) si aplica, qué evitaste o repetiste según outfits que te gustaron o no te gustaron antes (ej: "Repetí el estilo del outfit que marcaste como favorito", "Evité la combinación que no te gustó"). Escribilo siempre, mínimo 2 motivos.`;
 
     let wishlistSection = '';
     if (wishlist && wishlist.trim()) {
