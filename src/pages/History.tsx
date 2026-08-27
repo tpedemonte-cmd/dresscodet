@@ -77,6 +77,19 @@ export default function History() {
     },
   });
 
+  const matchesDateFilter = (entry: any) => {
+    if (dateFilter === 'todas') return true;
+    const entryDate = new Date(entry.created_at);
+    const now = new Date();
+    if (dateFilter === 'hoy') return isSameDay(entryDate, now);
+    if (dateFilter === 'semana') return isWithinInterval(entryDate, { start: startOfDay(subDays(now, 7)), end: endOfDay(now) });
+    if (dateFilter === 'mes') return isWithinInterval(entryDate, { start: startOfMonth(now), end: endOfMonth(now) });
+    if (dateFilter === 'personalizado' && customStart && customEnd) {
+      return isWithinInterval(entryDate, { start: startOfDay(customStart), end: endOfDay(customEnd) });
+    }
+    return true;
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
