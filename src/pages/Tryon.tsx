@@ -25,7 +25,11 @@ export default function Tryon() {
   const [saving, setSaving] = useState(false);
   const [savingModel, setSavingModel] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [avatarData, setAvatarData] = useState({ height: '170', weight: '65', age: '', gender: 'femenino' });
+  const [avatarData, setAvatarData] = useState({
+    height: '170', weight: '65', age: '', gender: 'femenino',
+    chest: '', waist: '', hips: '',
+    muscle: '45', skinTone: '#d9a17c', hairColor: '#3b2418', hairLength: '55',
+  });
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
 
   const { data: items = [] } = useQuery({
