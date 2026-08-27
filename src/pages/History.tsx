@@ -108,30 +108,71 @@ export default function History() {
       {history.length > 0 && (() => {
         const availableEvents = Array.from(new Set(history.map((h: any) => h.event)));
         return (
-          <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
-            <button
-              onClick={() => { setEventFilter('todos'); setPage(1); }}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-body transition-colors ${
-                eventFilter === 'todos'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-              }`}
-            >
-              Todos
-            </button>
-            {availableEvents.map((ev) => (
+          <div className="space-y-3">
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
               <button
-                key={ev}
-                onClick={() => { setEventFilter(ev); setPage(1); }}
+                onClick={() => { setEventFilter('todos'); setPage(1); }}
                 className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-body transition-colors ${
-                  eventFilter === ev
+                  eventFilter === 'todos'
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                 }`}
               >
-                {EVENT_LABELS[ev] || ev}
+                Todos
               </button>
-            ))}
+              {availableEvents.map((ev) => (
+                <button
+                  key={ev}
+                  onClick={() => { setEventFilter(ev); setPage(1); }}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-body transition-colors ${
+                    eventFilter === ev
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  {EVENT_LABELS[ev] || ev}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-body text-muted-foreground shrink-0"><CalendarIcon className="h-4 w-4 inline -mt-0.5 mr-1" /> Fecha:</span>
+              {[
+                { key: 'todas', label: 'Todas' },
+                { key: 'hoy', label: 'Hoy' },
+                { key: 'semana', label: 'Últ. 7 días' },
+                { key: 'mes', label: 'Este mes' },
+                { key: 'personalizado', label: 'Personalizado' },
+              ].map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => { setDateFilter(opt.key as any); setPage(1); }}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-body transition-colors ${
+                    dateFilter === opt.key
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            {dateFilter === 'personalizado' && (
+              <div className="flex flex-wrap items-center gap-3 bg-card p-3 rounded-xl shadow-card">
+                <DatePicker label="Desde" date={customStart} setDate={(d) => { setCustomStart(d); setPage(1); }} />
+                <span className="text-sm text-muted-foreground font-body">—</span>
+                <DatePicker label="Hasta" date={customEnd} setDate={(d) => { setCustomEnd(d); setPage(1); }} />
+                {(customStart || customEnd) && (
+                  <button
+                    onClick={() => { setCustomStart(undefined); setCustomEnd(undefined); setPage(1); }}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground font-body"
+                  >
+                    <X className="h-3 w-3" /> Limpiar
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         );
       })()}
