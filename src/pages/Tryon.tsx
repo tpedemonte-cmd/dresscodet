@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles, RotateCcw, ChevronLeft, ChevronRight, X, Save, Trash2, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import Avatar3D from '@/components/Avatar3D';
 
 const CATEGORIES: Record<string, string> = {
   remera: '👕', pantalon: '👖', campera: '🧥', buzo: '🧶',
@@ -25,7 +26,11 @@ export default function Tryon() {
   const [saving, setSaving] = useState(false);
   const [savingModel, setSavingModel] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [avatarData, setAvatarData] = useState({ height: '170', weight: '65', age: '', gender: 'femenino' });
+  const [avatarData, setAvatarData] = useState({
+    height: '170', weight: '65', age: '', gender: 'femenino',
+    chest: '', waist: '', hips: '',
+    muscle: '45', skinTone: '#d9a17c', hairColor: '#3b2418', hairLength: '55',
+  });
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
 
   const { data: items = [] } = useQuery({
@@ -63,7 +68,16 @@ export default function Tryon() {
     setGeneratingAvatar(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-avatar', {
-        body: { height: Number(height), weight: Number(weight), age: Number(age), gender },
+        body: {
+          height: Number(height), weight: Number(weight), age: Number(age), gender,
+          chest: Number(avatarData.chest) || undefined,
+          waist: Number(avatarData.waist) || undefined,
+          hips: Number(avatarData.hips) || undefined,
+          muscle: Number(avatarData.muscle),
+          skinTone: avatarData.skinTone,
+          hairColor: avatarData.hairColor,
+          hairLength: Number(avatarData.hairLength),
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -161,12 +175,13 @@ export default function Tryon() {
     onSuccess: (model) => {
       setSelfie(model.image_url);
       setActiveModelId(model.id);
-      setAvatarData({
+      setAvatarData(d => ({
+        ...d,
         height: String(model.height),
         weight: String(model.weight),
         age: String(model.age),
         gender: model.gender,
-      });
+      }));
       setResultImage(null);
       queryClient.invalidateQueries({ queryKey: ['user_models'] });
     },
@@ -343,53 +358,142 @@ export default function Tryon() {
         ) : (
           <div className="space-y-4">
             {/* Generate new model */}
-            <div className="max-w-sm mx-auto bg-secondary rounded-xl p-4 border-2 border-dashed border-border space-y-3">
+            <div className="max-w-sm mx-auto bg-secondary rounded-xl p-4 border border-border space-y-4">
               <p className="text-muted-foreground font-body text-xs text-center">
-                Completá tus datos para generar un modelo realista con IA
+                Armá tu personaje: movés los controles y el modelo 3D se actualiza en vivo
               </p>
 
+              <Avatar3D
+                measures={{
+                  height: Number(avatarData.height) || 170,
+                  weight: Number(avatarData.weight) || 65,
+                  gender: avatarData.gender,
+                  chest: Number(avatarData.chest) || undefined,
+                  waist: Number(avatarData.waist) || undefined,
+                  hips: Number(avatarData.hips) || undefined,
+                  muscle: Number(avatarData.muscle),
+                  skinTone: avatarData.skinTone,
+                  hairColor: avatarData.hairColor,
+                  hairLength: Number(avatarData.hairLength),
+                }}
+              />
+
+              {/* Género */}
               <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs font-body text-foreground">Altura (cm)</label>
-                  <input
-                    type="number"
-                    value={avatarData.height}
-                    onChange={e => setAvatarData(d => ({ ...d, height: e.target.value }))}
-                    placeholder="170"
-                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-body text-foreground">Peso (kg)</label>
-                  <input
-                    type="number"
-                    value={avatarData.weight}
-                    onChange={e => setAvatarData(d => ({ ...d, weight: e.target.value }))}
-                    placeholder="65"
-                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-body text-foreground">Edad</label>
-                  <input
-                    type="number"
-                    value={avatarData.age}
-                    onChange={e => setAvatarData(d => ({ ...d, age: e.target.value }))}
-                    placeholder="28"
-                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-body text-foreground">Género</label>
-                  <select
-                    value={avatarData.gender}
-                    onChange={e => setAvatarData(d => ({ ...d, gender: e.target.value }))}
-                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                {[['femenino', 'Femenino'], ['masculino', 'Masculino']].map(([val, label]) => (
+                  <button
+                    key={val}
+                    onClick={() => setAvatarData(d => ({ ...d, gender: val, hairLength: val === 'masculino' ? '12' : '55' }))}
+                    className={`py-2 rounded-lg text-sm font-body border transition-colors ${
+                      avatarData.gender === val
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background text-foreground border-input'
+                    }`}
                   >
-                    <option value="femenino">Femenino</option>
-                    <option value="masculino">Masculino</option>
-                  </select>
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Sliders de cuerpo */}
+              {([
+                ['height', 'Altura', 140, 205, 'cm'],
+                ['weight', 'Peso', 40, 140, 'kg'],
+                ['muscle', 'Contextura', 0, 100, ''],
+              ] as const).map(([key, label, min, max, unit]) => (
+                <div key={key} className="space-y-1">
+                  <div className="flex justify-between text-xs font-body text-foreground">
+                    <span>{label}</span>
+                    <span className="text-muted-foreground">
+                      {avatarData[key]}{unit && ` ${unit}`}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={min}
+                    max={max}
+                    value={avatarData[key] || String(min)}
+                    onChange={e => setAvatarData(d => ({ ...d, [key]: e.target.value }))}
+                    className="w-full accent-primary"
+                  />
                 </div>
+              ))}
+
+              {/* Medidas opcionales */}
+              <div className="space-y-2">
+                <p className="text-xs font-body text-muted-foreground">Medidas (opcional, más precisión)</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {([['chest', 'Pecho', '90'], ['waist', 'Cintura', '75'], ['hips', 'Cadera', '95']] as const).map(([key, label, ph]) => (
+                    <div key={key}>
+                      <label className="text-xs font-body text-foreground">{label} (cm)</label>
+                      <input
+                        type="number"
+                        value={avatarData[key]}
+                        onChange={e => setAvatarData(d => ({ ...d, [key]: e.target.value }))}
+                        placeholder={ph}
+                        className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Apariencia */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-body text-foreground">Tono de piel</label>
+                  <div className="flex gap-1.5 mt-1">
+                    {['#f6ddc9', '#e8bd95', '#d9a17c', '#b47a4f', '#8d5524', '#5a3620'].map(c => (
+                      <button
+                        key={c}
+                        onClick={() => setAvatarData(d => ({ ...d, skinTone: c }))}
+                        style={{ backgroundColor: c }}
+                        className={`h-6 w-6 rounded-full border-2 ${avatarData.skinTone === c ? 'border-primary' : 'border-transparent'}`}
+                        aria-label={`Tono ${c}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-body text-foreground">Pelo</label>
+                  <div className="flex gap-1.5 mt-1">
+                    {['#1c1917', '#3b2418', '#7a4a21', '#c39b5d', '#a33b1f', '#9ca3af'].map(c => (
+                      <button
+                        key={c}
+                        onClick={() => setAvatarData(d => ({ ...d, hairColor: c }))}
+                        style={{ backgroundColor: c }}
+                        className={`h-6 w-6 rounded-full border-2 ${avatarData.hairColor === c ? 'border-primary' : 'border-transparent'}`}
+                        aria-label={`Pelo ${c}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs font-body text-foreground">
+                  <span>Largo de pelo</span>
+                  <span className="text-muted-foreground">{avatarData.hairLength}</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={avatarData.hairLength}
+                  onChange={e => setAvatarData(d => ({ ...d, hairLength: e.target.value }))}
+                  className="w-full accent-primary"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-body text-foreground">Edad</label>
+                <input
+                  type="number"
+                  value={avatarData.age}
+                  onChange={e => setAvatarData(d => ({ ...d, age: e.target.value }))}
+                  placeholder="28"
+                  className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                />
               </div>
 
               <Button variant="warm" size="sm" className="w-full" disabled={generatingAvatar} onClick={handleGenerateAvatar}>
@@ -399,6 +503,9 @@ export default function Tryon() {
                   <><Sparkles className="h-4 w-4 mr-2" /> Generar mi modelo realista</>
                 )}
               </Button>
+              <p className="text-[11px] font-body text-muted-foreground text-center">
+                El avatar 3D y el probador son una referencia visual aproximada, no un calce exacto.
+              </p>
             </div>
 
             {/* Saved models */}
