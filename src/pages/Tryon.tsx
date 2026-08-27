@@ -5,7 +5,6 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles, RotateCcw, ChevronLeft, ChevronRight, X, Save, Trash2, Check } from 'lucide-react';
 import { toast } from 'sonner';
-import Avatar3D from '@/components/Avatar3D';
 
 const CATEGORIES: Record<string, string> = {
   remera: '👕', pantalon: '👖', campera: '🧥', buzo: '🧶',
@@ -26,7 +25,7 @@ export default function Tryon() {
   const [saving, setSaving] = useState(false);
   const [savingModel, setSavingModel] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [avatarData, setAvatarData] = useState({ height: '170', weight: '65', age: '', gender: 'femenino', chest: '', waist: '', hips: '' });
+  const [avatarData, setAvatarData] = useState({ height: '170', weight: '65', age: '', gender: 'femenino' });
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
 
   const { data: items = [] } = useQuery({
@@ -64,12 +63,7 @@ export default function Tryon() {
     setGeneratingAvatar(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-avatar', {
-        body: {
-          height: Number(height), weight: Number(weight), age: Number(age), gender,
-          chest: Number(avatarData.chest) || undefined,
-          waist: Number(avatarData.waist) || undefined,
-          hips: Number(avatarData.hips) || undefined,
-        },
+        body: { height: Number(height), weight: Number(weight), age: Number(age), gender },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -172,9 +166,6 @@ export default function Tryon() {
         weight: String(model.weight),
         age: String(model.age),
         gender: model.gender,
-        chest: '',
-        waist: '',
-        hips: '',
       });
       setResultImage(null);
       queryClient.invalidateQueries({ queryKey: ['user_models'] });
