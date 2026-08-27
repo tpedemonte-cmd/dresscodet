@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { Sparkles, Trash2, ChevronDown } from 'lucide-react';
+import { Sparkles, Trash2, ChevronDown, Star } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import OutfitFeedback from '@/components/OutfitFeedback';
+
 
 const FORMALITY_LABELS: Record<string, string> = {
   casual: '😎 Casual', equilibrado: '⚖️ Equilibrado', formal: '🎩 Formal',
@@ -145,6 +147,8 @@ export default function History() {
                       <span className="text-sm font-body font-medium text-foreground">
                         {EVENT_LABELS[entry.event] || entry.event}
                       </span>
+                      {entry.is_favorite && <Star className="h-3.5 w-3.5 text-amber-500 fill-current" />}
+
                       {entry.formality && (
                         <>
                           <span className="text-xs text-muted-foreground">•</span>
@@ -204,12 +208,23 @@ export default function History() {
                         </div>
                       </div>
                     )}
+                    <OutfitFeedback
+                      table="outfit_history"
+                      recordId={entry.id}
+                      initialFeedback={entry.feedback ?? null}
+                      initialFavorite={!!entry.is_favorite}
+                      onChange={() => {
+                        queryClient.invalidateQueries({ queryKey: ['outfit_history'] });
+                        queryClient.invalidateQueries({ queryKey: ['favorites'] });
+                      }}
+                    />
                     <button
                       onClick={() => deleteMutation.mutate(entry.id)}
                       className="flex items-center gap-1 text-xs text-destructive hover:underline font-body"
                     >
                       <Trash2 className="h-3 w-3" /> Eliminar
                     </button>
+
                   </div>
                 )}
               </div>
