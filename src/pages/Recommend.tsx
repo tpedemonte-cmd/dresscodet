@@ -578,7 +578,21 @@ export default function Recommend() {
               </div>
             </div>
           )}
+          {reasons.length > 0 && (
+            <div className="pt-3 border-t border-border">
+              <p className="text-sm font-body font-medium text-muted-foreground mb-2">💡 Por qué elegí este outfit:</p>
+              <ul className="space-y-1.5">
+                {reasons.map((r, i) => (
+                  <li key={i} className="flex gap-2 text-sm font-body text-foreground">
+                    <span className="text-primary">•</span>
+                    <span>{r}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {recommendationId && (
+
             <OutfitFeedback table="outfit_history" recordId={recommendationId} />
           )}
         </div>
