@@ -217,7 +217,8 @@ export default function History() {
       ) : (() => {
         const filtered = history
           .filter((h: any) => eventFilter === 'todos' || h.event === eventFilter)
-          .filter((h: any) => matchesDateFilter(h));
+          .filter((h: any) => matchesDateFilter(h))
+          .filter((h: any) => matchesFeedbackFilter(h));
         if (filtered.length === 0) {
           return (
             <div className="text-center py-12 space-y-2">
