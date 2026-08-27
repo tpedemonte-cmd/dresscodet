@@ -129,9 +129,12 @@ export default function History() {
             </div>
           );
         }
+        const totalPages = Math.ceil(filtered.length / perPage);
+        const safePage = Math.min(page, totalPages);
+        const paginated = filtered.slice((safePage - 1) * perPage, safePage * perPage);
         return (
         <div className="space-y-3">
-          {filtered.map((entry: any) => {
+          {paginated.map((entry: any) => {
             const isExpanded = expandedId === entry.id;
             const entryItems = items.filter((i) =>
               (entry.recommended_item_ids || []).includes(i.id)
@@ -232,6 +235,27 @@ export default function History() {
               </div>
             );
           })}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={safePage <= 1}
+                className="flex items-center gap-1 px-3 py-2 rounded-lg bg-secondary text-secondary-foreground font-body text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-secondary/80"
+              >
+                <ChevronLeft className="h-4 w-4" /> Anteriores
+              </button>
+              <span className="text-sm font-body text-muted-foreground">
+                Página {safePage} de {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage >= totalPages}
+                className="flex items-center gap-1 px-3 py-2 rounded-lg bg-secondary text-secondary-foreground font-body text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-secondary/80"
+              >
+                Siguientes <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
         );
       })()}
