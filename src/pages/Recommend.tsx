@@ -218,6 +218,8 @@ export default function Recommend() {
     setRecommendation(null);
     setRecommendationId(null);
     setRecommendedItems([]);
+    setReasons([]);
+
     setRecommendedWishlistItems([]);
     setHistoryMatches([]);
     setForgottenSuggestions([]);
