@@ -47,6 +47,24 @@ export type Database = {
         }
         Relationships: []
       }
+      job_locks: {
+        Row: {
+          locked_until: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          locked_until?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          locked_until?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       outfit_history: {
         Row: {
           created_at: string
@@ -195,6 +213,7 @@ export type Database = {
           user_id: string
           weather: string | null
           weather_label: string | null
+          weather_synced_at: string | null
           wind_kmh: number | null
         }
         Insert: {
@@ -221,6 +240,7 @@ export type Database = {
           user_id: string
           weather?: string | null
           weather_label?: string | null
+          weather_synced_at?: string | null
           wind_kmh?: number | null
         }
         Update: {
@@ -247,6 +267,7 @@ export type Database = {
           user_id?: string
           weather?: string | null
           weather_label?: string | null
+          weather_synced_at?: string | null
           wind_kmh?: number | null
         }
         Relationships: []
