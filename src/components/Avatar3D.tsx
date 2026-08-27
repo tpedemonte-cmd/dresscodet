@@ -78,12 +78,12 @@ function Figure({ measures }: { measures: BodyMeasures }) {
       </mesh>
 
       {/* torso: pecho -> cintura */}
-      <mesh position={[0, shoulderY - b.torsoLen * 0.22, 0]} castShadow>
+      <mesh position={[0, shoulderY - b.torsoLen * 0.28, 0]} castShadow>
         <cylinderGeometry args={[b.chestR * 0.95, b.waistR, b.torsoLen * 0.56, 28]} />
         {mat}
       </mesh>
       {/* cintura -> cadera */}
-      <mesh position={[0, hipY + b.torsoLen * 0.2, 0]} castShadow>
+      <mesh position={[0, hipY + b.torsoLen * 0.22, 0]} castShadow>
         <cylinderGeometry args={[b.waistR, b.hipsR, b.torsoLen * 0.44, 28]} />
         {mat}
       </mesh>
@@ -135,7 +135,7 @@ export default function Avatar3D({ measures, className = '' }: { measures: BodyM
 
   return (
     <div className={`relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-secondary ${className}`}>
-      <Canvas shadows camera={{ position: [0, 0.15, h * 2.1], fov: 42 }} dpr={[1, 2]}>
+      <Canvas shadows camera={{ position: [0, 0.1, h * 1.5], fov: 42 }} dpr={[1, 2]}>
         <color attach="background" args={['#efe7df']} />
         <ambientLight intensity={0.55} />
         <directionalLight
@@ -154,7 +154,7 @@ export default function Avatar3D({ measures, className = '' }: { measures: BodyM
           <Figure measures={measures} />
           <ContactShadows position={[0, -h / 2 + 0.02, 0]} opacity={0.35} scale={3} blur={2.4} far={1.5} />
         </Suspense>
-        <OrbitControls enablePan={false} minDistance={h} maxDistance={h * 3.4} target={[0, 0.05, 0]} />
+        <OrbitControls enablePan={false} minDistance={h * 0.9} maxDistance={h * 3} target={[0, 0.05, 0]} />
       </Canvas>
       <div className="absolute bottom-2 left-2 right-2 text-center text-[10px] font-body text-muted-foreground bg-background/70 backdrop-blur-sm rounded-full py-1 px-2">
         Vista previa aproximada · arrastrá para girar
