@@ -37,6 +37,9 @@ export default function History() {
   const queryClient = useQueryClient();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [eventFilter, setEventFilter] = useState<string>('todos');
+  const [dateFilter, setDateFilter] = useState<'todas' | 'hoy' | 'semana' | 'mes' | 'personalizado'>('todas');
+  const [customStart, setCustomStart] = useState<Date | undefined>(undefined);
+  const [customEnd, setCustomEnd] = useState<Date | undefined>(undefined);
   const [page, setPage] = useState(1);
   const perPage = 10;
 
