@@ -147,6 +147,8 @@ export default function History() {
                       <span className="text-sm font-body font-medium text-foreground">
                         {EVENT_LABELS[entry.event] || entry.event}
                       </span>
+                      {entry.is_favorite && <Star className="h-3.5 w-3.5 text-amber-500 fill-current" />}
+
                       {entry.formality && (
                         <>
                           <span className="text-xs text-muted-foreground">•</span>
