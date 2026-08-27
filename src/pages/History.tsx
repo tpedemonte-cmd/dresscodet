@@ -91,6 +91,15 @@ export default function History() {
     return true;
   };
 
+  const matchesFeedbackFilter = (entry: any) => {
+    if (feedbackFilter === 'todos') return true;
+    const fb = entry.feedback;
+    if (feedbackFilter === 'sin') return !fb;
+    if (feedbackFilter === 'positivo') return fb === 'liked' || fb === 'used';
+    if (feedbackFilter === 'negativo') return fb === 'disliked' || fb === 'not_used';
+    return true;
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
