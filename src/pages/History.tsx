@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { Sparkles, Trash2, ChevronDown, Star } from 'lucide-react';
+import { Sparkles, Trash2, ChevronDown, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import OutfitFeedback from '@/components/OutfitFeedback';
@@ -31,6 +31,8 @@ export default function History() {
   const queryClient = useQueryClient();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [eventFilter, setEventFilter] = useState<string>('todos');
+  const [page, setPage] = useState(1);
+  const perPage = 10;
 
   const { data: history = [], isLoading } = useQuery({
     queryKey: ['outfit_history', user?.id],
@@ -86,7 +88,7 @@ export default function History() {
         return (
           <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
             <button
-              onClick={() => setEventFilter('todos')}
+              onClick={() => { setEventFilter('todos'); setPage(1); }}
               className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-body transition-colors ${
                 eventFilter === 'todos'
                   ? 'bg-primary text-primary-foreground'
@@ -98,7 +100,7 @@ export default function History() {
             {availableEvents.map((ev) => (
               <button
                 key={ev}
-                onClick={() => setEventFilter(ev)}
+                onClick={() => { setEventFilter(ev); setPage(1); }}
                 className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-body transition-colors ${
                   eventFilter === ev
                     ? 'bg-primary text-primary-foreground'
@@ -127,9 +129,12 @@ export default function History() {
             </div>
           );
         }
+        const totalPages = Math.ceil(filtered.length / perPage);
+        const safePage = Math.min(page, totalPages);
+        const paginated = filtered.slice((safePage - 1) * perPage, safePage * perPage);
         return (
         <div className="space-y-3">
-          {filtered.map((entry: any) => {
+          {paginated.map((entry: any) => {
             const isExpanded = expandedId === entry.id;
             const entryItems = items.filter((i) =>
               (entry.recommended_item_ids || []).includes(i.id)
@@ -230,6 +235,27 @@ export default function History() {
               </div>
             );
           })}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={safePage <= 1}
+                className="flex items-center gap-1 px-3 py-2 rounded-lg bg-secondary text-secondary-foreground font-body text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-secondary/80"
+              >
+                <ChevronLeft className="h-4 w-4" /> Anteriores
+              </button>
+              <span className="text-sm font-body text-muted-foreground">
+                Página {safePage} de {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage >= totalPages}
+                className="flex items-center gap-1 px-3 py-2 rounded-lg bg-secondary text-secondary-foreground font-body text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-secondary/80"
+              >
+                Siguientes <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
         );
       })()}
