@@ -67,7 +67,16 @@ export default function Tryon() {
     setGeneratingAvatar(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-avatar', {
-        body: { height: Number(height), weight: Number(weight), age: Number(age), gender },
+        body: {
+          height: Number(height), weight: Number(weight), age: Number(age), gender,
+          chest: Number(avatarData.chest) || undefined,
+          waist: Number(avatarData.waist) || undefined,
+          hips: Number(avatarData.hips) || undefined,
+          muscle: Number(avatarData.muscle),
+          skinTone: avatarData.skinTone,
+          hairColor: avatarData.hairColor,
+          hairLength: Number(avatarData.hairLength),
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
