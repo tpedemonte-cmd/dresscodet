@@ -15,7 +15,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { height, weight, age, gender } = await req.json();
+    const { height, weight, age, gender, chest, waist, hips, muscle, skinTone, hairColor, hairLength } = await req.json();
 
     if (!height || !weight || !age || !gender) {
       return new Response(
@@ -34,8 +34,30 @@ serve(async (req) => {
 
     const genderText = gender === "masculino" ? "hombre" : gender === "femenino" ? "mujer" : "persona";
 
+    const m = Number(muscle);
+    const muscleText = isNaN(m)
+      ? ""
+      : m < 25 ? "slim, low muscle definition"
+      : m < 55 ? "normal muscle tone"
+      : m < 80 ? "visibly toned and fit" : "very muscular, athletic build";
+
+    const hl = Number(hairLength);
+    const hairText = isNaN(hl)
+      ? ""
+      : hl < 15 ? "very short hair"
+      : hl < 40 ? "short hair"
+      : hl < 70 ? "medium-length hair" : "long hair";
+
+    const measuresText = [
+      chest ? `chest circumference ${chest}cm` : null,
+      waist ? `waist circumference ${waist}cm` : null,
+      hips ? `hip circumference ${hips}cm` : null,
+    ].filter(Boolean).join(", ");
+
     const prompt = `Generate a realistic full-body photograph of a ${genderText} of ${age} years old, ${height}cm tall, weighing ${weight}kg, with a ${build} body build.
 
+Body and appearance details (match them closely):
+${muscleText ? `- Muscle/contexture: ${muscleText}\n` : ""}${measuresText ? `- Body measurements: ${measuresText}\n` : ""}${skinTone ? `- Skin tone approximately this color: ${skinTone}\n` : ""}${hairColor ? `- Hair color approximately this color: ${hairColor}\n` : ""}${hairText ? `- Hair length: ${hairText}\n` : ""}
 The person should:
 - Stand in a neutral relaxed pose, facing the camera, arms slightly away from the body
 - Wear plain neutral underwear (basic gray/white tank top and shorts) so clothing can be virtually tried on later
