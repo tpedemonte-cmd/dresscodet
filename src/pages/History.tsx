@@ -183,6 +183,28 @@ export default function History() {
                 )}
               </div>
             )}
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-body text-muted-foreground shrink-0">Feedback:</span>
+              {[
+                { key: 'todos', label: 'Todos' },
+                { key: 'positivo', label: '👍 Me gustó / Lo usé' },
+                { key: 'negativo', label: '👎 No me gustó / No lo usaría' },
+                { key: 'sin', label: 'Sin feedback' },
+              ].map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => { setFeedbackFilter(opt.key as any); setPage(1); }}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-body transition-colors ${
+                    feedbackFilter === opt.key
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
         );
       })()}
