@@ -255,9 +255,13 @@ export default function Recommend() {
     setForgottenSuggestions(relevantForgotten.slice(0, 4));
 
     try {
-      const wardrobeSummary = items.map(i =>
-        `- ID:${i.id} | ${i.name} (${i.category}${i.color ? ', ' + i.color : ''})${i.is_favorite ? ' ⭐ FAVORITA' : ''}`
-      ).join('\n');
+      const usageById = new Map(allUsage.map(u => [u.itemId, u]));
+      const wardrobeSummary = items.map(i => {
+        const u = usageById.get(i.id);
+        const usoTxt = u ? ` | usos:${u.usos} (${u.estado})` : ' | usos:0 (olvidada)';
+        return `- ID:${i.id} | ${i.name} (${i.category}${i.color ? ', ' + i.color : ''})${i.is_favorite ? ' ⭐ FAVORITA' : ''}${usoTxt}`;
+      }).join('\n');
+
 
       const wishlistSummary = wishlistItems.length > 0
         ? wishlistItems.map((w: any) => `- ID:${w.id} | ${w.title} ($${w.price} ${w.currency})`).join('\n')
