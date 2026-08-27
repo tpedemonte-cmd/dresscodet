@@ -54,6 +54,8 @@ export default function Recommend() {
   const [season, setSeason] = useState('');
   const [recommendation, setRecommendation] = useState<string | null>(null);
   const [recommendationId, setRecommendationId] = useState<string | null>(null);
+  const [reasons, setReasons] = useState<string[]>([]);
+
   const [recommendedWishlistItems, setRecommendedWishlistItems] = useState<any[]>([]);
   const [recommendedItems, setRecommendedItems] = useState<any[]>([]);
   const [shoppingSuggestions, setShoppingSuggestions] = useState<ShoppingSuggestion[]>([]);
@@ -216,6 +218,8 @@ export default function Recommend() {
     setRecommendation(null);
     setRecommendationId(null);
     setRecommendedItems([]);
+    setReasons([]);
+
     setRecommendedWishlistItems([]);
     setHistoryMatches([]);
     setForgottenSuggestions([]);
@@ -291,8 +295,18 @@ export default function Recommend() {
         .replace(/\n?ITEMS_USADOS:.+/i, '')
         .replace(/\n?WISHLIST_USADOS:.+/i, '')
         .replace(/\n?COMPRAR:.+/i, '')
+        .replace(/\n?POR_QUE:[\s\S]+/i, '')
         .trim();
       setRecommendation(cleanText);
+
+      // Parse POR_QUE (explicación de la elección)
+      const whyMatch = fullText.match(/POR_QUE:\s*(.+)/i);
+      setReasons(
+        whyMatch
+          ? whyMatch[1].split('|').map((r: string) => r.trim()).filter(Boolean)
+          : []
+      );
+
 
       let usedItemIds: string[] = [];
       if (itemsMatch && itemsMatch[1].trim() !== 'ninguno') {
@@ -564,7 +578,21 @@ export default function Recommend() {
               </div>
             </div>
           )}
+          {reasons.length > 0 && (
+            <div className="pt-3 border-t border-border">
+              <p className="text-sm font-body font-medium text-muted-foreground mb-2">💡 Por qué elegí este outfit:</p>
+              <ul className="space-y-1.5">
+                {reasons.map((r, i) => (
+                  <li key={i} className="flex gap-2 text-sm font-body text-foreground">
+                    <span className="text-primary">•</span>
+                    <span>{r}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {recommendationId && (
+
             <OutfitFeedback table="outfit_history" recordId={recommendationId} />
           )}
         </div>
