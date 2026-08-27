@@ -204,12 +204,23 @@ export default function History() {
                         </div>
                       </div>
                     )}
+                    <OutfitFeedback
+                      table="outfit_history"
+                      recordId={entry.id}
+                      initialFeedback={entry.feedback ?? null}
+                      initialFavorite={!!entry.is_favorite}
+                      onChange={() => {
+                        queryClient.invalidateQueries({ queryKey: ['outfit_history'] });
+                        queryClient.invalidateQueries({ queryKey: ['favorites'] });
+                      }}
+                    />
                     <button
                       onClick={() => deleteMutation.mutate(entry.id)}
                       className="flex items-center gap-1 text-xs text-destructive hover:underline font-body"
                     >
                       <Trash2 className="h-3 w-3" /> Eliminar
                     </button>
+
                   </div>
                 )}
               </div>
