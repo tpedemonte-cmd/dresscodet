@@ -183,12 +183,14 @@ export default function History() {
           <p className="text-muted-foreground font-body">Todavía no pediste ninguna recomendación.</p>
         </div>
       ) : (() => {
-        const filtered = eventFilter === 'todos' ? history : history.filter((h: any) => h.event === eventFilter);
+        const filtered = history
+          .filter((h: any) => eventFilter === 'todos' || h.event === eventFilter)
+          .filter((h: any) => matchesDateFilter(h));
         if (filtered.length === 0) {
           return (
             <div className="text-center py-12 space-y-2">
               <p className="text-3xl">🔍</p>
-              <p className="text-muted-foreground font-body text-sm">No hay recomendaciones para este tipo de salida.</p>
+              <p className="text-muted-foreground font-body text-sm">No hay recomendaciones para este tipo de salida o fecha.</p>
             </div>
           );
         }
