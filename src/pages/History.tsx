@@ -38,6 +38,7 @@ export default function History() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [eventFilter, setEventFilter] = useState<string>('todos');
   const [dateFilter, setDateFilter] = useState<'todas' | 'hoy' | 'semana' | 'mes' | 'personalizado'>('todas');
+  const [feedbackFilter, setFeedbackFilter] = useState<'todos' | 'positivo' | 'negativo' | 'sin'>('todos');
   const [customStart, setCustomStart] = useState<Date | undefined>(undefined);
   const [customEnd, setCustomEnd] = useState<Date | undefined>(undefined);
   const [page, setPage] = useState(1);
@@ -87,6 +88,15 @@ export default function History() {
     if (dateFilter === 'personalizado' && customStart && customEnd) {
       return isWithinInterval(entryDate, { start: startOfDay(customStart), end: endOfDay(customEnd) });
     }
+    return true;
+  };
+
+  const matchesFeedbackFilter = (entry: any) => {
+    if (feedbackFilter === 'todos') return true;
+    const fb = entry.feedback;
+    if (feedbackFilter === 'sin') return !fb;
+    if (feedbackFilter === 'positivo') return fb === 'liked' || fb === 'used';
+    if (feedbackFilter === 'negativo') return fb === 'disliked' || fb === 'not_used';
     return true;
   };
 
@@ -173,6 +183,28 @@ export default function History() {
                 )}
               </div>
             )}
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-body text-muted-foreground shrink-0">Feedback:</span>
+              {[
+                { key: 'todos', label: 'Todos' },
+                { key: 'positivo', label: '👍 Me gustó / Lo usé' },
+                { key: 'negativo', label: '👎 No me gustó / No lo usaría' },
+                { key: 'sin', label: 'Sin feedback' },
+              ].map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => { setFeedbackFilter(opt.key as any); setPage(1); }}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-body transition-colors ${
+                    feedbackFilter === opt.key
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
         );
       })()}
@@ -185,7 +217,8 @@ export default function History() {
       ) : (() => {
         const filtered = history
           .filter((h: any) => eventFilter === 'todos' || h.event === eventFilter)
-          .filter((h: any) => matchesDateFilter(h));
+          .filter((h: any) => matchesDateFilter(h))
+          .filter((h: any) => matchesFeedbackFilter(h));
         if (filtered.length === 0) {
           return (
             <div className="text-center py-12 space-y-2">
