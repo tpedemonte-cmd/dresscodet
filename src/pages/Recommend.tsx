@@ -628,7 +628,7 @@ export default function Recommend() {
       )}
 
       {/* History-based similarity matches */}
-      {historyMatches.length > 0 && (
+      {historyMatches.length > 0 && recommendation && (
         <div className="bg-card p-6 rounded-xl shadow-card space-y-3 animate-in fade-in slide-in-from-bottom-4">
           <h3 className="font-display font-bold text-lg text-foreground flex items-center gap-2">
             <History className="h-5 w-5 text-primary" />
