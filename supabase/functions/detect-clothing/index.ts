@@ -6,7 +6,7 @@ const corsHeaders = {
 const VALID_CATEGORIES = [
   'remera', 'pantalon', 'campera', 'buzo', 'camisa',
   'short', 'vestido', 'pollera', 'zapatillas', 'zapatos',
-  'accesorio', 'otro',
+  'medias', 'accesorio', 'otro',
 ];
 
 Deno.serve(async (req) => {
@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
 - "color": the main color in Spanish (e.g. "negro", "blanco", "azul", "rojo", "verde", "gris", "beige", "marrón", "rosa", "celeste", "naranja", "amarillo", "violeta", "bordo")
 
 If you see multiple colors, pick the dominant one. If unsure about category, use "otro".
+Use "medias" for socks of any kind (ankle socks, crew socks, sport socks, stockings, thigh-highs).
 Respond with ONLY the JSON, no extra text.`,
               },
               {

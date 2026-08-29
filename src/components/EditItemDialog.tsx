@@ -18,6 +18,7 @@ const CATEGORIES = [
   { value: 'pollera', label: '💃 Pollera' },
   { value: 'zapatillas', label: '👟 Zapatillas' },
   { value: 'zapatos', label: '👞 Zapatos' },
+  { value: 'medias', label: '🧦 Medias' },
   { value: 'accesorio', label: '🎒 Accesorio' },
   { value: 'otro', label: '📦 Otro' },
 ];

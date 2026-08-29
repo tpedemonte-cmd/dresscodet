@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 const CATEGORIES: Record<string, string> = {
   remera: '👕', pantalon: '👖', campera: '🧥', buzo: '🧶',
   camisa: '👔', short: '🩳', vestido: '👗', pollera: '💃',
-  zapatillas: '👟', zapatos: '👞', accesorio: '🎒', otro: '📦',
+  zapatillas: '👟', zapatos: '👞', medias: '🧦', accesorio: '🎒', otro: '📦',
 };
 
 export default function Tryon() {

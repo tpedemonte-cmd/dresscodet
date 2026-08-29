@@ -9,7 +9,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   remera: '👕 Remera', pantalon: '👖 Pantalón', campera: '🧥 Campera',
   buzo: '🧶 Buzo', camisa: '👔 Camisa', short: '🩳 Short',
   vestido: '👗 Vestido', pollera: '💃 Pollera', zapatillas: '👟 Zapatillas',
-  zapatos: '👞 Zapatos', accesorio: '🎒 Accesorio',
+  zapatos: '👞 Zapatos', medias: '🧦 Medias', accesorio: '🎒 Accesorio',
 };
 
 export default function Stats() {
