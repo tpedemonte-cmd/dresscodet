@@ -46,9 +46,31 @@ export default function Wardrobe() {
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('clothing_items').delete().eq('id', id);
       if (error) throw error;
+
+      // Quitar la prenda eliminada de las recomendaciones del historial
+      const { data: historyRefs } = await supabase
+        .from('outfit_history')
+        .select('id, recommended_item_ids')
+        .contains('recommended_item_ids', [id]);
+      for (const entry of historyRefs ?? []) {
+        const newIds = (entry.recommended_item_ids ?? []).filter((i) => i !== id);
+        await supabase.from('outfit_history').update({ recommended_item_ids: newIds }).eq('id', entry.id);
+      }
+
+      // Quitarla también de los planes semanales
+      const { data: planRefs } = await supabase
+        .from('weekly_plans')
+        .select('id, recommended_item_ids')
+        .contains('recommended_item_ids', [id]);
+      for (const plan of planRefs ?? []) {
+        const newIds = (plan.recommended_item_ids ?? []).filter((i) => i !== id);
+        await supabase.from('weekly_plans').update({ recommended_item_ids: newIds }).eq('id', plan.id);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clothing_items'] });
+      queryClient.invalidateQueries({ queryKey: ['outfit_history'] });
+      queryClient.invalidateQueries({ queryKey: ['weekly_plans'] });
       toast.success('Prenda eliminada');
     },
   });
