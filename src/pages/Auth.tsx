@@ -35,7 +35,7 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-4xl font-display font-bold text-foreground">Mi Placard</h1>
+          <h1 className="text-4xl font-display font-bold text-foreground">DressCode</h1>
           <p className="mt-2 text-muted-foreground font-body">
             Tu asistente de moda personal
           </p>
