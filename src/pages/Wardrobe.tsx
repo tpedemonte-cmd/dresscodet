@@ -18,6 +18,7 @@ const CATEGORIES: Record<string, string> = {
   pollera: '💃 Pollera',
   zapatillas: '👟 Zapatillas',
   zapatos: '👞 Zapatos',
+  medias: '🧦 Medias',
   accesorio: '🎒 Accesorio',
   otro: '📦 Otro',
 };
