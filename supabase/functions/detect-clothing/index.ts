@@ -6,7 +6,7 @@ const corsHeaders = {
 const VALID_CATEGORIES = [
   'remera', 'pantalon', 'campera', 'buzo', 'camisa',
   'short', 'vestido', 'pollera', 'zapatillas', 'zapatos',
-  'accesorio', 'otro',
+  'medias', 'accesorio', 'otro',
 ];
 
 Deno.serve(async (req) => {
