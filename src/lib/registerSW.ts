@@ -43,15 +43,28 @@ export async function registerServiceWorker() {
     const registration = await navigator.serviceWorker.register("/sw.js", {
       scope: "/",
     });
-    registration.addEventListener("updatefound", () => {
-      const newWorker = registration.installing;
-      newWorker?.addEventListener("statechange", () => {
-        if (newWorker?.state === "installed" && navigator.serviceWorker.controller) {
-          // Hay una nueva versión esperando; recargamos para activarla.
-          window.location.reload();
-        }
-      });
+
+    // Cuando el nuevo service worker toma el control, recargamos una sola vez
+    // para que el usuario vea siempre la última versión publicada.
+    let reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (reloading) return;
+      reloading = true;
+      window.location.reload();
     });
+
+    // Chequeos de actualización: al iniciar, al volver a la pestaña/app y
+    // periódicamente mientras está abierta.
+    const checkForUpdate = () => {
+      registration.update().catch(() => {});
+    };
+
+    checkForUpdate();
+    window.addEventListener("focus", checkForUpdate);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") checkForUpdate();
+    });
+    setInterval(checkForUpdate, 60 * 1000);
   } catch (err) {
     console.error("Error registrando el service worker:", err);
   }
