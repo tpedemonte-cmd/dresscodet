@@ -6,13 +6,21 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+function toBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 0x8000;
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
 async function fetchImageAsBase64(url: string): Promise<{ base64: string; mime: string }> {
   const resp = await fetch(url);
   if (!resp.ok) throw new Error("No se pudo descargar la imagen de la prenda");
   const buffer = await resp.arrayBuffer();
-  const base64 = btoa(
-    new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-  );
+  const base64 = toBase64(buffer);
   const mime = resp.headers.get("content-type") || "image/jpeg";
   return { base64, mime };
 }
