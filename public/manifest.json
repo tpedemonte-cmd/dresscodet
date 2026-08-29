@@ -1,6 +1,6 @@
 {
-  "name": "Mi Placard",
-  "short_name": "Mi Placard",
+  "name": "DressCode",
+  "short_name": "DressCode",
   "description": "Tu guardarropas inteligente",
   "start_url": "/",
   "display": "standalone",

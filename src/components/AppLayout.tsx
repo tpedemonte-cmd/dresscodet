@@ -9,7 +9,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   const navItems = [
-    { path: '/', icon: Shirt, label: 'Mi Placard' },
+    { path: '/', icon: Shirt, label: 'DressCode' },
     { path: '/agregar', icon: Plus, label: 'Agregar' },
     { path: '/probador', icon: ScanFace, label: 'Probador' },
     { path: '/looks', icon: ImageIcon, label: 'Looks' },
@@ -26,7 +26,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-background overflow-x-hidden">
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <h1 className="text-xl font-display font-bold text-foreground">Mi Placard</h1>
+          <h1 className="text-xl font-display font-bold text-foreground">DressCode</h1>
           <Button variant="ghost" size="icon" onClick={signOut}>
             <LogOut className="h-5 w-5" />
           </Button>
