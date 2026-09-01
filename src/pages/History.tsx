@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import OutfitFeedback from '@/components/OutfitFeedback';
+import DeleteHistoryConfirmDialog from '@/components/DeleteHistoryConfirmDialog';
 
 
 const FORMALITY_LABELS: Record<string, string> = {
@@ -42,6 +43,7 @@ export default function History() {
   const [customStart, setCustomStart] = useState<Date | undefined>(undefined);
   const [customEnd, setCustomEnd] = useState<Date | undefined>(undefined);
   const [page, setPage] = useState(1);
+  const [entryToDelete, setEntryToDelete] = useState<{ id: string; event: string; created_at: string } | null>(null);
   const perPage = 10;
 
   const { data: history = [], isLoading } = useQuery({
@@ -322,7 +324,7 @@ export default function History() {
                       }}
                     />
                     <button
-                      onClick={() => deleteMutation.mutate(entry.id)}
+                      onClick={() => setEntryToDelete({ id: entry.id, event: entry.event, created_at: entry.created_at })}
                       className="flex items-center gap-1 text-xs text-destructive hover:underline font-body"
                     >
                       <Trash2 className="h-3 w-3" /> Eliminar
@@ -357,6 +359,21 @@ export default function History() {
         </div>
         );
       })()}
+
+      <DeleteHistoryConfirmDialog
+        entry={entryToDelete}
+        open={!!entryToDelete}
+        onOpenChange={(open) => {
+          if (!open) setEntryToDelete(null);
+        }}
+        onConfirm={() => {
+          if (entryToDelete) {
+            deleteMutation.mutate(entryToDelete.id);
+            setEntryToDelete(null);
+          }
+        }}
+        isPending={deleteMutation.isPending}
+      />
     </div>
   );
 }
