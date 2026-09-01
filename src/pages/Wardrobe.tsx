@@ -186,6 +186,32 @@ export default function Wardrobe() {
         </div>
       )}
 
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={() => setAvailFilter(null)}
+          className={`px-3 py-1.5 rounded-full text-xs font-body font-medium transition-colors ${
+            !availFilter ? 'bg-foreground text-background' : 'bg-secondary text-secondary-foreground'
+          }`}
+        >
+          Todos los estados
+        </button>
+        {AVAILABILITY_OPTIONS.map((o) => {
+          const count = items.filter((i) => ((i as any).availability ?? 'disponible') === o.value).length;
+          if (count === 0 && o.value !== 'disponible') return null;
+          return (
+            <button
+              key={o.value}
+              onClick={() => setAvailFilter(availFilter === o.value ? null : o.value)}
+              className={`px-3 py-1.5 rounded-full text-xs font-body font-medium transition-colors ${
+                availFilter === o.value ? 'bg-foreground text-background' : 'bg-secondary text-secondary-foreground'
+              }`}
+            >
+              {o.emoji} {o.label} ({count})
+            </button>
+          );
+        })}
+      </div>
+
       {filtered.length === 0 ? (
         <div className="text-center py-16 space-y-2">
           <p className="text-4xl">👕</p>
