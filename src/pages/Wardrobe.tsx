@@ -230,14 +230,35 @@ export default function Wardrobe() {
                 <img
                   src={item.image_url}
                   alt={item.name}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover ${((item as any).availability ?? 'disponible') !== 'disponible' ? 'opacity-60 grayscale' : ''}`}
                   loading="lazy"
                 />
               </div>
-              <div className="p-3">
-                <p className="font-body font-medium text-sm text-foreground truncate">{item.name}</p>
-                <p className="text-xs text-muted-foreground">{CATEGORIES[item.category] || item.category}</p>
-                {item.color && <p className="text-xs text-muted-foreground mt-0.5">{item.color}</p>}
+              <div className="p-3 space-y-2">
+                <div>
+                  <p className="font-body font-medium text-sm text-foreground truncate">{item.name}</p>
+                  <p className="text-xs text-muted-foreground">{CATEGORIES[item.category] || item.category}</p>
+                  {item.color && <p className="text-xs text-muted-foreground mt-0.5">{item.color}</p>}
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`w-full px-2 py-1 rounded-full text-xs font-body font-medium transition-opacity hover:opacity-80 ${getAvailability((item as any).availability).className}`}
+                    >
+                      {getAvailability((item as any).availability).emoji} {getAvailability((item as any).availability).label}
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="bg-popover z-50">
+                    {AVAILABILITY_OPTIONS.map((o) => (
+                      <DropdownMenuItem
+                        key={o.value}
+                        onClick={() => availabilityMutation.mutate({ id: item.id, availability: o.value })}
+                      >
+                        {o.emoji} {o.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <button
                 onClick={() => favMutation.mutate({ id: item.id, is_favorite: !(item as any).is_favorite })}
