@@ -38,6 +38,7 @@ export default function Wardrobe() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<string | null>(null);
+  const [availFilter, setAvailFilter] = useState<Availability | null>(null);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
   const [deleteRefs, setDeleteRefs] = useState({ history: 0, plans: 0 });
@@ -102,6 +103,18 @@ export default function Wardrobe() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['clothing_items'] }),
   });
 
+  const availabilityMutation = useMutation({
+    mutationFn: async ({ id, availability }: { id: string; availability: Availability }) => {
+      const { error } = await supabase.from('clothing_items').update({ availability } as any).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => {
+      queryClient.invalidateQueries({ queryKey: ['clothing_items'] });
+      toast.success(`Estado actualizado: ${getAvailability(v.availability).label}`);
+    },
+    onError: () => toast.error('No se pudo actualizar el estado'),
+  });
+
   const prepareDelete = async (item: any) => {
     const { count: historyCount } = await supabase
       .from('outfit_history')
@@ -124,7 +137,11 @@ export default function Wardrobe() {
     }
   };
 
-  const filtered = filter ? items.filter((i) => i.category === filter) : items;
+  const filtered = items.filter(
+    (i) =>
+      (!filter || i.category === filter) &&
+      (!availFilter || ((i as any).availability ?? 'disponible') === availFilter)
+  );
 
   const categories = [...new Set(items.map((i) => i.category))];
 
