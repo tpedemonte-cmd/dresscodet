@@ -95,10 +95,26 @@ export default function Marketplace() {
     fetchWishlist();
   }, [fetchWishlist]);
 
-  const removeFromWishlist = async (id: string) => {
-    await supabase.from('wishlist').delete().eq('id', id);
-    setWishlist((prev) => prev.filter((w) => w.id !== id));
-    toast.success('Eliminado de favoritos');
+  const openDeleteDialog = (item: WishlistItem) => {
+    setItemToDelete(item);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmRemoveFromWishlist = async () => {
+    if (!itemToDelete) return;
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.from('wishlist').delete().eq('id', itemToDelete.id);
+      if (error) throw error;
+      setWishlist((prev) => prev.filter((w) => w.id !== itemToDelete.id));
+      toast.success('Eliminado de favoritos');
+    } catch (err) {
+      toast.error('No se pudo eliminar el producto');
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    }
   };
 
   const buildSearchUrl = (searchQuery: string) => {
