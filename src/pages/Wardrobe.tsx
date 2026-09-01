@@ -5,6 +5,8 @@ import { Trash2, Pencil, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import EditItemDialog from '@/components/EditItemDialog';
+import DeleteItemConfirmDialog from '@/components/DeleteItemConfirmDialog';
+
 
 
 const CATEGORIES: Record<string, string> = {
