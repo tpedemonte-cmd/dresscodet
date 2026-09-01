@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import DeleteWishlistConfirmDialog from '@/components/DeleteWishlistConfirmDialog';
 import { toast } from 'sonner';
 
 type WishlistItem = {
