@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Search, ExternalLink, Truck, ShoppingBag, Loader2, SlidersHorizontal, Heart, Trash2 } from 'lucide-react';
+import DeleteWishlistConfirmDialog from '@/components/DeleteWishlistConfirmDialog';
 import { toast } from 'sonner';
 
 const PRICE_RANGES = [
@@ -77,6 +78,10 @@ export default function Marketplace() {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [showWishlist, setShowWishlist] = useState(false);
 
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<WishlistItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const fetchWishlist = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
@@ -90,10 +95,26 @@ export default function Marketplace() {
     fetchWishlist();
   }, [fetchWishlist]);
 
-  const removeFromWishlist = async (id: string) => {
-    await supabase.from('wishlist').delete().eq('id', id);
-    setWishlist((prev) => prev.filter((w) => w.id !== id));
-    toast.success('Eliminado de favoritos');
+  const openDeleteDialog = (item: WishlistItem) => {
+    setItemToDelete(item);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmRemoveFromWishlist = async () => {
+    if (!itemToDelete) return;
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.from('wishlist').delete().eq('id', itemToDelete.id);
+      if (error) throw error;
+      setWishlist((prev) => prev.filter((w) => w.id !== itemToDelete.id));
+      toast.success('Eliminado de favoritos');
+    } catch (err) {
+      toast.error('No se pudo eliminar el producto');
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    }
   };
 
   const buildSearchUrl = (searchQuery: string) => {
@@ -180,7 +201,7 @@ export default function Marketplace() {
                           <ExternalLink className="h-3.5 w-3.5" />
                         </Button>
                       </a>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeFromWishlist(item.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => openDeleteDialog(item)}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -189,6 +210,14 @@ export default function Marketplace() {
               </div>
             </>
           )}
+
+          <DeleteWishlistConfirmDialog
+            item={itemToDelete}
+            open={deleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+            onConfirm={confirmRemoveFromWishlist}
+            isPending={isDeleting}
+          />
         </div>
       ) : (
         <>

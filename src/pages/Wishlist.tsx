@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import DeleteWishlistConfirmDialog from '@/components/DeleteWishlistConfirmDialog';
 import { toast } from 'sonner';
 
 type WishlistItem = {
@@ -33,10 +34,14 @@ export default function Wishlist() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [mlUrl, setMlUrl] = useState('');
   const [manualTitle, setManualTitle] = useState('');
-  
+
   const [adding, setAdding] = useState(false);
   const [step, setStep] = useState<'url' | 'details'>('url');
   const [extractedData, setExtractedData] = useState<{ product_id: string; permalink: string; thumbnail: string } | null>(null);
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<WishlistItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchWishlist = useCallback(async () => {
     if (!user) return;
@@ -53,10 +58,26 @@ export default function Wishlist() {
     fetchWishlist();
   }, [fetchWishlist]);
 
-  const removeItem = async (id: string) => {
-    await supabase.from('wishlist').delete().eq('id', id);
-    setItems(prev => prev.filter(i => i.id !== id));
-    toast.success('Eliminado de tu wishlist');
+  const openDeleteDialog = (item: WishlistItem) => {
+    setItemToDelete(item);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmRemoveItem = async () => {
+    if (!itemToDelete) return;
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.from('wishlist').delete().eq('id', itemToDelete.id);
+      if (error) throw error;
+      setItems(prev => prev.filter(i => i.id !== itemToDelete.id));
+      toast.success('Eliminado de tu wishlist');
+    } catch (err) {
+      toast.error('No se pudo eliminar el producto');
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    }
   };
 
   const resetDialog = () => {
@@ -315,7 +336,7 @@ export default function Wishlist() {
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7 text-destructive hover:text-destructive"
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => openDeleteDialog(item)}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -325,6 +346,14 @@ export default function Wishlist() {
           ))}
         </div>
       )}
+
+      <DeleteWishlistConfirmDialog
+        item={itemToDelete}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmRemoveItem}
+        isPending={isDeleting}
+      />
     </div>
   );
 }
