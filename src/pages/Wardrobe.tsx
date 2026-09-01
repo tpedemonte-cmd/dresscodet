@@ -5,6 +5,8 @@ import { Trash2, Pencil, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import EditItemDialog from '@/components/EditItemDialog';
+import DeleteItemConfirmDialog from '@/components/DeleteItemConfirmDialog';
+
 
 
 const CATEGORIES: Record<string, string> = {
@@ -28,6 +30,10 @@ export default function Wardrobe() {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [itemToDelete, setItemToDelete] = useState<any>(null);
+  const [deleteRefs, setDeleteRefs] = useState({ history: 0, plans: 0 });
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['clothing_items', user?.id],
@@ -72,7 +78,11 @@ export default function Wardrobe() {
       queryClient.invalidateQueries({ queryKey: ['outfit_history'] });
       queryClient.invalidateQueries({ queryKey: ['weekly_plans'] });
       toast.success('Prenda eliminada');
+      setIsConfirmOpen(false);
+      setItemToDelete(null);
+      setDeleteRefs({ history: 0, plans: 0 });
     },
+
   });
 
   const favMutation = useMutation({
@@ -83,7 +93,30 @@ export default function Wardrobe() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['clothing_items'] }),
   });
 
+  const prepareDelete = async (item: any) => {
+    const { count: historyCount } = await supabase
+      .from('outfit_history')
+      .select('*', { count: 'exact', head: true })
+      .contains('recommended_item_ids', [item.id]);
+
+    const { count: planCount } = await supabase
+      .from('weekly_plans')
+      .select('*', { count: 'exact', head: true })
+      .contains('recommended_item_ids', [item.id]);
+
+    setItemToDelete(item);
+    setDeleteRefs({ history: historyCount ?? 0, plans: planCount ?? 0 });
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (itemToDelete) {
+      deleteMutation.mutate(itemToDelete.id);
+    }
+  };
+
   const filtered = filter ? items.filter((i) => i.category === filter) : items;
+
   const categories = [...new Set(items.map((i) => i.category))];
 
   if (isLoading) {
@@ -167,11 +200,12 @@ export default function Wardrobe() {
                 <Pencil className="h-4 w-4" />
               </button>
               <button
-                onClick={() => deleteMutation.mutate(item.id)}
+                onClick={() => prepareDelete(item)}
                 className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:bg-destructive hover:text-destructive-foreground"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
+
             </div>
           ))}
         </div>
@@ -184,6 +218,23 @@ export default function Wardrobe() {
           onOpenChange={(open) => { if (!open) setEditingItem(null); }}
         />
       )}
+
+      <DeleteItemConfirmDialog
+        item={itemToDelete}
+        historyCount={deleteRefs.history}
+        planCount={deleteRefs.plans}
+        open={isConfirmOpen}
+        onOpenChange={(open) => {
+          setIsConfirmOpen(open);
+          if (!open) {
+            setItemToDelete(null);
+            setDeleteRefs({ history: 0, plans: 0 });
+          }
+        }}
+        onConfirm={handleConfirmDelete}
+        isPending={deleteMutation.isPending}
+      />
     </div>
+
   );
 }
