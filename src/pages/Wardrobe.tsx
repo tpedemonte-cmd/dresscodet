@@ -89,7 +89,30 @@ export default function Wardrobe() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['clothing_items'] }),
   });
 
+  const prepareDelete = async (item: any) => {
+    const { count: historyCount } = await supabase
+      .from('outfit_history')
+      .select('*', { count: 'exact', head: true })
+      .contains('recommended_item_ids', [item.id]);
+
+    const { count: planCount } = await supabase
+      .from('weekly_plans')
+      .select('*', { count: 'exact', head: true })
+      .contains('recommended_item_ids', [item.id]);
+
+    setItemToDelete(item);
+    setDeleteRefs({ history: historyCount ?? 0, plans: planCount ?? 0 });
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (itemToDelete) {
+      deleteMutation.mutate(itemToDelete.id);
+    }
+  };
+
   const filtered = filter ? items.filter((i) => i.category === filter) : items;
+
   const categories = [...new Set(items.map((i) => i.category))];
 
   if (isLoading) {
