@@ -43,6 +43,7 @@ export default function History() {
   const [customStart, setCustomStart] = useState<Date | undefined>(undefined);
   const [customEnd, setCustomEnd] = useState<Date | undefined>(undefined);
   const [page, setPage] = useState(1);
+  const [entryToDelete, setEntryToDelete] = useState<{ id: string; event: string; created_at: string } | null>(null);
   const perPage = 10;
 
   const { data: history = [], isLoading } = useQuery({
