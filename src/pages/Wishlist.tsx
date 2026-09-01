@@ -58,10 +58,26 @@ export default function Wishlist() {
     fetchWishlist();
   }, [fetchWishlist]);
 
-  const removeItem = async (id: string) => {
-    await supabase.from('wishlist').delete().eq('id', id);
-    setItems(prev => prev.filter(i => i.id !== id));
-    toast.success('Eliminado de tu wishlist');
+  const openDeleteDialog = (item: WishlistItem) => {
+    setItemToDelete(item);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmRemoveItem = async () => {
+    if (!itemToDelete) return;
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.from('wishlist').delete().eq('id', itemToDelete.id);
+      if (error) throw error;
+      setItems(prev => prev.filter(i => i.id !== itemToDelete.id));
+      toast.success('Eliminado de tu wishlist');
+    } catch (err) {
+      toast.error('No se pudo eliminar el producto');
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    }
   };
 
   const resetDialog = () => {
