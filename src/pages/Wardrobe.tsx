@@ -218,6 +218,23 @@ export default function Wardrobe() {
           onOpenChange={(open) => { if (!open) setEditingItem(null); }}
         />
       )}
+
+      <DeleteItemConfirmDialog
+        item={itemToDelete}
+        historyCount={deleteRefs.history}
+        planCount={deleteRefs.plans}
+        open={isConfirmOpen}
+        onOpenChange={(open) => {
+          setIsConfirmOpen(open);
+          if (!open) {
+            setItemToDelete(null);
+            setDeleteRefs({ history: 0, plans: 0 });
+          }
+        }}
+        onConfirm={handleConfirmDelete}
+        isPending={deleteMutation.isPending}
+      />
     </div>
+
   );
 }
