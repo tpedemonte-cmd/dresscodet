@@ -78,7 +78,11 @@ export default function Wardrobe() {
       queryClient.invalidateQueries({ queryKey: ['outfit_history'] });
       queryClient.invalidateQueries({ queryKey: ['weekly_plans'] });
       toast.success('Prenda eliminada');
+      setIsConfirmOpen(false);
+      setItemToDelete(null);
+      setDeleteRefs({ history: 0, plans: 0 });
     },
+
   });
 
   const favMutation = useMutation({
