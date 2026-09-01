@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import OutfitFeedback from '@/components/OutfitFeedback';
+import DeleteHistoryConfirmDialog from '@/components/DeleteHistoryConfirmDialog';
 
 
 const FORMALITY_LABELS: Record<string, string> = {
