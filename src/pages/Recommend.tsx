@@ -12,6 +12,7 @@ import { analizarUsoPrendas, type ItemUsage } from '@/lib/wardrobeAnalysis';
 import { Clock, AlertTriangle } from 'lucide-react';
 import { fetchCurrentWeather, fetchWeatherFromCoords } from '@/lib/weather';
 import OutfitFeedback from '@/components/OutfitFeedback';
+import { isAvailable } from '@/lib/availability';
 
 const EVENTS = [
   { value: 'trabajo', label: '💼 Trabajo' },

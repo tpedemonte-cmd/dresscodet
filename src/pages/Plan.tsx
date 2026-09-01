@@ -10,6 +10,7 @@ import { Calendar, ExternalLink, Loader2, MapPin, Plus, Search, ShoppingBag, Spa
 import { toast } from 'sonner';
 import { fetchForecastForDate, searchCity, type GeoResult } from '@/lib/weather';
 import OutfitFeedback from '@/components/OutfitFeedback';
+import { isAvailable } from '@/lib/availability';
 
 const EVENTS = [
   { value: 'trabajo', label: '💼 Trabajo' },
