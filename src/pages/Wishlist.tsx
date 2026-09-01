@@ -34,10 +34,14 @@ export default function Wishlist() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [mlUrl, setMlUrl] = useState('');
   const [manualTitle, setManualTitle] = useState('');
-  
+
   const [adding, setAdding] = useState(false);
   const [step, setStep] = useState<'url' | 'details'>('url');
   const [extractedData, setExtractedData] = useState<{ product_id: string; permalink: string; thumbnail: string } | null>(null);
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<WishlistItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchWishlist = useCallback(async () => {
     if (!user) return;
