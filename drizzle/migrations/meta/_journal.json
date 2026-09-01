@@ -8,6 +8,13 @@
       "when": 1788037823610,
       "tag": "0000_add_medias_category",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788302054735,
+      "tag": "0001_add_clothing_availability",
+      "breakpoints": true
     }
   ]
 }
