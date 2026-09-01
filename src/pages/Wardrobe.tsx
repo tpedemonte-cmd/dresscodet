@@ -196,11 +196,12 @@ export default function Wardrobe() {
                 <Pencil className="h-4 w-4" />
               </button>
               <button
-                onClick={() => deleteMutation.mutate(item.id)}
+                onClick={() => prepareDelete(item)}
                 className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:bg-destructive hover:text-destructive-foreground"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
+
             </div>
           ))}
         </div>
