@@ -336,7 +336,7 @@ export default function Wishlist() {
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7 text-destructive hover:text-destructive"
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => openDeleteDialog(item)}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -346,6 +346,14 @@ export default function Wishlist() {
           ))}
         </div>
       )}
+
+      <DeleteWishlistConfirmDialog
+        item={itemToDelete}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmRemoveItem}
+        isPending={isDeleting}
+      />
     </div>
   );
 }
