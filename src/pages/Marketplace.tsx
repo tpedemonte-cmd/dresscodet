@@ -201,7 +201,7 @@ export default function Marketplace() {
                           <ExternalLink className="h-3.5 w-3.5" />
                         </Button>
                       </a>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeFromWishlist(item.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => openDeleteDialog(item)}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -210,6 +210,14 @@ export default function Marketplace() {
               </div>
             </>
           )}
+
+          <DeleteWishlistConfirmDialog
+            item={itemToDelete}
+            open={deleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+            onConfirm={confirmRemoveFromWishlist}
+            isPending={isDeleting}
+          />
         </div>
       ) : (
         <>
