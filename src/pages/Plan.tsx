@@ -141,7 +141,7 @@ export default function Plan() {
       );
 
       // 2. IA
-      const wardrobeSummary = (items as any[]).map(i =>
+      const wardrobeSummary = (items as any[]).filter((i) => isAvailable(i)).map(i =>
         `- ID:${i.id} | ${i.name} (${i.category}${i.color ? ', ' + i.color : ''})${i.is_favorite ? ' ⭐ FAVORITA' : ''}`
       ).join('\n');
       const wishlistSummary = (wishlistItems as any[]).length > 0
