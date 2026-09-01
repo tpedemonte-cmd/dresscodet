@@ -10,6 +10,7 @@ import { Calendar, ExternalLink, Loader2, MapPin, Plus, Search, ShoppingBag, Spa
 import { toast } from 'sonner';
 import { fetchForecastForDate, searchCity, type GeoResult } from '@/lib/weather';
 import OutfitFeedback from '@/components/OutfitFeedback';
+import { isAvailable } from '@/lib/availability';
 
 const EVENTS = [
   { value: 'trabajo', label: '💼 Trabajo' },
@@ -141,7 +142,7 @@ export default function Plan() {
       );
 
       // 2. IA
-      const wardrobeSummary = (items as any[]).map(i =>
+      const wardrobeSummary = (items as any[]).filter((i) => isAvailable(i)).map(i =>
         `- ID:${i.id} | ${i.name} (${i.category}${i.color ? ', ' + i.color : ''})${i.is_favorite ? ' ⭐ FAVORITA' : ''}`
       ).join('\n');
       const wishlistSummary = (wishlistItems as any[]).length > 0

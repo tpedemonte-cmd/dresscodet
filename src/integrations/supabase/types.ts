@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       clothing_items: {
         Row: {
+          availability: string
           category: string
           color: string | null
           created_at: string
@@ -26,6 +27,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          availability?: string
           category: string
           color?: string | null
           created_at?: string
@@ -36,6 +38,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          availability?: string
           category?: string
           color?: string | null
           created_at?: string

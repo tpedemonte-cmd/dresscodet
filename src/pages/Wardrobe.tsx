@@ -6,6 +6,15 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import EditItemDialog from '@/components/EditItemDialog';
 import DeleteItemConfirmDialog from '@/components/DeleteItemConfirmDialog';
+import { AVAILABILITY_OPTIONS, getAvailability, type Availability } from '@/lib/availability';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+
 
 
 
@@ -29,6 +38,7 @@ export default function Wardrobe() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<string | null>(null);
+  const [availFilter, setAvailFilter] = useState<Availability | null>(null);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
   const [deleteRefs, setDeleteRefs] = useState({ history: 0, plans: 0 });
@@ -93,6 +103,18 @@ export default function Wardrobe() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['clothing_items'] }),
   });
 
+  const availabilityMutation = useMutation({
+    mutationFn: async ({ id, availability }: { id: string; availability: Availability }) => {
+      const { error } = await supabase.from('clothing_items').update({ availability } as any).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => {
+      queryClient.invalidateQueries({ queryKey: ['clothing_items'] });
+      toast.success(`Estado actualizado: ${getAvailability(v.availability).label}`);
+    },
+    onError: () => toast.error('No se pudo actualizar el estado'),
+  });
+
   const prepareDelete = async (item: any) => {
     const { count: historyCount } = await supabase
       .from('outfit_history')
@@ -115,7 +137,11 @@ export default function Wardrobe() {
     }
   };
 
-  const filtered = filter ? items.filter((i) => i.category === filter) : items;
+  const filtered = items.filter(
+    (i) =>
+      (!filter || i.category === filter) &&
+      (!availFilter || ((i as any).availability ?? 'disponible') === availFilter)
+  );
 
   const categories = [...new Set(items.map((i) => i.category))];
 
@@ -160,6 +186,32 @@ export default function Wardrobe() {
         </div>
       )}
 
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={() => setAvailFilter(null)}
+          className={`px-3 py-1.5 rounded-full text-xs font-body font-medium transition-colors ${
+            !availFilter ? 'bg-foreground text-background' : 'bg-secondary text-secondary-foreground'
+          }`}
+        >
+          Todos los estados
+        </button>
+        {AVAILABILITY_OPTIONS.map((o) => {
+          const count = items.filter((i) => ((i as any).availability ?? 'disponible') === o.value).length;
+          if (count === 0 && o.value !== 'disponible') return null;
+          return (
+            <button
+              key={o.value}
+              onClick={() => setAvailFilter(availFilter === o.value ? null : o.value)}
+              className={`px-3 py-1.5 rounded-full text-xs font-body font-medium transition-colors ${
+                availFilter === o.value ? 'bg-foreground text-background' : 'bg-secondary text-secondary-foreground'
+              }`}
+            >
+              {o.emoji} {o.label} ({count})
+            </button>
+          );
+        })}
+      </div>
+
       {filtered.length === 0 ? (
         <div className="text-center py-16 space-y-2">
           <p className="text-4xl">👕</p>
@@ -178,14 +230,35 @@ export default function Wardrobe() {
                 <img
                   src={item.image_url}
                   alt={item.name}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover ${((item as any).availability ?? 'disponible') !== 'disponible' ? 'opacity-60 grayscale' : ''}`}
                   loading="lazy"
                 />
               </div>
-              <div className="p-3">
-                <p className="font-body font-medium text-sm text-foreground truncate">{item.name}</p>
-                <p className="text-xs text-muted-foreground">{CATEGORIES[item.category] || item.category}</p>
-                {item.color && <p className="text-xs text-muted-foreground mt-0.5">{item.color}</p>}
+              <div className="p-3 space-y-2">
+                <div>
+                  <p className="font-body font-medium text-sm text-foreground truncate">{item.name}</p>
+                  <p className="text-xs text-muted-foreground">{CATEGORIES[item.category] || item.category}</p>
+                  {item.color && <p className="text-xs text-muted-foreground mt-0.5">{item.color}</p>}
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`w-full px-2 py-1 rounded-full text-xs font-body font-medium transition-opacity hover:opacity-80 ${getAvailability((item as any).availability).className}`}
+                    >
+                      {getAvailability((item as any).availability).emoji} {getAvailability((item as any).availability).label}
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="bg-popover z-50">
+                    {AVAILABILITY_OPTIONS.map((o) => (
+                      <DropdownMenuItem
+                        key={o.value}
+                        onClick={() => availabilityMutation.mutate({ id: item.id, availability: o.value })}
+                      >
+                        {o.emoji} {o.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <button
                 onClick={() => favMutation.mutate({ id: item.id, is_favorite: !(item as any).is_favorite })}
