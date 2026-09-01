@@ -324,7 +324,7 @@ export default function History() {
                       }}
                     />
                     <button
-                      onClick={() => deleteMutation.mutate(entry.id)}
+                      onClick={() => setEntryToDelete({ id: entry.id, event: entry.event, created_at: entry.created_at })}
                       className="flex items-center gap-1 text-xs text-destructive hover:underline font-body"
                     >
                       <Trash2 className="h-3 w-3" /> Eliminar
