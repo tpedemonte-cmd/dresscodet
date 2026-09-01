@@ -30,6 +30,10 @@ export default function Wardrobe() {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [itemToDelete, setItemToDelete] = useState<any>(null);
+  const [deleteRefs, setDeleteRefs] = useState({ history: 0, plans: 0 });
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['clothing_items', user?.id],
