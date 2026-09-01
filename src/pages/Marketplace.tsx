@@ -78,6 +78,10 @@ export default function Marketplace() {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [showWishlist, setShowWishlist] = useState(false);
 
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<WishlistItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const fetchWishlist = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
