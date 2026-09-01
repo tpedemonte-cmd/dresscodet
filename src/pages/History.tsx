@@ -359,6 +359,21 @@ export default function History() {
         </div>
         );
       })()}
+
+      <DeleteHistoryConfirmDialog
+        entry={entryToDelete}
+        open={!!entryToDelete}
+        onOpenChange={(open) => {
+          if (!open) setEntryToDelete(null);
+        }}
+        onConfirm={() => {
+          if (entryToDelete) {
+            deleteMutation.mutate(entryToDelete.id);
+            setEntryToDelete(null);
+          }
+        }}
+        isPending={deleteMutation.isPending}
+      />
     </div>
   );
 }
