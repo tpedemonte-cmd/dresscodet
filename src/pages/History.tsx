@@ -12,6 +12,9 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import OutfitFeedback from '@/components/OutfitFeedback';
 import DeleteHistoryConfirmDialog from '@/components/DeleteHistoryConfirmDialog';
+import AdBanner from '@/components/AdBanner';
+import { usePlan } from '@/lib/plan';
+import { Crown } from 'lucide-react';
 
 
 const FORMALITY_LABELS: Record<string, string> = {
@@ -35,6 +38,7 @@ const SEASON_LABELS: Record<string, string> = {
 
 export default function History() {
   const { user } = useAuth();
+  const { isPremium, setPlan, FREE_HISTORY_LIMIT } = usePlan();
   const queryClient = useQueryClient();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [eventFilter, setEventFilter] = useState<string>('todos');
@@ -114,8 +118,15 @@ export default function History() {
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-display font-bold text-foreground">Historial de Outfits</h2>
-        <p className="text-muted-foreground font-body">{history.length} recomendaciones</p>
+        <p className="text-muted-foreground font-body">
+          {history.length} recomendaciones
+          {!isPremium && history.length > FREE_HISTORY_LIMIT && (
+            <span className="text-sm"> · viendo las últimas {FREE_HISTORY_LIMIT} (plan gratis)</span>
+          )}
+        </p>
       </div>
+
+      <AdBanner index={2} />
 
       {history.length > 0 && (() => {
         const availableEvents = Array.from(new Set(history.map((h: any) => h.event)));
@@ -217,10 +228,12 @@ export default function History() {
           <p className="text-muted-foreground font-body">Todavía no pediste ninguna recomendación.</p>
         </div>
       ) : (() => {
-        const filtered = history
+        const allFiltered = history
           .filter((h: any) => eventFilter === 'todos' || h.event === eventFilter)
           .filter((h: any) => matchesDateFilter(h))
           .filter((h: any) => matchesFeedbackFilter(h));
+        const filtered = isPremium ? allFiltered : allFiltered.slice(0, FREE_HISTORY_LIMIT);
+        const hiddenCount = allFiltered.length - filtered.length;
         if (filtered.length === 0) {
           return (
             <div className="text-center py-12 space-y-2">
@@ -354,6 +367,19 @@ export default function History() {
               >
                 Siguientes <ChevronRight className="h-4 w-4" />
               </button>
+            </div>
+          )}
+          {hiddenCount > 0 && (
+            <div className="rounded-xl border border-border bg-card p-4 text-center space-y-2 shadow-card">
+              <p className="text-sm font-body font-medium text-foreground">
+                Hay {hiddenCount} recomendaciones más en tu historial
+              </p>
+              <p className="text-xs font-body text-muted-foreground">
+                El plan gratis muestra solo las últimas {FREE_HISTORY_LIMIT}. Con Premium ves todo tu historial completo.
+              </p>
+              <Button variant="warm" size="sm" onClick={() => setPlan('premium')}>
+                <Crown className="h-4 w-4 mr-2" /> Ver todo con Premium
+              </Button>
             </div>
           )}
         </div>

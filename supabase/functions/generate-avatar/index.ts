@@ -15,7 +15,8 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { height, weight, age, gender } = await req.json();
+    const { height, weight, age, gender, hairColor, hairStyle, skinTone, eyeColor, bodyType } =
+      await req.json();
 
     if (!height || !weight || !age || !gender) {
       return new Response(
@@ -34,12 +35,22 @@ serve(async (req) => {
 
     const genderText = gender === "masculino" ? "hombre" : gender === "femenino" ? "mujer" : "persona";
 
-    const prompt = `Generate a realistic full-body photograph of a ${genderText} of ${age} years old, ${height}cm tall, weighing ${weight}kg, with a ${build} body build.
+    const traits: string[] = [];
+    if (hairColor) traits.push(`hair color: ${hairColor}`);
+    if (hairStyle) traits.push(`hair style: ${hairStyle}`);
+    if (skinTone) traits.push(`skin tone: ${skinTone}`);
+    if (eyeColor) traits.push(`eye color: ${eyeColor}`);
+    if (bodyType) traits.push(`body type: ${bodyType}`);
+    const traitsText = traits.length
+      ? `\nPersonal features (in Spanish terms, follow them closely): ${traits.join(", ")}.`
+      : "";
+
+    const prompt = `Generate a realistic full-body photograph of a ${genderText} of ${age} years old, ${height}cm tall, weighing ${weight}kg, with a ${bodyType || build} body build.${traitsText}
 
 The person should:
 - Stand in a neutral relaxed pose, facing the camera, arms slightly away from the body
 - Wear plain neutral underwear (basic gray/white tank top and shorts) so clothing can be virtually tried on later
-- Have a neutral facial expression and a generic appearance (no distinctive features)
+- Have a neutral facial expression${traits.length ? "" : " and a generic appearance (no distinctive features)"}
 - Be photographed against a clean light gray seamless studio background
 - Be evenly lit with soft natural lighting
 - Be shown from head to toe, fully visible, centered in the frame

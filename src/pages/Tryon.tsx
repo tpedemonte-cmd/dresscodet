@@ -3,9 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown } from 'lucide-react';
+import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
+import { usePlan } from '@/lib/plan';
+import AdBanner from '@/components/AdBanner';
+import { PremiumBadge } from '@/components/PremiumGate';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,9 +22,28 @@ const CATEGORIES: Record<string, string> = {
   zapatillas: '👟', zapatos: '👞', medias: '🧦', accesorio: '🎒', otro: '📦',
 };
 
+// Ejemplos de modelos para que el usuario elija con cuál se identifica (Premium)
+const MODEL_PRESETS = [
+  { id: 'rubio', label: 'Rubio/a', emoji: '👱', hairColor: 'rubio', hairStyle: 'lacio media melena', skinTone: 'clara', eyeColor: 'celestes' },
+  { id: 'morocho', label: 'Morocho/a', emoji: '🧑', hairColor: 'negro', hairStyle: 'lacio corto', skinTone: 'trigueña', eyeColor: 'marrones' },
+  { id: 'pelirrojo', label: 'Pelirrojo/a', emoji: '🧑‍🦰', hairColor: 'pelirrojo', hairStyle: 'ondulado', skinTone: 'muy clara con pecas', eyeColor: 'verdes' },
+  { id: 'castano', label: 'Castaño/a', emoji: '🙂', hairColor: 'castaño', hairStyle: 'lacio largo', skinTone: 'clara', eyeColor: 'marrones' },
+  { id: 'rulos', label: 'Con rulos', emoji: '🧑‍🦱', hairColor: 'castaño oscuro', hairStyle: 'rulos', skinTone: 'morena', eyeColor: 'marrones' },
+  { id: 'canoso', label: 'Canoso/a', emoji: '🧑‍🦳', hairColor: 'canoso', hairStyle: 'corto', skinTone: 'clara', eyeColor: 'grises' },
+];
+
+const HAIR_COLORS = ['rubio', 'castaño', 'negro', 'pelirrojo', 'canoso'];
+const HAIR_STYLES = ['lacio corto', 'lacio largo', 'ondulado', 'rulos', 'recogido'];
+const SKIN_TONES = ['muy clara', 'clara', 'trigueña', 'morena', 'oscura'];
+const EYE_COLORS = ['marrones', 'celestes', 'verdes', 'grises'];
+const BODY_TYPES = ['delgado', 'atlético', 'promedio', 'curvilíneo', 'robusto'];
+
 export default function Tryon() {
   const { user } = useAuth();
+  const { isPremium, setPlan } = usePlan();
   const queryClient = useQueryClient();
+  const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
+  const [presetId, setPresetId] = useState<string | null>(null);
 
   const [selfie, setSelfie] = useState<string | null>(null);
   const [activeModelId, setActiveModelId] = useState<string | null>(null);
@@ -32,7 +54,17 @@ export default function Tryon() {
   const [savingModel, setSavingModel] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [subFilter, setSubFilter] = useState<string | null>(null);
-  const [avatarData, setAvatarData] = useState({ height: '170', weight: '65', age: '', gender: 'femenino' });
+  const [avatarData, setAvatarData] = useState({
+    height: '170',
+    weight: '65',
+    age: '',
+    gender: 'femenino',
+    hairColor: '',
+    hairStyle: '',
+    skinTone: '',
+    eyeColor: '',
+    bodyType: '',
+  });
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
 
   const { data: items = [] } = useQuery({
@@ -82,8 +114,30 @@ export default function Tryon() {
     [items, categoryFilter, subFilter]
   );
 
+  const applyPreset = (preset: typeof MODEL_PRESETS[number]) => {
+    setPresetId(preset.id);
+    setAvatarData((d) => ({
+      ...d,
+      hairColor: preset.hairColor,
+      hairStyle: preset.hairStyle,
+      skinTone: preset.skinTone,
+      eyeColor: preset.eyeColor,
+    }));
+  };
+
+  const handleSelfieUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      setSelfie(reader.result as string);
+      setActiveModelId(null);
+      setResultImage(null);
+      toast.success('¡Foto lista! Elegí prendas para probártelas.');
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleGenerateAvatar = async () => {
-    const { height, weight, age, gender } = avatarData;
+    const { height, weight, age, gender, hairColor, hairStyle, skinTone, eyeColor, bodyType } = avatarData;
     if (!height || !weight || !age) {
       toast.error('Completá altura, peso y edad');
       return;
@@ -91,7 +145,13 @@ export default function Tryon() {
     setGeneratingAvatar(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-avatar', {
-        body: { height: Number(height), weight: Number(weight), age: Number(age), gender },
+        body: {
+          height: Number(height),
+          weight: Number(weight),
+          age: Number(age),
+          gender,
+          ...(isPremium ? { hairColor, hairStyle, skinTone, eyeColor, bodyType } : {}),
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -189,12 +249,13 @@ export default function Tryon() {
     onSuccess: (model) => {
       setSelfie(model.image_url);
       setActiveModelId(model.id);
-      setAvatarData({
+      setAvatarData((d) => ({
+        ...d,
         height: String(model.height),
         weight: String(model.weight),
         age: String(model.age),
         gender: model.gender,
-      });
+      }));
       setResultImage(null);
       queryClient.invalidateQueries({ queryKey: ['user_models'] });
     },
@@ -330,9 +391,33 @@ export default function Tryon() {
         <p className="text-muted-foreground font-body">Elegí las prendas y armá tu outfit completo</p>
       </div>
 
+      <AdBanner index={0} />
+
       {/* Step 1: Model */}
       <div className="space-y-3">
         <p className="text-sm font-body font-medium text-foreground">1. Tu modelo</p>
+
+        {!selfie && (
+          <div className="max-w-sm mx-auto grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setModelMode('ia')}
+              className={`rounded-xl px-3 py-2 text-xs font-body font-medium transition-colors ${
+                modelMode === 'ia' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Sparkles className="h-4 w-4 inline mr-1" /> Modelo con IA
+            </button>
+            <button
+              onClick={() => setModelMode('selfie')}
+              className={`inline-flex items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-body font-medium transition-colors ${
+                modelMode === 'selfie' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {isPremium ? <Camera className="h-4 w-4" /> : <Lock className="h-3.5 w-3.5" />} Mi propia foto
+            </button>
+          </div>
+        )}
+
 
         {selfie ? (
           <div className="space-y-3">
@@ -366,11 +451,76 @@ export default function Tryon() {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Generate new model */}
+            {modelMode === 'selfie' ? (
+              isPremium ? (
+                <div className="max-w-sm mx-auto bg-secondary rounded-xl p-4 border-2 border-dashed border-border space-y-3 text-center">
+                  <p className="text-muted-foreground font-body text-xs">
+                    Sacate una foto de cuerpo completo y probate la ropa sobre tu propia imagen
+                  </p>
+                  <label className="block">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleSelfieUpload(file);
+                      }}
+                    />
+                    <span className="inline-flex items-center justify-center gap-2 w-full cursor-pointer rounded-md bg-primary text-primary-foreground px-3 py-2 text-sm font-body font-medium">
+                      <Camera className="h-4 w-4" /> Sacar o subir mi foto
+                    </span>
+                  </label>
+                </div>
+              ) : (
+                <div className="max-w-sm mx-auto bg-card rounded-xl p-4 shadow-card space-y-2 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-sm font-body font-medium text-foreground">Probártelo con tu propia foto</p>
+                    <PremiumBadge />
+                  </div>
+                  <p className="text-xs font-body text-muted-foreground">
+                    Con Premium podés sacarte una foto y ver cómo te queda la ropa en tu cuerpo real.
+                  </p>
+                  <Button variant="warm" size="sm" onClick={() => setPlan('premium')}>
+                    <Crown className="h-4 w-4 mr-2" /> Pasar a Premium
+                  </Button>
+                </div>
+              )
+            ) : (
             <div className="max-w-sm mx-auto bg-secondary rounded-xl p-4 border-2 border-dashed border-border space-y-3">
               <p className="text-muted-foreground font-body text-xs text-center">
                 Completá tus datos para generar un modelo realista con IA
               </p>
+
+              {/* Ejemplos de modelos (Premium) */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2">
+                  <p className="text-xs font-body font-medium text-foreground">Elegí con quién te identificás</p>
+                  {!isPremium && <PremiumBadge />}
+                </div>
+                <div className={`flex flex-wrap justify-center gap-2 ${isPremium ? '' : 'opacity-60'}`}>
+                  {MODEL_PRESETS.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => (isPremium ? applyPreset(p) : setPlan('premium'))}
+                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-body transition-colors ${
+                        presetId === p.id && isPremium
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-background text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {isPremium ? p.emoji : '🔒'} {p.label}
+                    </button>
+                  ))}
+                </div>
+                {!isPremium && (
+                  <p className="text-[11px] font-body text-muted-foreground text-center">
+                    Los modelos de ejemplo y los datos avanzados son parte del plan Premium.
+                  </p>
+                )}
+              </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -416,6 +566,40 @@ export default function Tryon() {
                 </div>
               </div>
 
+              {/* Datos avanzados (Premium) */}
+              {isPremium ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { key: 'hairColor', label: 'Color de pelo', options: HAIR_COLORS },
+                    { key: 'hairStyle', label: 'Tipo de pelo', options: HAIR_STYLES },
+                    { key: 'skinTone', label: 'Tono de piel', options: SKIN_TONES },
+                    { key: 'eyeColor', label: 'Color de ojos', options: EYE_COLORS },
+                    { key: 'bodyType', label: 'Contextura', options: BODY_TYPES },
+                  ] as const).map((f) => (
+                    <div key={f.key}>
+                      <label className="text-xs font-body text-foreground">{f.label}</label>
+                      <select
+                        value={(avatarData as any)[f.key]}
+                        onChange={e => { setPresetId(null); setAvatarData(d => ({ ...d, [f.key]: e.target.value })); }}
+                        className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                      >
+                        <option value="">Sin preferencia</option>
+                        {f.options.map((o) => (
+                          <option key={o} value={o}>{o}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <button
+                  onClick={() => setPlan('premium')}
+                  className="w-full rounded-lg bg-background/70 border border-dashed border-border px-3 py-2 text-[11px] font-body text-muted-foreground hover:text-foreground"
+                >
+                  <Lock className="h-3.5 w-3.5 inline mr-1" /> Color de pelo, tono de piel, ojos y contextura — Premium
+                </button>
+              )}
+
               <Button variant="warm" size="sm" className="w-full" disabled={generatingAvatar} onClick={handleGenerateAvatar}>
                 {generatingAvatar ? (
                   <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando modelo...</>
@@ -424,6 +608,8 @@ export default function Tryon() {
                 )}
               </Button>
             </div>
+            )}
+
 
             {/* Saved models */}
             {savedModels.length > 0 && (
