@@ -55,6 +55,26 @@ export default function Tryon() {
     enabled: !!user,
   });
 
+  // Subtipos disponibles según la categoría elegida (o todos los presentes en el placard)
+  const subOptions = useMemo(() => {
+    const pool = categoryFilter ? items.filter((i) => i.category === categoryFilter) : items;
+    const present = new Set(pool.map((i: any) => i.subcategory).filter(Boolean) as string[]);
+    if (categoryFilter) {
+      return getSubcategories(categoryFilter).filter((o) => present.has(o.value));
+    }
+    return Array.from(present).map((v) => ({ value: v, label: getSubcategoryLabel(null, v) || v }));
+  }, [items, categoryFilter]);
+
+  const visibleItems = useMemo(
+    () =>
+      items.filter(
+        (i: any) =>
+          (!categoryFilter || i.category === categoryFilter) &&
+          (!subFilter || i.subcategory === subFilter)
+      ),
+    [items, categoryFilter, subFilter]
+  );
+
   const handleGenerateAvatar = async () => {
     const { height, weight, age, gender } = avatarData;
     if (!height || !weight || !age) {
