@@ -1,4 +1,4 @@
-import { usePlan } from '@/lib/plan';
+import { Link } from 'react-router-dom';
 import { Crown, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -11,7 +11,6 @@ export function PremiumBadge() {
 }
 
 export default function PremiumGate({ title, description }: { title: string; description: string }) {
-  const { setPlan } = usePlan();
   return (
     <div className="rounded-xl border border-border bg-card p-4 text-center space-y-2 shadow-card">
       <div className="flex items-center justify-center gap-2">
@@ -19,8 +18,10 @@ export default function PremiumGate({ title, description }: { title: string; des
         <p className="text-sm font-body font-medium text-foreground">{title}</p>
       </div>
       <p className="text-xs font-body text-muted-foreground">{description}</p>
-      <Button size="sm" variant="warm" onClick={() => setPlan('premium')}>
-        <Crown className="h-4 w-4 mr-2" /> Pasar a Premium
+      <Button size="sm" variant="warm" asChild>
+        <Link to="/premium">
+          <Crown className="h-4 w-4 mr-2" /> Pasar a Premium
+        </Link>
       </Button>
     </div>
   );

@@ -1,0 +1,123 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+const PRICE_AMOUNT = 1;
+const CURRENCY = 'USD';
+
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  try {
+    const authHeader = req.headers.get('Authorization') ?? '';
+    if (!authHeader) return json({ error: 'No autorizado' }, 401);
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const user = userData?.user;
+    if (userError || !user) return json({ error: 'No autorizado' }, 401);
+
+    const body = await req.json().catch(() => ({}));
+    const action = body?.action as string;
+
+    if (action === 'create_session') {
+      const { data, error } = await supabase
+        .from('payment_sessions')
+        .insert({ user_id: user.id, amount: PRICE_AMOUNT, currency: CURRENCY, status: 'pending' })
+        .select('id, amount, currency, status')
+        .single();
+      if (error) return json({ error: error.message }, 400);
+
+      return json({
+        session_id: data.id,
+        amount: Number(data.amount),
+        currency: data.currency,
+        checkout_url: `/pago/${data.id}`,
+        mode: 'sandbox',
+      });
+    }
+
+    if (action === 'get_session') {
+      const { data, error } = await supabase
+        .from('payment_sessions')
+        .select('id, amount, currency, status, paid_at')
+        .eq('id', body?.session_id)
+        .maybeSingle();
+      if (error) return json({ error: error.message }, 400);
+      if (!data) return json({ error: 'Sesión de pago no encontrada' }, 404);
+      return json({ ...data, amount: Number(data.amount) });
+    }
+
+    if (action === 'confirm_payment') {
+      const { data: session, error: sessionError } = await supabase
+        .from('payment_sessions')
+        .select('id, status')
+        .eq('id', body?.session_id)
+        .maybeSingle();
+      if (sessionError) return json({ error: sessionError.message }, 400);
+      if (!session) return json({ error: 'Sesión de pago no encontrada' }, 404);
+
+      const paidAt = new Date();
+      const periodEnd = new Date(paidAt);
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+      if (session.status !== 'paid') {
+        const { error: payError } = await supabase
+          .from('payment_sessions')
+          .update({ status: 'paid', paid_at: paidAt.toISOString() })
+          .eq('id', session.id);
+        if (payError) return json({ error: payError.message }, 400);
+      }
+
+      const { error: subError } = await supabase
+        .from('subscriptions')
+        .upsert({
+          user_id: user.id,
+          plan: 'premium',
+          status: 'active',
+          price_amount: PRICE_AMOUNT,
+          currency: CURRENCY,
+          interval: 'month',
+          current_period_end: periodEnd.toISOString(),
+          updated_at: paidAt.toISOString(),
+        }, { onConflict: 'user_id' });
+      if (subError) return json({ error: subError.message }, 400);
+
+      return json({ ok: true, plan: 'premium', current_period_end: periodEnd.toISOString() });
+    }
+
+    if (action === 'cancel_subscription') {
+      const { error } = await supabase
+        .from('subscriptions')
+        .upsert({
+          user_id: user.id,
+          plan: 'free',
+          status: 'canceled',
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true, plan: 'free' });
+    }
+
+    return json({ error: 'Acción inválida' }, 400);
+  } catch (e) {
+    return json({ error: e instanceof Error ? e.message : 'Error inesperado' }, 500);
+  }
+});
