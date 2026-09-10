@@ -56,12 +56,16 @@ Deno.serve(async (req) => {
             content: [
               {
                 type: 'text',
-                text: `Analyze this clothing item photo. Return ONLY a JSON object with two fields:
+                text: `Analyze this clothing item photo. Return ONLY a JSON object with three fields:
 - "category": one of these exact values: ${VALID_CATEGORIES.join(', ')}
+- "subcategory": the specific type of the garment. It MUST be one of the allowed values for the chosen category, using these exact strings:
+${Object.entries(SUBCATEGORIES).map(([c, subs]) => `  ${c}: ${subs.length ? subs.join(', ') : '(none)'}`).join('\n')}
+  If you cannot tell the subtype confidently, use null.
 - "color": the main color in Spanish (e.g. "negro", "blanco", "azul", "rojo", "verde", "gris", "beige", "marrón", "rosa", "celeste", "naranja", "amarillo", "violeta", "bordo")
 
 If you see multiple colors, pick the dominant one. If unsure about category, use "otro".
 Use "medias" for socks of any kind (ankle socks, crew socks, sport socks, stockings, thigh-highs).
+Pay attention to sleeve length (manga_corta vs manga_larga), fabric (jean, lana, frisa, cuero, lino) and shape to decide the subcategory.
 Respond with ONLY the JSON, no extra text.`,
               },
               {
