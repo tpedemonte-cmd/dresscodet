@@ -515,7 +515,7 @@ export default function Tryon() {
                         }`}
                       >
                         {isActive && subFilter
-                          ? `${emoji} ${getSubcategoryLabel(key, subFilter)}`
+                          ? `${emoji} ${subFilter === '__none__' ? 'Sin clasificar' : getSubcategoryLabel(key, subFilter)}`
                           : `${emoji} ${key}`}
                         <ChevronDown className="h-3 w-3" />
                       </button>
