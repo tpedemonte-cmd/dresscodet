@@ -331,9 +331,9 @@ export default function Tryon() {
         .insert({
           user_id: user.id,
           image_url: urlData.publicUrl,
-          height: Number(avatarData.height),
-          weight: Number(avatarData.weight),
-          age: Number(avatarData.age),
+          height: effectiveNumber(avatarData.height, 170),
+          weight: effectiveNumber(avatarData.weight, 65),
+          age: effectiveNumber(avatarData.age, 28),
           gender: avatarData.gender,
           is_active: true,
         })
