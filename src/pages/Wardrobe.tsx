@@ -7,6 +7,7 @@ import { useState } from 'react';
 import EditItemDialog from '@/components/EditItemDialog';
 import DeleteItemConfirmDialog from '@/components/DeleteItemConfirmDialog';
 import { AVAILABILITY_OPTIONS, getAvailability, type Availability } from '@/lib/availability';
+import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import {
   DropdownMenu,
   DropdownMenuContent,
