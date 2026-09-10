@@ -175,7 +175,7 @@ export default function Wardrobe() {
       {categories.length > 0 && (
         <div className="flex gap-2 flex-wrap">
           <button
-            onClick={() => setFilter(null)}
+            onClick={() => { setFilter(null); setSubFilter(null); }}
             className={`px-3 py-1.5 rounded-full text-xs font-body font-medium transition-colors ${
               !filter ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
             }`}
@@ -185,7 +185,7 @@ export default function Wardrobe() {
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setFilter(cat)}
+              onClick={() => { setFilter(cat); setSubFilter(null); }}
               className={`px-3 py-1.5 rounded-full text-xs font-body font-medium transition-colors ${
                 filter === cat ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
               }`}
@@ -195,6 +195,31 @@ export default function Wardrobe() {
           ))}
         </div>
       )}
+
+      {subOptions.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => setSubFilter(null)}
+            className={`px-3 py-1.5 rounded-full text-xs font-body font-medium border transition-colors ${
+              !subFilter ? 'border-primary text-primary bg-primary/10' : 'border-border text-muted-foreground'
+            }`}
+          >
+            Todos los tipos
+          </button>
+          {subOptions.map((o) => (
+            <button
+              key={o.value}
+              onClick={() => setSubFilter(subFilter === o.value ? null : o.value)}
+              className={`px-3 py-1.5 rounded-full text-xs font-body font-medium border transition-colors ${
+                subFilter === o.value ? 'border-primary text-primary bg-primary/10' : 'border-border text-muted-foreground'
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+
 
       <div className="flex gap-2 flex-wrap">
         <button
