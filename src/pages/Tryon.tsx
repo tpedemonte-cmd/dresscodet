@@ -226,9 +226,9 @@ export default function Tryon() {
   };
 
   const handleGenerateAvatar = async () => {
-    const { height, weight, age } = avatarData;
-    if (!height || !weight || !age) {
-      toast.error('Completá altura, peso y edad');
+    const { weight, age, gender } = avatarData;
+    if (!weight || !age || !gender) {
+      toast.error('Completá peso, edad y género');
       return;
     }
     setGeneratingAvatar(true);
