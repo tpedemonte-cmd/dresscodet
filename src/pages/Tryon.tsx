@@ -243,15 +243,21 @@ export default function Tryon() {
 
     try {
       if (isPremium) {
-        // Generamos varias versiones con distintos tonos de pelo y piel para que el usuario elija
+        // Respetamos lo que el usuario aclaró y variamos al azar lo que dejó vacío
+        const looks = buildVariantLooks(avatarData);
         const results = await Promise.allSettled(
-          VARIANT_LOOKS.map((look) =>
-            generateOne({ hairColor: look.hairColor, hairStyle: look.hairStyle, skinTone: look.skinTone })
+          looks.map((look) =>
+            generateOne({
+              hairColor: look.hairColor,
+              hairStyle: look.hairStyle,
+              skinTone: look.skinTone,
+              bodyType: look.bodyType,
+            })
           )
         );
         const ok = results
-          .map((r, i) => (r.status === 'fulfilled' ? { ...VARIANT_LOOKS[i], image: r.value } : null))
-          .filter(Boolean) as { id: string; label: string; emoji: string; hairColor: string; hairStyle: string; skinTone: string; image: string }[];
+          .map((r, i) => (r.status === 'fulfilled' ? { ...looks[i], image: r.value } : null))
+          .filter(Boolean) as (Look & { image: string })[];
         if (ok.length === 0) {
           const firstError = results.find((r) => r.status === 'rejected') as PromiseRejectedResult | undefined;
           throw new Error(firstError?.reason?.message || 'No se pudieron generar los modelos');
@@ -275,15 +281,17 @@ export default function Tryon() {
     }
   };
 
-  const chooseVariant = (v: { id: string; hairColor: string; hairStyle: string; skinTone: string; image: string }) => {
+  const chooseVariant = (v: Look & { image: string }) => {
     setAvatarData((d) => ({
       ...d,
       hairColor: v.hairColor,
       hairStyle: v.hairStyle,
       skinTone: v.skinTone,
+      bodyType: v.bodyType,
     }));
     setSelfie(v.image);
     setVariants([]);
+
     setResultImage(null);
     toast.success('¡Listo! Ya podés probarte prendas con este modelo.');
   };
