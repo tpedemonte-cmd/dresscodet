@@ -369,6 +369,19 @@ export default function History() {
               </button>
             </div>
           )}
+          {hiddenCount > 0 && (
+            <div className="rounded-xl border border-border bg-card p-4 text-center space-y-2 shadow-card">
+              <p className="text-sm font-body font-medium text-foreground">
+                Hay {hiddenCount} recomendaciones más en tu historial
+              </p>
+              <p className="text-xs font-body text-muted-foreground">
+                El plan gratis muestra solo las últimas {FREE_HISTORY_LIMIT}. Con Premium ves todo tu historial completo.
+              </p>
+              <Button variant="warm" size="sm" onClick={() => setPlan('premium')}>
+                <Crown className="h-4 w-4 mr-2" /> Ver todo con Premium
+              </Button>
+            </div>
+          )}
         </div>
         );
       })()}
