@@ -54,7 +54,17 @@ export default function Tryon() {
   const [savingModel, setSavingModel] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [subFilter, setSubFilter] = useState<string | null>(null);
-  const [avatarData, setAvatarData] = useState({ height: '170', weight: '65', age: '', gender: 'femenino' });
+  const [avatarData, setAvatarData] = useState({
+    height: '170',
+    weight: '65',
+    age: '',
+    gender: 'femenino',
+    hairColor: '',
+    hairStyle: '',
+    skinTone: '',
+    eyeColor: '',
+    bodyType: '',
+  });
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
 
   const { data: items = [] } = useQuery({
@@ -104,8 +114,30 @@ export default function Tryon() {
     [items, categoryFilter, subFilter]
   );
 
+  const applyPreset = (preset: typeof MODEL_PRESETS[number]) => {
+    setPresetId(preset.id);
+    setAvatarData((d) => ({
+      ...d,
+      hairColor: preset.hairColor,
+      hairStyle: preset.hairStyle,
+      skinTone: preset.skinTone,
+      eyeColor: preset.eyeColor,
+    }));
+  };
+
+  const handleSelfieUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      setSelfie(reader.result as string);
+      setActiveModelId(null);
+      setResultImage(null);
+      toast.success('¡Foto lista! Elegí prendas para probártelas.');
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleGenerateAvatar = async () => {
-    const { height, weight, age, gender } = avatarData;
+    const { height, weight, age, gender, hairColor, hairStyle, skinTone, eyeColor, bodyType } = avatarData;
     if (!height || !weight || !age) {
       toast.error('Completá altura, peso y edad');
       return;
@@ -113,7 +145,13 @@ export default function Tryon() {
     setGeneratingAvatar(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-avatar', {
-        body: { height: Number(height), weight: Number(weight), age: Number(age), gender },
+        body: {
+          height: Number(height),
+          weight: Number(weight),
+          age: Number(age),
+          gender,
+          ...(isPremium ? { hairColor, hairStyle, skinTone, eyeColor, bodyType } : {}),
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
