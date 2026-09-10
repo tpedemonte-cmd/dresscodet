@@ -532,6 +532,40 @@ export default function Tryon() {
           </div>
         ) : (
           <div className="space-y-4">
+            {variants.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-sm font-body font-medium text-foreground text-center">
+                  Elegí el modelo con el que más te identificás
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {variants.map((v) => (
+                    <button
+                      key={v.id}
+                      onClick={() => chooseVariant(v)}
+                      className="rounded-xl overflow-hidden bg-secondary shadow-card hover:shadow-elevated hover:ring-2 hover:ring-primary transition-all text-left"
+                    >
+                      <img src={v.image} alt={v.label} className="w-full aspect-[3/4] object-cover" />
+                      <p className="text-[11px] font-body text-center py-1 text-foreground">
+                        {v.emoji} {v.label}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+                <div className="flex justify-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setVariants([])}>
+                    Volver a los datos
+                  </Button>
+                  <Button variant="warm" size="sm" disabled={generatingAvatar} onClick={handleGenerateAvatar}>
+                    {generatingAvatar ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
+                    ) : (
+                      <><RotateCcw className="h-4 w-4 mr-2" /> Generar otras opciones</>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {modelMode === 'selfie' ? (
               isPremium ? (
                 <div className="max-w-sm mx-auto bg-secondary rounded-xl p-4 border-2 border-dashed border-border space-y-3 text-center">
