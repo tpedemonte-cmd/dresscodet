@@ -182,41 +182,59 @@ export default function Wardrobe() {
           >
             Todas
           </button>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => { setFilter(cat); setSubFilter(null); }}
-              className={`px-3 py-1.5 rounded-full text-xs font-body font-medium transition-colors ${
-                filter === cat ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
-              }`}
-            >
-              {CATEGORIES[cat] || cat}
-            </button>
-          ))}
-        </div>
-      )}
+          {categories.map((cat) => {
+            const presentSubsForCat = new Set(
+              items.filter((i) => i.category === cat).map((i: any) => i.subcategory).filter(Boolean) as string[]
+            );
+            const subsForCat = getSubcategories(cat).filter((o) => presentSubsForCat.has(o.value));
+            const isActive = filter === cat;
 
-      {subOptions.length > 0 && (
-        <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={() => setSubFilter(null)}
-            className={`px-3 py-1.5 rounded-full text-xs font-body font-medium border transition-colors ${
-              !subFilter ? 'border-primary text-primary bg-primary/10' : 'border-border text-muted-foreground'
-            }`}
-          >
-            Todos los tipos
-          </button>
-          {subOptions.map((o) => (
-            <button
-              key={o.value}
-              onClick={() => setSubFilter(subFilter === o.value ? null : o.value)}
-              className={`px-3 py-1.5 rounded-full text-xs font-body font-medium border transition-colors ${
-                subFilter === o.value ? 'border-primary text-primary bg-primary/10' : 'border-border text-muted-foreground'
-              }`}
-            >
-              {o.label}
-            </button>
-          ))}
+            if (subsForCat.length === 0) {
+              return (
+                <button
+                  key={cat}
+                  onClick={() => { setFilter(cat); setSubFilter(null); }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-body font-medium transition-colors ${
+                    isActive ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
+                  }`}
+                >
+                  {CATEGORIES[cat] || cat}
+                </button>
+              );
+            }
+
+            return (
+              <DropdownMenu key={cat}>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-body font-medium transition-colors ${
+                      isActive ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
+                    }`}
+                  >
+                    {isActive && subFilter
+                      ? `${CATEGORIES[cat] || cat} · ${getSubcategoryLabel(cat, subFilter)}`
+                      : CATEGORIES[cat] || cat}
+                    <ChevronDown className="h-3 w-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-popover z-50">
+                  <DropdownMenuItem onClick={() => { setFilter(cat); setSubFilter(null); }}>
+                    <span className="flex-1">Todas</span>
+                    {isActive && !subFilter && <Check className="h-3.5 w-3.5 ml-2" />}
+                  </DropdownMenuItem>
+                  {subsForCat.map((o) => (
+                    <DropdownMenuItem
+                      key={o.value}
+                      onClick={() => { setFilter(cat); setSubFilter(o.value); }}
+                    >
+                      <span className="flex-1">{o.label}</span>
+                      {isActive && subFilter === o.value && <Check className="h-3.5 w-3.5 ml-2" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            );
+          })}
         </div>
       )}
 
