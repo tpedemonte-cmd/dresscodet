@@ -3,9 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown } from 'lucide-react';
+import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
+import { usePlan } from '@/lib/plan';
+import AdBanner from '@/components/AdBanner';
+import { PremiumBadge } from '@/components/PremiumGate';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,9 +22,28 @@ const CATEGORIES: Record<string, string> = {
   zapatillas: '👟', zapatos: '👞', medias: '🧦', accesorio: '🎒', otro: '📦',
 };
 
+// Ejemplos de modelos para que el usuario elija con cuál se identifica (Premium)
+const MODEL_PRESETS = [
+  { id: 'rubio', label: 'Rubio/a', emoji: '👱', hairColor: 'rubio', hairStyle: 'lacio media melena', skinTone: 'clara', eyeColor: 'celestes' },
+  { id: 'morocho', label: 'Morocho/a', emoji: '🧑', hairColor: 'negro', hairStyle: 'lacio corto', skinTone: 'trigueña', eyeColor: 'marrones' },
+  { id: 'pelirrojo', label: 'Pelirrojo/a', emoji: '🧑‍🦰', hairColor: 'pelirrojo', hairStyle: 'ondulado', skinTone: 'muy clara con pecas', eyeColor: 'verdes' },
+  { id: 'castano', label: 'Castaño/a', emoji: '🙂', hairColor: 'castaño', hairStyle: 'lacio largo', skinTone: 'clara', eyeColor: 'marrones' },
+  { id: 'rulos', label: 'Con rulos', emoji: '🧑‍🦱', hairColor: 'castaño oscuro', hairStyle: 'rulos', skinTone: 'morena', eyeColor: 'marrones' },
+  { id: 'canoso', label: 'Canoso/a', emoji: '🧑‍🦳', hairColor: 'canoso', hairStyle: 'corto', skinTone: 'clara', eyeColor: 'grises' },
+];
+
+const HAIR_COLORS = ['rubio', 'castaño', 'negro', 'pelirrojo', 'canoso'];
+const HAIR_STYLES = ['lacio corto', 'lacio largo', 'ondulado', 'rulos', 'recogido'];
+const SKIN_TONES = ['muy clara', 'clara', 'trigueña', 'morena', 'oscura'];
+const EYE_COLORS = ['marrones', 'celestes', 'verdes', 'grises'];
+const BODY_TYPES = ['delgado', 'atlético', 'promedio', 'curvilíneo', 'robusto'];
+
 export default function Tryon() {
   const { user } = useAuth();
+  const { isPremium, setPlan } = usePlan();
   const queryClient = useQueryClient();
+  const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
+  const [presetId, setPresetId] = useState<string | null>(null);
 
   const [selfie, setSelfie] = useState<string | null>(null);
   const [activeModelId, setActiveModelId] = useState<string | null>(null);
