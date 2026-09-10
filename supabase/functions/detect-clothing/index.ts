@@ -9,6 +9,22 @@ const VALID_CATEGORIES = [
   'medias', 'accesorio', 'otro',
 ];
 
+const SUBCATEGORIES: Record<string, string[]> = {
+  remera: ['manga_corta', 'manga_larga', 'musculosa', 'oversize', 'deportiva'],
+  pantalon: ['jean', 'jogging', 'chino', 'cargo', 'vestir', 'calza'],
+  campera: ['inflable', 'jean', 'cuero', 'rompeviento', 'sobretodo', 'liviana'],
+  buzo: ['lana', 'frisa', 'canguro', 'medio_cierre'],
+  camisa: ['manga_corta', 'manga_larga', 'lino', 'jean', 'franela'],
+  short: ['jean', 'deportivo', 'bermuda', 'baño'],
+  vestido: ['corto', 'midi', 'largo', 'fiesta'],
+  pollera: ['corta', 'midi', 'larga', 'jean'],
+  zapatillas: ['urbanas', 'deportivas', 'botitas', 'lona'],
+  zapatos: ['vestir', 'mocasines', 'botas', 'sandalias', 'chatitas'],
+  medias: ['cortas', 'largas', 'deportivas', 'termicas'],
+  accesorio: ['gorra', 'bufanda', 'cinturon', 'bolso', 'lentes', 'joya'],
+  otro: [],
+};
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
