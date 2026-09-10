@@ -94,9 +94,11 @@ Respond with ONLY the JSON, no extra text.`,
     const parsed = JSON.parse(jsonMatch[0]);
     const category = VALID_CATEGORIES.includes(parsed.category) ? parsed.category : 'otro';
     const color = typeof parsed.color === 'string' ? parsed.color.toLowerCase().trim() : '';
+    const rawSub = typeof parsed.subcategory === 'string' ? parsed.subcategory.toLowerCase().trim() : '';
+    const subcategory = (SUBCATEGORIES[category] ?? []).includes(rawSub) ? rawSub : null;
 
     return new Response(
-      JSON.stringify({ category, color }),
+      JSON.stringify({ category, color, subcategory }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
