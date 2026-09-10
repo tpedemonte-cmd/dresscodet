@@ -272,7 +272,12 @@ export default function Wardrobe() {
               <div className="p-3 space-y-2">
                 <div>
                   <p className="font-body font-medium text-sm text-foreground truncate">{item.name}</p>
-                  <p className="text-xs text-muted-foreground">{CATEGORIES[item.category] || item.category}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {CATEGORIES[item.category] || item.category}
+                    {getSubcategoryLabel(item.category, (item as any).subcategory)
+                      ? ` · ${getSubcategoryLabel(item.category, (item as any).subcategory)}`
+                      : ''}
+                  </p>
                   {item.color && <p className="text-xs text-muted-foreground mt-0.5">{item.color}</p>}
                 </div>
                 <DropdownMenu>
