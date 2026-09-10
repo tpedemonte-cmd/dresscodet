@@ -1,6 +1,6 @@
 import { usePlan } from '@/lib/plan';
 import { Crown, Megaphone, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const ADS = [
   { title: 'Zapatillas urbanas 30% OFF', text: 'Envío gratis a todo el país · Publicidad' },
@@ -9,6 +9,18 @@ const ADS = [
 ];
 
 const DISMISS_KEY = 'dresscode_ad_dismissed';
+const ACTION_COUNT_KEY = 'dresscode_ad_action_count';
+const ACTION_THRESHOLD = 15;
+
+function getActionCount() {
+  if (typeof localStorage === 'undefined') return 0;
+  const v = localStorage.getItem(ACTION_COUNT_KEY);
+  return v ? parseInt(v, 10) || 0 : 0;
+}
+
+function setActionCount(n: number) {
+  if (typeof localStorage !== 'undefined') localStorage.setItem(ACTION_COUNT_KEY, String(n));
+}
 
 export default function AdBanner({ index = 0 }: { index?: number }) {
   const { isPremium, setPlan } = usePlan();
