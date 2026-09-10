@@ -103,7 +103,8 @@ const MEASUREMENTS = [
 
 export default function Tryon() {
   const { user } = useAuth();
-  const { isPremium, setPlan } = usePlan();
+  const { isPremium } = usePlan();
+  const navigatePremium = useNavigate();
   const queryClient = useQueryClient();
   const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
   
@@ -678,7 +679,7 @@ export default function Tryon() {
                   <p className="text-xs font-body text-muted-foreground">
                     Con Premium podés sacarte una foto y ver cómo te queda la ropa en tu cuerpo real.
                   </p>
-                  <Button variant="warm" size="sm" onClick={() => setPlan('premium')}>
+                  <Button variant="warm" size="sm" onClick={() => navigatePremium('/premium')}>
                     <Crown className="h-4 w-4 mr-2" /> Pasar a Premium
                   </Button>
                 </div>
@@ -763,7 +764,7 @@ export default function Tryon() {
                 </div>
               ) : (
                 <button
-                  onClick={() => setPlan('premium')}
+                  onClick={() => navigatePremium('/premium')}
                   className="w-full rounded-lg bg-background/70 border border-dashed border-border px-3 py-2 text-[11px] font-body text-muted-foreground hover:text-foreground"
                 >
                   <Lock className="h-3.5 w-3.5 inline mr-1" /> Pelo, piel, contextura y tus medidas — Premium

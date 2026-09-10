@@ -38,7 +38,8 @@ const SEASON_LABELS: Record<string, string> = {
 
 export default function History() {
   const { user } = useAuth();
-  const { isPremium, setPlan, FREE_HISTORY_LIMIT } = usePlan();
+  const { isPremium, FREE_HISTORY_LIMIT } = usePlan();
+  const navigatePremium = useNavigate();
   const queryClient = useQueryClient();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [eventFilter, setEventFilter] = useState<string>('todos');
@@ -377,7 +378,7 @@ export default function History() {
               <p className="text-xs font-body text-muted-foreground">
                 El plan gratis muestra solo las últimas {FREE_HISTORY_LIMIT}. Con Premium ves todo tu historial completo.
               </p>
-              <Button variant="warm" size="sm" onClick={() => setPlan('premium')}>
+              <Button variant="warm" size="sm" onClick={() => navigatePremium('/premium')}>
                 <Crown className="h-4 w-4 mr-2" /> Ver todo con Premium
               </Button>
             </div>

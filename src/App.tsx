@@ -18,6 +18,8 @@ import Wishlist from "./pages/Wishlist";
 import Looks from "./pages/Looks";
 import Plan from "./pages/Plan";
 import Favorites from "./pages/Favorites";
+import Premium from "./pages/Premium";
+import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +49,8 @@ const AppRoutes = () => {
       <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
       <Route path="/looks" element={<ProtectedRoute><Looks /></ProtectedRoute>} />
       <Route path="/plan" element={<ProtectedRoute><Plan /></ProtectedRoute>} />
+      <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
+      <Route path="/pago/:sessionId" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
       <Route path="/favoritos" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
