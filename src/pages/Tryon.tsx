@@ -7,6 +7,7 @@ import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Came
 import { toast } from 'sonner';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan } from '@/lib/plan';
+import { useNavigate } from 'react-router-dom';
 import AdBanner from '@/components/AdBanner';
 import { PremiumBadge } from '@/components/PremiumGate';
 import {

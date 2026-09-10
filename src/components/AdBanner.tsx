@@ -1,4 +1,5 @@
-import { usePlan } from '@/lib/plan';
+import { usePlan, PREMIUM_PRICE, PREMIUM_CURRENCY } from '@/lib/plan';
+import { useNavigate } from 'react-router-dom';
 import { Crown, Megaphone, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
@@ -24,7 +25,8 @@ function setActionCount(n: number) {
 }
 
 export default function AdBanner({ index = 0 }: { index?: number }) {
-  const { isPremium, setPlan } = usePlan();
+  const { isPremium } = usePlan();
+  const navigate = useNavigate();
   const [dismissed, setDismissed] = useState(true);
   const [ready, setReady] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(CLOSE_DELAY_SECONDS);
@@ -77,8 +79,8 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
   const ad = ADS[index % ADS.length];
   const canClose = secondsLeft <= 0;
 
-  const close = () => {
-    if (!canClose) return;
+  const close = (force = false) => {
+    if (!canClose && !force) return;
     setDismissed(true);
     if (typeof localStorage !== 'undefined') localStorage.setItem(DISMISS_KEY, 'true');
   };
@@ -103,10 +105,13 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
             <p className="text-base font-body text-muted-foreground mt-1">{ad.text}</p>
           </div>
           <button
-            onClick={() => setPlan('premium')}
+            onClick={() => {
+              close(true);
+              navigate('/premium');
+            }}
             className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-base font-body font-semibold text-primary-foreground transition-transform hover:scale-105 active:scale-95"
           >
-            <Crown className="h-5 w-5" /> Quitar anuncios
+            <Crown className="h-5 w-5" /> Quitar anuncios · {PREMIUM_PRICE} {PREMIUM_CURRENCY}/mes
           </button>
           {canClose ? (
             <button

@@ -14,6 +14,7 @@ import OutfitFeedback from '@/components/OutfitFeedback';
 import DeleteHistoryConfirmDialog from '@/components/DeleteHistoryConfirmDialog';
 import AdBanner from '@/components/AdBanner';
 import { usePlan } from '@/lib/plan';
+import { useNavigate } from 'react-router-dom';
 import { Crown } from 'lucide-react';
 
 
