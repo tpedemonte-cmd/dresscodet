@@ -694,8 +694,9 @@ export default function Tryon() {
                   <label className="text-xs font-body text-foreground">Altura (cm)</label>
                   <input
                     type="number"
+                    min="0"
                     value={avatarData.height}
-                    onChange={e => setAvatarData(d => ({ ...d, height: e.target.value }))}
+                    onChange={handleNumberChange('height')}
                     placeholder="170"
                     className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground/60"
                   />
@@ -704,8 +705,9 @@ export default function Tryon() {
                   <label className="text-xs font-body text-foreground">Peso (kg)</label>
                   <input
                     type="number"
+                    min="0"
                     value={avatarData.weight}
-                    onChange={e => setAvatarData(d => ({ ...d, weight: e.target.value }))}
+                    onChange={handleNumberChange('weight')}
                     placeholder="65"
                     className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground/60"
                   />
@@ -714,8 +716,9 @@ export default function Tryon() {
                   <label className="text-xs font-body text-foreground">Edad</label>
                   <input
                     type="number"
+                    min="0"
                     value={avatarData.age}
-                    onChange={e => setAvatarData(d => ({ ...d, age: e.target.value }))}
+                    onChange={handleNumberChange('age')}
                     placeholder="28"
                     className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground/60"
                   />
