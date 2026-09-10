@@ -175,7 +175,7 @@ export default function AddItem() {
         />
         
         <div className="relative">
-          <Select value={category} onValueChange={setCategory}>
+          <Select value={category} onValueChange={(v) => { setCategory(v); setSubcategory(''); }}>
             <SelectTrigger>
               <SelectValue placeholder="Categoría" />
             </SelectTrigger>
@@ -193,6 +193,22 @@ export default function AddItem() {
             </div>
           )}
         </div>
+
+        {getSubcategories(category).length > 0 && (
+          <Select value={subcategory} onValueChange={setSubcategory}>
+            <SelectTrigger>
+              <SelectValue placeholder="Tipo específico (opcional)" />
+            </SelectTrigger>
+            <SelectContent>
+              {getSubcategories(category).map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  {s.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
 
         <div className="relative">
           <Input
