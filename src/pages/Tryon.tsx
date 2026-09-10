@@ -669,7 +669,7 @@ export default function Tryon() {
                   onClick={() => setPlan('premium')}
                   className="w-full rounded-lg bg-background/70 border border-dashed border-border px-3 py-2 text-[11px] font-body text-muted-foreground hover:text-foreground"
                 >
-                  <Lock className="h-3.5 w-3.5 inline mr-1" /> Pelo, piel, ojos, contextura y tus medidas — Premium
+                  <Lock className="h-3.5 w-3.5 inline mr-1" /> Pelo, piel, contextura y tus medidas — Premium
                 </button>
               )}
 
