@@ -128,6 +128,36 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_sessions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          paid_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       saved_looks: {
         Row: {
           created_at: string
@@ -151,6 +181,45 @@ export type Database = {
           image_url?: string
           item_ids?: string[]
           note?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          currency: string
+          current_period_end: string | null
+          id: string
+          interval: string
+          plan: string
+          price_amount: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          id?: string
+          interval?: string
+          plan?: string
+          price_amount?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          id?: string
+          interval?: string
+          plan?: string
+          price_amount?: number
+          status?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
