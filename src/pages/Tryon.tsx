@@ -120,9 +120,9 @@ export default function Tryon() {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [subFilter, setSubFilter] = useState<string | null>(null);
   const [avatarData, setAvatarData] = useState({
-    height: '170',
-    weight: '65',
-    age: '28',
+    height: '',
+    weight: '',
+    age: '',
     gender: '',
     hairColor: '',
     hairStyle: '',
@@ -138,6 +138,9 @@ export default function Tryon() {
     thigh: '',
     shoeSize: '',
   });
+
+  const effectiveNumber = (value: string, fallback: number) =>
+    value === '' || value == null ? fallback : Number(value);
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
   const [showVariantPicker, setShowVariantPicker] = useState(false);
 
