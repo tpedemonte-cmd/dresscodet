@@ -100,6 +100,7 @@ export default function AddItem() {
         user_id: user.id,
         name,
         category,
+        subcategory: subcategory || null,
         color: color || null,
         image_url: publicUrl,
       });
