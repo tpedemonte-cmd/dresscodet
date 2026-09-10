@@ -36,9 +36,9 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
 
     const onAction = (e: MouseEvent | TouchEvent) => {
       if (isPremium) return;
+      if (ref.current) return; // no contar mientras el anuncio está abierto
       const target = e.target as HTMLElement | null;
       if (!target) return;
-      if (ref.current && ref.current.contains(target)) return;
 
       const interactive = target.closest('button, a, [role="button"], input[type="submit"]');
       if (!interactive) return;
