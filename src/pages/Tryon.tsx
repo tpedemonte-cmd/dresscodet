@@ -158,40 +158,71 @@ export default function Tryon() {
     reader.readAsDataURL(file);
   };
 
+  const buildAvatarBody = (overrides: Partial<typeof avatarData> = {}) => {
+    const d = { ...avatarData, ...overrides };
+    return {
+      height: Number(d.height),
+      weight: Number(d.weight),
+      age: Number(d.age),
+      gender: d.gender,
+      ...(isPremium
+        ? {
+            hairColor: d.hairColor,
+            hairStyle: d.hairStyle,
+            skinTone: d.skinTone,
+            eyeColor: d.eyeColor,
+            bodyType: d.bodyType,
+            measurements: Object.fromEntries(
+              MEASUREMENTS.map((m) => [m.key, (d as any)[m.key]]).filter(
+                ([, v]) => v !== '' && v != null
+              )
+            ),
+          }
+        : {}),
+    };
+  };
+
   const handleGenerateAvatar = async () => {
-    const { height, weight, age, gender, hairColor, hairStyle, skinTone, eyeColor, bodyType } = avatarData;
+    const { height, weight, age } = avatarData;
     if (!height || !weight || !age) {
       toast.error('Completá altura, peso y edad');
       return;
     }
     setGeneratingAvatar(true);
-    try {
+    setVariants([]);
+
+    const generateOne = async (overrides: Partial<typeof avatarData> = {}) => {
       const { data, error } = await supabase.functions.invoke('generate-avatar', {
-        body: {
-          height: Number(height),
-          weight: Number(weight),
-          age: Number(age),
-          gender,
-          ...(isPremium
-            ? {
-                hairColor,
-                hairStyle,
-                skinTone,
-                eyeColor,
-                bodyType,
-                measurements: Object.fromEntries(
-                  MEASUREMENTS.map((m) => [m.key, (avatarData as any)[m.key]]).filter(
-                    ([, v]) => v !== '' && v != null
-                  )
-                ),
-              }
-            : {}),
-        },
+        body: buildAvatarBody(overrides),
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      if (data?.image) {
-        setSelfie(data.image);
+      if (!data?.image) throw new Error('No se pudo generar el modelo');
+      return data.image as string;
+    };
+
+    try {
+      if (isPremium) {
+        // Generamos varias versiones con distintos tonos de pelo y piel para que el usuario elija
+        const results = await Promise.allSettled(
+          VARIANT_LOOKS.map((look) =>
+            generateOne({ hairColor: look.hairColor, hairStyle: look.hairStyle, skinTone: look.skinTone, eyeColor: look.eyeColor })
+          )
+        );
+        const ok = results
+          .map((r, i) => (r.status === 'fulfilled' ? { ...VARIANT_LOOKS[i], image: r.value } : null))
+          .filter(Boolean) as { id: string; label: string; emoji: string; hairColor: string; hairStyle: string; skinTone: string; eyeColor: string; image: string }[];
+        if (ok.length === 0) {
+          const firstError = results.find((r) => r.status === 'rejected') as PromiseRejectedResult | undefined;
+          throw new Error(firstError?.reason?.message || 'No se pudieron generar los modelos');
+        }
+        setVariants(ok);
+        setActiveModelId(null);
+        setResultImage(null);
+        toast.success(`Se generaron ${ok.length} modelos. Elegí con cuál te identificás.`);
+      } else {
+        const image = await generateOne();
+        setSelfie(image);
         setActiveModelId(null);
         setResultImage(null);
         toast.success('¡Modelo generado! Ahora podés guardarlo.');
@@ -202,6 +233,21 @@ export default function Tryon() {
     } finally {
       setGeneratingAvatar(false);
     }
+  };
+
+  const chooseVariant = (v: { id: string; hairColor: string; hairStyle: string; skinTone: string; eyeColor: string; image: string }) => {
+    setPresetId(v.id);
+    setAvatarData((d) => ({
+      ...d,
+      hairColor: v.hairColor,
+      hairStyle: v.hairStyle,
+      skinTone: v.skinTone,
+      eyeColor: v.eyeColor,
+    }));
+    setSelfie(v.image);
+    setVariants([]);
+    setResultImage(null);
+    toast.success('¡Listo! Ya podés probarte prendas con este modelo.');
   };
 
   const saveModelMutation = useMutation({
