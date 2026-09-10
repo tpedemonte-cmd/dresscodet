@@ -474,7 +474,7 @@ export default function Tryon() {
         {items.length > 0 && (
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => setCategoryFilter(null)}
+              onClick={() => { setCategoryFilter(null); setSubFilter(null); }}
               className={`text-xs font-body px-3 py-1 rounded-full transition-colors ${
                 categoryFilter === null ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
               }`}
@@ -483,42 +483,59 @@ export default function Tryon() {
             </button>
             {Object.entries(CATEGORIES)
               .filter(([key]) => items.some(i => i.category === key))
-              .map(([key, emoji]) => (
-                <button
-                  key={key}
-                  onClick={() => { setCategoryFilter(prev => prev === key ? null : key); setSubFilter(null); }}
-                  className={`text-xs font-body px-3 py-1 rounded-full transition-colors ${
-                    categoryFilter === key ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {emoji} {key}
-                </button>
-              ))}
-          </div>
-        )}
+              .map(([key, emoji]) => {
+                const presentSubsForCat = new Set(
+                  items.filter((i) => i.category === key).map((i: any) => i.subcategory).filter(Boolean) as string[]
+                );
+                const subsForCat = getSubcategories(key).filter((o) => presentSubsForCat.has(o.value));
+                const isActive = categoryFilter === key;
 
-        {/* Subtype filter chips */}
-        {subOptions.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setSubFilter(null)}
-              className={`text-xs font-body px-3 py-1 rounded-full border transition-colors ${
-                subFilter === null ? 'border-primary text-primary bg-primary/10' : 'border-border text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Todos los tipos
-            </button>
-            {subOptions.map((o) => (
-              <button
-                key={o.value}
-                onClick={() => setSubFilter(prev => prev === o.value ? null : o.value)}
-                className={`text-xs font-body px-3 py-1 rounded-full border transition-colors ${
-                  subFilter === o.value ? 'border-primary text-primary bg-primary/10' : 'border-border text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {o.label}
-              </button>
-            ))}
+                if (subsForCat.length === 0) {
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => { setCategoryFilter(prev => prev === key ? null : key); setSubFilter(null); }}
+                      className={`text-xs font-body px-3 py-1 rounded-full transition-colors ${
+                        isActive ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {emoji} {key}
+                    </button>
+                  );
+                }
+
+                return (
+                  <DropdownMenu key={key}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className={`inline-flex items-center gap-1 text-xs font-body px-3 py-1 rounded-full transition-colors ${
+                          isActive ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        {isActive && subFilter
+                          ? `${emoji} ${getSubcategoryLabel(key, subFilter)}`
+                          : `${emoji} ${key}`}
+                        <ChevronDown className="h-3 w-3" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="bg-popover z-50">
+                      <DropdownMenuItem onClick={() => { setCategoryFilter(key); setSubFilter(null); }}>
+                        <span className="flex-1">Todas</span>
+                        {isActive && !subFilter && <Check className="h-3.5 w-3.5 ml-2" />}
+                      </DropdownMenuItem>
+                      {subsForCat.map((o) => (
+                        <DropdownMenuItem
+                          key={o.value}
+                          onClick={() => { setCategoryFilter(key); setSubFilter(o.value); }}
+                        >
+                          <span className="flex-1">{o.label}</span>
+                          {isActive && subFilter === o.value && <Check className="h-3.5 w-3.5 ml-2" />}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              })}
           </div>
         )}
 
