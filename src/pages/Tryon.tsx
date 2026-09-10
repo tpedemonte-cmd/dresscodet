@@ -141,7 +141,23 @@ export default function Tryon() {
 
   const effectiveNumber = (value: string, fallback: number) =>
     value === '' || value == null ? fallback : Number(value);
+
+  const handleNumberChange = (key: keyof typeof avatarData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    if (raw === '') {
+      setAvatarData(d => ({ ...d, [key]: '' }));
+      return;
+    }
+    // Evitar valores negativos: descartar el signo menos y cualquier valor < 0
+    const cleaned = raw.replace(/^-/, '');
+    const num = Number(cleaned);
+    if (!isNaN(num) && num >= 0) {
+      setAvatarData(d => ({ ...d, [key]: cleaned }));
+    }
+  };
+
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
+
   const [showVariantPicker, setShowVariantPicker] = useState(false);
 
   const { data: items = [] } = useQuery({
