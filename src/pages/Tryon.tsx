@@ -16,7 +16,6 @@ const CATEGORIES: Record<string, string> = {
 export default function Tryon() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const [selfie, setSelfie] = useState<string | null>(null);
   const [activeModelId, setActiveModelId] = useState<string | null>(null);
