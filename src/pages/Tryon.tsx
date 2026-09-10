@@ -782,9 +782,10 @@ export default function Tryon() {
                         <label className="text-xs font-body text-foreground">{m.label}</label>
                         <input
                           type="number"
+                          min="0"
                           inputMode="numeric"
                           value={(avatarData as any)[m.key]}
-                          onChange={e => setAvatarData(d => ({ ...d, [m.key]: e.target.value }))}
+                          onChange={handleNumberChange(m.key as keyof typeof avatarData)}
                           placeholder={m.placeholder}
                           className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
                         />
