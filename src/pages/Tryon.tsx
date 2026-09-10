@@ -141,7 +141,23 @@ export default function Tryon() {
 
   const effectiveNumber = (value: string, fallback: number) =>
     value === '' || value == null ? fallback : Number(value);
+
+  const handleNumberChange = (key: keyof typeof avatarData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    if (raw === '') {
+      setAvatarData(d => ({ ...d, [key]: '' }));
+      return;
+    }
+    // Evitar valores negativos: descartar el signo menos y cualquier valor < 0
+    const cleaned = raw.replace(/^-/, '');
+    const num = Number(cleaned);
+    if (!isNaN(num) && num >= 0) {
+      setAvatarData(d => ({ ...d, [key]: cleaned }));
+    }
+  };
+
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
+
   const [showVariantPicker, setShowVariantPicker] = useState(false);
 
   const { data: items = [] } = useQuery({
@@ -678,8 +694,9 @@ export default function Tryon() {
                   <label className="text-xs font-body text-foreground">Altura (cm)</label>
                   <input
                     type="number"
+                    min="0"
                     value={avatarData.height}
-                    onChange={e => setAvatarData(d => ({ ...d, height: e.target.value }))}
+                    onChange={handleNumberChange('height')}
                     placeholder="170"
                     className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground/60"
                   />
@@ -688,8 +705,9 @@ export default function Tryon() {
                   <label className="text-xs font-body text-foreground">Peso (kg)</label>
                   <input
                     type="number"
+                    min="0"
                     value={avatarData.weight}
-                    onChange={e => setAvatarData(d => ({ ...d, weight: e.target.value }))}
+                    onChange={handleNumberChange('weight')}
                     placeholder="65"
                     className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground/60"
                   />
@@ -698,8 +716,9 @@ export default function Tryon() {
                   <label className="text-xs font-body text-foreground">Edad</label>
                   <input
                     type="number"
+                    min="0"
                     value={avatarData.age}
-                    onChange={e => setAvatarData(d => ({ ...d, age: e.target.value }))}
+                    onChange={handleNumberChange('age')}
                     placeholder="28"
                     className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground/60"
                   />
@@ -763,9 +782,10 @@ export default function Tryon() {
                         <label className="text-xs font-body text-foreground">{m.label}</label>
                         <input
                           type="number"
+                          min="0"
                           inputMode="numeric"
                           value={(avatarData as any)[m.key]}
-                          onChange={e => setAvatarData(d => ({ ...d, [m.key]: e.target.value }))}
+                          onChange={handleNumberChange(m.key as keyof typeof avatarData)}
                           placeholder={m.placeholder}
                           className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
                         />
