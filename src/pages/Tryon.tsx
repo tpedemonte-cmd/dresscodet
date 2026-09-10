@@ -22,14 +22,12 @@ const CATEGORIES: Record<string, string> = {
   zapatillas: '👟', zapatos: '👞', medias: '🧦', accesorio: '🎒', otro: '📦',
 };
 
-// Ejemplos de modelos para que el usuario elija con cuál se identifica (Premium)
-const MODEL_PRESETS = [
+// Versiones que se generan juntas para que el usuario elija con cuál se identifica (Premium)
+const VARIANT_LOOKS = [
   { id: 'rubio', label: 'Rubio/a', emoji: '👱', hairColor: 'rubio', hairStyle: 'lacio media melena', skinTone: 'clara', eyeColor: 'celestes' },
   { id: 'morocho', label: 'Morocho/a', emoji: '🧑', hairColor: 'negro', hairStyle: 'lacio corto', skinTone: 'trigueña', eyeColor: 'marrones' },
   { id: 'pelirrojo', label: 'Pelirrojo/a', emoji: '🧑‍🦰', hairColor: 'pelirrojo', hairStyle: 'ondulado', skinTone: 'muy clara con pecas', eyeColor: 'verdes' },
-  { id: 'castano', label: 'Castaño/a', emoji: '🙂', hairColor: 'castaño', hairStyle: 'lacio largo', skinTone: 'clara', eyeColor: 'marrones' },
-  { id: 'rulos', label: 'Con rulos', emoji: '🧑‍🦱', hairColor: 'castaño oscuro', hairStyle: 'rulos', skinTone: 'morena', eyeColor: 'marrones' },
-  { id: 'canoso', label: 'Canoso/a', emoji: '🧑‍🦳', hairColor: 'canoso', hairStyle: 'corto', skinTone: 'clara', eyeColor: 'grises' },
+  { id: 'castano', label: 'Castaño/a', emoji: '🙂', hairColor: 'castaño', hairStyle: 'lacio largo', skinTone: 'morena', eyeColor: 'marrones' },
 ];
 
 const HAIR_COLORS = ['rubio', 'castaño', 'negro', 'pelirrojo', 'canoso'];
