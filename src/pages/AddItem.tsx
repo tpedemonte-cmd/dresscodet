@@ -55,8 +55,9 @@ export default function AddItem() {
       if (data?.color) {
         setColor(data.color);
       }
+      setSubcategory(data?.subcategory ?? '');
       setAutoDetected(true);
-      toast.success('Categoría y color detectados automáticamente');
+      toast.success('Tipo, subtipo y color detectados automáticamente');
     } catch (err) {
       console.error('Auto-detect failed:', err);
       // Silently fail — user can still fill manually
