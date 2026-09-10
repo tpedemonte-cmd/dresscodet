@@ -120,10 +120,10 @@ export default function Tryon() {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [subFilter, setSubFilter] = useState<string | null>(null);
   const [avatarData, setAvatarData] = useState({
-    height: '170',
+    height: '',
     weight: '65',
     age: '',
-    gender: 'femenino',
+    gender: '',
     hairColor: '',
     hairStyle: '',
     skinTone: '',
@@ -138,6 +138,8 @@ export default function Tryon() {
     thigh: '',
     shoeSize: '',
   });
+
+  const effectiveHeight = (h: string) => Number(h) || 170;
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
   const [showVariantPicker, setShowVariantPicker] = useState(false);
 
@@ -203,7 +205,7 @@ export default function Tryon() {
   const buildAvatarBody = (overrides: Partial<typeof avatarData> = {}) => {
     const d = { ...avatarData, ...overrides };
     return {
-      height: Number(d.height),
+      height: effectiveHeight(d.height),
       weight: Number(d.weight),
       age: Number(d.age),
       gender: d.gender,
@@ -224,9 +226,9 @@ export default function Tryon() {
   };
 
   const handleGenerateAvatar = async () => {
-    const { height, weight, age } = avatarData;
-    if (!height || !weight || !age) {
-      toast.error('Completá altura, peso y edad');
+    const { weight, age, gender } = avatarData;
+    if (!weight || !age || !gender) {
+      toast.error('Completá peso, edad y género');
       return;
     }
     setGeneratingAvatar(true);
@@ -328,7 +330,7 @@ export default function Tryon() {
         .insert({
           user_id: user.id,
           image_url: urlData.publicUrl,
-          height: Number(avatarData.height),
+          height: effectiveHeight(avatarData.height),
           weight: Number(avatarData.weight),
           age: Number(avatarData.age),
           gender: avatarData.gender,
@@ -678,7 +680,7 @@ export default function Tryon() {
                     value={avatarData.height}
                     onChange={e => setAvatarData(d => ({ ...d, height: e.target.value }))}
                     placeholder="170"
-                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background placeholder:font-bold placeholder:text-foreground/80"
                   />
                 </div>
                 <div>
@@ -708,6 +710,7 @@ export default function Tryon() {
                     onChange={e => setAvatarData(d => ({ ...d, gender: e.target.value }))}
                     className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
                   >
+                    <option value="">Seleccioná uno</option>
                     <option value="femenino">Femenino</option>
                     <option value="masculino">Masculino</option>
                   </select>
