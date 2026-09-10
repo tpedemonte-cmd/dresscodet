@@ -89,7 +89,7 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
       <div ref={ref} className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl shadow-primary/10 animate-in zoom-in-95">
         <button
-          onClick={close}
+          onClick={() => close()}
           disabled={!canClose}
           className="absolute right-3 top-3 rounded-full p-2 text-muted-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:bg-secondary hover:enabled:text-foreground"
           aria-label="Cerrar anuncio"
@@ -115,7 +115,7 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
           </button>
           {canClose ? (
             <button
-              onClick={close}
+              onClick={() => close()}
               className="text-sm font-body text-muted-foreground underline hover:text-foreground"
             >
               Cerrar anuncio
