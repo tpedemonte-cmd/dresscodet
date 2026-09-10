@@ -22,18 +22,71 @@ const CATEGORIES: Record<string, string> = {
   zapatillas: '👟', zapatos: '👞', medias: '🧦', accesorio: '🎒', otro: '📦',
 };
 
-// Versiones que se generan juntas para que el usuario elija con cuál se identifica (Premium)
-const VARIANT_LOOKS = [
-  { id: 'rubio', label: 'Rubio/a', emoji: '👱', hairColor: 'rubio', hairStyle: 'lacio media melena', skinTone: 'clara' },
-  { id: 'morocho', label: 'Morocho/a', emoji: '🧑', hairColor: 'negro', hairStyle: 'lacio corto', skinTone: 'morena' },
-  { id: 'pelirrojo', label: 'Pelirrojo/a', emoji: '🧑‍🦰', hairColor: 'pelirrojo', hairStyle: 'ondulado', skinTone: 'muy clara con pecas' },
-  { id: 'castano', label: 'Castaño/a', emoji: '🙂', hairColor: 'castaño', hairStyle: 'lacio largo', skinTone: 'morena' },
-];
-
 const HAIR_COLORS = ['rubio', 'castaño', 'negro', 'pelirrojo', 'canoso'];
 const HAIR_STYLES = ['lacio corto', 'lacio largo', 'ondulado', 'rulos', 'recogido'];
 const SKIN_TONES = ['muy clara', 'clara', 'morena', 'oscura'];
 const BODY_TYPES = ['delgado', 'atlético', 'promedio', 'curvilíneo', 'robusto'];
+
+type Look = {
+  id: string;
+  label: string;
+  emoji: string;
+  hairColor: string;
+  hairStyle: string;
+  skinTone: string;
+  bodyType: string;
+};
+
+const HAIR_EMOJI: Record<string, string> = {
+  rubio: '👱',
+  castaño: '🙂',
+  negro: '🧑',
+  pelirrojo: '🧑‍🦰',
+  canoso: '🧓',
+};
+
+const shuffle = <T,>(arr: T[]) => [...arr].sort(() => Math.random() - 0.5);
+
+// Arma 4 versiones: respeta lo que el usuario aclaró y varía al azar lo que dejó vacío
+const buildVariantLooks = (data: {
+  hairColor: string;
+  hairStyle: string;
+  skinTone: string;
+  bodyType: string;
+}): Look[] => {
+  const pick = (fixed: string, pool: string[], i: number) => {
+    if (fixed) return fixed;
+    return shuffle(pool)[i % pool.length];
+  };
+  const hairPool = shuffle(HAIR_COLORS);
+  const stylePool = shuffle(HAIR_STYLES);
+  const skinPool = shuffle(SKIN_TONES);
+  const bodyPool = shuffle(BODY_TYPES);
+
+  return Array.from({ length: 4 }, (_, i) => {
+    const hairColor = data.hairColor || hairPool[i % hairPool.length];
+    const hairStyle = data.hairStyle || stylePool[i % stylePool.length];
+    const skinTone = data.skinTone || skinPool[i % skinPool.length];
+    const bodyType = data.bodyType || bodyPool[i % bodyPool.length];
+    const labelParts = [
+      !data.hairColor ? `Pelo ${hairColor}` : null,
+      !data.hairStyle ? hairStyle : null,
+      !data.skinTone ? `piel ${skinTone}` : null,
+      !data.bodyType ? bodyType : null,
+    ].filter(Boolean) as string[];
+    const label = labelParts.length > 0 ? labelParts.join(' · ') : `Opción ${i + 1}`;
+    return {
+      id: `v${i}`,
+      label: label.charAt(0).toUpperCase() + label.slice(1),
+      emoji: HAIR_EMOJI[hairColor] || '🙂',
+      hairColor,
+      hairStyle,
+      skinTone,
+      bodyType,
+    };
+  });
+};
+
 
 // Medidas corporales usadas en la industria para el calce (Premium)
 const MEASUREMENTS = [
@@ -54,9 +107,8 @@ export default function Tryon() {
   const queryClient = useQueryClient();
   const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
   
-  const [variants, setVariants] = useState<
-    { id: string; label: string; emoji: string; hairColor: string; hairStyle: string; skinTone: string; image: string }[]
-  >([]);
+  const [variants, setVariants] = useState<(Look & { image: string })[]>([]);
+
 
   const [selfie, setSelfie] = useState<string | null>(null);
   const [activeModelId, setActiveModelId] = useState<string | null>(null);
@@ -191,15 +243,21 @@ export default function Tryon() {
 
     try {
       if (isPremium) {
-        // Generamos varias versiones con distintos tonos de pelo y piel para que el usuario elija
+        // Respetamos lo que el usuario aclaró y variamos al azar lo que dejó vacío
+        const looks = buildVariantLooks(avatarData);
         const results = await Promise.allSettled(
-          VARIANT_LOOKS.map((look) =>
-            generateOne({ hairColor: look.hairColor, hairStyle: look.hairStyle, skinTone: look.skinTone })
+          looks.map((look) =>
+            generateOne({
+              hairColor: look.hairColor,
+              hairStyle: look.hairStyle,
+              skinTone: look.skinTone,
+              bodyType: look.bodyType,
+            })
           )
         );
         const ok = results
-          .map((r, i) => (r.status === 'fulfilled' ? { ...VARIANT_LOOKS[i], image: r.value } : null))
-          .filter(Boolean) as { id: string; label: string; emoji: string; hairColor: string; hairStyle: string; skinTone: string; image: string }[];
+          .map((r, i) => (r.status === 'fulfilled' ? { ...looks[i], image: r.value } : null))
+          .filter(Boolean) as (Look & { image: string })[];
         if (ok.length === 0) {
           const firstError = results.find((r) => r.status === 'rejected') as PromiseRejectedResult | undefined;
           throw new Error(firstError?.reason?.message || 'No se pudieron generar los modelos');
@@ -223,15 +281,17 @@ export default function Tryon() {
     }
   };
 
-  const chooseVariant = (v: { id: string; hairColor: string; hairStyle: string; skinTone: string; image: string }) => {
+  const chooseVariant = (v: Look & { image: string }) => {
     setAvatarData((d) => ({
       ...d,
       hairColor: v.hairColor,
       hairStyle: v.hairStyle,
       skinTone: v.skinTone,
+      bodyType: v.bodyType,
     }));
     setSelfie(v.image);
     setVariants([]);
+
     setResultImage(null);
     toast.success('¡Listo! Ya podés probarte prendas con este modelo.');
   };
