@@ -487,7 +487,8 @@ export default function Tryon() {
                 const presentSubsForCat = new Set(
                   items.filter((i) => i.category === key).map((i: any) => i.subcategory).filter(Boolean) as string[]
                 );
-                const subsForCat = getSubcategories(key).filter((o) => presentSubsForCat.has(o.value));
+                const definedSubs = getSubcategories(key);
+                const subsForCat = definedSubs.length > 0 ? definedSubs : [];
                 const isActive = categoryFilter === key;
 
                 if (subsForCat.length === 0) {
