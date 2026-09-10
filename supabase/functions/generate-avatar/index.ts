@@ -17,7 +17,7 @@ serve(async (req) => {
 
     const {
       height, weight, age, gender,
-      hairColor, hairStyle, skinTone, eyeColor, bodyType,
+      hairColor, hairStyle, skinTone, bodyType,
       measurements,
     } = await req.json();
 
@@ -42,7 +42,6 @@ serve(async (req) => {
     if (hairColor) traits.push(`hair color: ${hairColor}`);
     if (hairStyle) traits.push(`hair style: ${hairStyle}`);
     if (skinTone) traits.push(`skin tone: ${skinTone}`);
-    if (eyeColor) traits.push(`eye color: ${eyeColor}`);
     if (bodyType) traits.push(`body type: ${bodyType}`);
     const traitsText = traits.length
       ? `\nPersonal features (in Spanish terms, follow them closely): ${traits.join(", ")}.`

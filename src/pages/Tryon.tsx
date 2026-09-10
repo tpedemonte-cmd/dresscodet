@@ -24,16 +24,15 @@ const CATEGORIES: Record<string, string> = {
 
 // Versiones que se generan juntas para que el usuario elija con cuál se identifica (Premium)
 const VARIANT_LOOKS = [
-  { id: 'rubio', label: 'Rubio/a', emoji: '👱', hairColor: 'rubio', hairStyle: 'lacio media melena', skinTone: 'clara', eyeColor: 'celestes' },
-  { id: 'morocho', label: 'Morocho/a', emoji: '🧑', hairColor: 'negro', hairStyle: 'lacio corto', skinTone: 'trigueña', eyeColor: 'marrones' },
-  { id: 'pelirrojo', label: 'Pelirrojo/a', emoji: '🧑‍🦰', hairColor: 'pelirrojo', hairStyle: 'ondulado', skinTone: 'muy clara con pecas', eyeColor: 'verdes' },
-  { id: 'castano', label: 'Castaño/a', emoji: '🙂', hairColor: 'castaño', hairStyle: 'lacio largo', skinTone: 'morena', eyeColor: 'marrones' },
+  { id: 'rubio', label: 'Rubio/a', emoji: '👱', hairColor: 'rubio', hairStyle: 'lacio media melena', skinTone: 'clara' },
+  { id: 'morocho', label: 'Morocho/a', emoji: '🧑', hairColor: 'negro', hairStyle: 'lacio corto', skinTone: 'morena' },
+  { id: 'pelirrojo', label: 'Pelirrojo/a', emoji: '🧑‍🦰', hairColor: 'pelirrojo', hairStyle: 'ondulado', skinTone: 'muy clara con pecas' },
+  { id: 'castano', label: 'Castaño/a', emoji: '🙂', hairColor: 'castaño', hairStyle: 'lacio largo', skinTone: 'morena' },
 ];
 
 const HAIR_COLORS = ['rubio', 'castaño', 'negro', 'pelirrojo', 'canoso'];
 const HAIR_STYLES = ['lacio corto', 'lacio largo', 'ondulado', 'rulos', 'recogido'];
-const SKIN_TONES = ['muy clara', 'clara', 'trigueña', 'morena', 'oscura'];
-const EYE_COLORS = ['marrones', 'celestes', 'verdes', 'grises'];
+const SKIN_TONES = ['muy clara', 'clara', 'morena', 'oscura'];
 const BODY_TYPES = ['delgado', 'atlético', 'promedio', 'curvilíneo', 'robusto'];
 
 // Medidas corporales usadas en la industria para el calce (Premium)
@@ -56,7 +55,7 @@ export default function Tryon() {
   const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
   
   const [variants, setVariants] = useState<
-    { id: string; label: string; emoji: string; hairColor: string; hairStyle: string; skinTone: string; eyeColor: string; image: string }[]
+    { id: string; label: string; emoji: string; hairColor: string; hairStyle: string; skinTone: string; image: string }[]
   >([]);
 
   const [selfie, setSelfie] = useState<string | null>(null);
@@ -76,7 +75,6 @@ export default function Tryon() {
     hairColor: '',
     hairStyle: '',
     skinTone: '',
-    eyeColor: '',
     bodyType: '',
     chest: '',
     waist: '',
@@ -161,7 +159,6 @@ export default function Tryon() {
             hairColor: d.hairColor,
             hairStyle: d.hairStyle,
             skinTone: d.skinTone,
-            eyeColor: d.eyeColor,
             bodyType: d.bodyType,
             measurements: Object.fromEntries(
               MEASUREMENTS.map((m) => [m.key, (d as any)[m.key]]).filter(
@@ -197,12 +194,12 @@ export default function Tryon() {
         // Generamos varias versiones con distintos tonos de pelo y piel para que el usuario elija
         const results = await Promise.allSettled(
           VARIANT_LOOKS.map((look) =>
-            generateOne({ hairColor: look.hairColor, hairStyle: look.hairStyle, skinTone: look.skinTone, eyeColor: look.eyeColor })
+            generateOne({ hairColor: look.hairColor, hairStyle: look.hairStyle, skinTone: look.skinTone })
           )
         );
         const ok = results
           .map((r, i) => (r.status === 'fulfilled' ? { ...VARIANT_LOOKS[i], image: r.value } : null))
-          .filter(Boolean) as { id: string; label: string; emoji: string; hairColor: string; hairStyle: string; skinTone: string; eyeColor: string; image: string }[];
+          .filter(Boolean) as { id: string; label: string; emoji: string; hairColor: string; hairStyle: string; skinTone: string; image: string }[];
         if (ok.length === 0) {
           const firstError = results.find((r) => r.status === 'rejected') as PromiseRejectedResult | undefined;
           throw new Error(firstError?.reason?.message || 'No se pudieron generar los modelos');
@@ -226,14 +223,12 @@ export default function Tryon() {
     }
   };
 
-  const chooseVariant = (v: { id: string; hairColor: string; hairStyle: string; skinTone: string; eyeColor: string; image: string }) => {
-
+  const chooseVariant = (v: { id: string; hairColor: string; hairStyle: string; skinTone: string; image: string }) => {
     setAvatarData((d) => ({
       ...d,
       hairColor: v.hairColor,
       hairStyle: v.hairStyle,
       skinTone: v.skinTone,
-      eyeColor: v.eyeColor,
     }));
     setSelfie(v.image);
     setVariants([]);
@@ -652,7 +647,6 @@ export default function Tryon() {
                     { key: 'hairColor', label: 'Color de pelo', options: HAIR_COLORS },
                     { key: 'hairStyle', label: 'Tipo de pelo', options: HAIR_STYLES },
                     { key: 'skinTone', label: 'Tono de piel', options: SKIN_TONES },
-                    { key: 'eyeColor', label: 'Color de ojos', options: EYE_COLORS },
                     { key: 'bodyType', label: 'Contextura', options: BODY_TYPES },
                   ] as const).map((f) => (
                     <div key={f.key}>
@@ -675,7 +669,7 @@ export default function Tryon() {
                   onClick={() => setPlan('premium')}
                   className="w-full rounded-lg bg-background/70 border border-dashed border-border px-3 py-2 text-[11px] font-body text-muted-foreground hover:text-foreground"
                 >
-                  <Lock className="h-3.5 w-3.5 inline mr-1" /> Pelo, piel, ojos, contextura y tus medidas — Premium
+                  <Lock className="h-3.5 w-3.5 inline mr-1" /> Pelo, piel, contextura y tus medidas — Premium
                 </button>
               )}
 
