@@ -123,7 +123,7 @@ export default function Tryon() {
     height: '',
     weight: '65',
     age: '',
-    gender: 'femenino',
+    gender: '',
     hairColor: '',
     hairStyle: '',
     skinTone: '',
