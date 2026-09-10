@@ -142,7 +142,7 @@ export default function Wardrobe() {
   const filtered = items.filter(
     (i) =>
       (!filter || i.category === filter) &&
-      (!subFilter || (i as any).subcategory === subFilter) &&
+      (!subFilter || (subFilter === '__none__' ? !(i as any).subcategory : (i as any).subcategory === subFilter)) &&
       (!availFilter || ((i as any).availability ?? 'disponible') === availFilter)
   );
 
@@ -186,7 +186,7 @@ export default function Wardrobe() {
             const presentSubsForCat = new Set(
               items.filter((i) => i.category === cat).map((i: any) => i.subcategory).filter(Boolean) as string[]
             );
-            const subsForCat = getSubcategories(cat).filter((o) => presentSubsForCat.has(o.value));
+            const subsForCat = getSubcategories(cat);
             const isActive = filter === cat;
 
             if (subsForCat.length === 0) {
@@ -212,7 +212,7 @@ export default function Wardrobe() {
                     }`}
                   >
                     {isActive && subFilter
-                      ? `${CATEGORIES[cat] || cat} · ${getSubcategoryLabel(cat, subFilter)}`
+                      ? `${CATEGORIES[cat] || cat} · ${subFilter === '__none__' ? 'Sin clasificar' : getSubcategoryLabel(cat, subFilter)}`
                       : CATEGORIES[cat] || cat}
                     <ChevronDown className="h-3 w-3" />
                   </button>
@@ -222,15 +222,26 @@ export default function Wardrobe() {
                     <span className="flex-1">Todas</span>
                     {isActive && !subFilter && <Check className="h-3.5 w-3.5 ml-2" />}
                   </DropdownMenuItem>
-                  {subsForCat.map((o) => (
-                    <DropdownMenuItem
-                      key={o.value}
-                      onClick={() => { setFilter(cat); setSubFilter(o.value); }}
-                    >
-                      <span className="flex-1">{o.label}</span>
-                      {isActive && subFilter === o.value && <Check className="h-3.5 w-3.5 ml-2" />}
+                  {subsForCat.map((o) => {
+                    const hasItems = presentSubsForCat.has(o.value);
+                    return (
+                      <DropdownMenuItem
+                        key={o.value}
+                        disabled={!hasItems}
+                        onClick={() => { setFilter(cat); setSubFilter(o.value); }}
+                        className={hasItems ? '' : 'opacity-50'}
+                      >
+                        <span className="flex-1">{o.label}</span>
+                        {isActive && subFilter === o.value && <Check className="h-3.5 w-3.5 ml-2" />}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                  {items.some((i) => i.category === cat && !(i as any).subcategory) && (
+                    <DropdownMenuItem onClick={() => { setFilter(cat); setSubFilter('__none__'); }}>
+                      <span className="flex-1 italic">Sin clasificar</span>
+                      {isActive && subFilter === '__none__' && <Check className="h-3.5 w-3.5 ml-2" />}
                     </DropdownMenuItem>
-                  ))}
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             );
