@@ -284,10 +284,6 @@ export default function Tryon() {
     }
   };
 
-  const scroll = (dir: 'left' | 'right') => {
-    if (!scrollRef.current) return;
-    scrollRef.current.scrollBy({ left: dir === 'left' ? -200 : 200, behavior: 'smooth' });
-  };
 
   const reset = () => {
     setSelfie(null);
