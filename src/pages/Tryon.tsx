@@ -24,16 +24,15 @@ const CATEGORIES: Record<string, string> = {
 
 // Versiones que se generan juntas para que el usuario elija con cuál se identifica (Premium)
 const VARIANT_LOOKS = [
-  { id: 'rubio', label: 'Rubio/a', emoji: '👱', hairColor: 'rubio', hairStyle: 'lacio media melena', skinTone: 'clara', eyeColor: 'celestes' },
-  { id: 'morocho', label: 'Morocho/a', emoji: '🧑', hairColor: 'negro', hairStyle: 'lacio corto', skinTone: 'trigueña', eyeColor: 'marrones' },
-  { id: 'pelirrojo', label: 'Pelirrojo/a', emoji: '🧑‍🦰', hairColor: 'pelirrojo', hairStyle: 'ondulado', skinTone: 'muy clara con pecas', eyeColor: 'verdes' },
-  { id: 'castano', label: 'Castaño/a', emoji: '🙂', hairColor: 'castaño', hairStyle: 'lacio largo', skinTone: 'morena', eyeColor: 'marrones' },
+  { id: 'rubio', label: 'Rubio/a', emoji: '👱', hairColor: 'rubio', hairStyle: 'lacio media melena', skinTone: 'clara' },
+  { id: 'morocho', label: 'Morocho/a', emoji: '🧑', hairColor: 'negro', hairStyle: 'lacio corto', skinTone: 'morena' },
+  { id: 'pelirrojo', label: 'Pelirrojo/a', emoji: '🧑‍🦰', hairColor: 'pelirrojo', hairStyle: 'ondulado', skinTone: 'muy clara con pecas' },
+  { id: 'castano', label: 'Castaño/a', emoji: '🙂', hairColor: 'castaño', hairStyle: 'lacio largo', skinTone: 'morena' },
 ];
 
 const HAIR_COLORS = ['rubio', 'castaño', 'negro', 'pelirrojo', 'canoso'];
 const HAIR_STYLES = ['lacio corto', 'lacio largo', 'ondulado', 'rulos', 'recogido'];
-const SKIN_TONES = ['muy clara', 'clara', 'trigueña', 'morena', 'oscura'];
-const EYE_COLORS = ['marrones', 'celestes', 'verdes', 'grises'];
+const SKIN_TONES = ['muy clara', 'clara', 'morena', 'oscura'];
 const BODY_TYPES = ['delgado', 'atlético', 'promedio', 'curvilíneo', 'robusto'];
 
 // Medidas corporales usadas en la industria para el calce (Premium)
