@@ -14,19 +14,19 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
   const ad = ADS[index % ADS.length];
 
   return (
-    <div className="rounded-xl border border-dashed border-border bg-secondary/60 p-3 flex items-center gap-3">
-      <div className="rounded-lg bg-background p-2">
-        <Megaphone className="h-5 w-5 text-muted-foreground" />
+    <div className="rounded-xl border border-dashed border-border bg-secondary/60 p-4 flex items-center gap-3">
+      <div className="rounded-lg bg-background p-2.5">
+        <Megaphone className="h-6 w-6 text-muted-foreground" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-body font-medium text-foreground truncate">{ad.title}</p>
-        <p className="text-xs font-body text-muted-foreground truncate">{ad.text}</p>
+        <p className="text-base font-body font-medium text-foreground truncate">{ad.title}</p>
+        <p className="text-sm font-body text-muted-foreground truncate">{ad.text}</p>
       </div>
       <button
         onClick={() => setPlan('premium')}
-        className="shrink-0 inline-flex items-center gap-1 text-xs font-body font-medium text-primary hover:underline"
+        className="shrink-0 inline-flex items-center gap-1 text-sm font-body font-medium text-primary hover:underline"
       >
-        <Crown className="h-3.5 w-3.5" /> Quitar anuncios
+        <Crown className="h-4 w-4" /> Quitar anuncios
       </button>
     </div>
   );
