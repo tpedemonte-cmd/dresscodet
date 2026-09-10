@@ -107,9 +107,8 @@ export default function Tryon() {
   const queryClient = useQueryClient();
   const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
   
-  const [variants, setVariants] = useState<
-    { id: string; label: string; emoji: string; hairColor: string; hairStyle: string; skinTone: string; image: string }[]
-  >([]);
+  const [variants, setVariants] = useState<(Look & { image: string })[]>([]);
+
 
   const [selfie, setSelfie] = useState<string | null>(null);
   const [activeModelId, setActiveModelId] = useState<string | null>(null);
