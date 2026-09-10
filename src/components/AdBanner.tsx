@@ -11,6 +11,7 @@ const ADS = [
 const DISMISS_KEY = 'dresscode_ad_dismissed';
 const ACTION_COUNT_KEY = 'dresscode_ad_action_count';
 const ACTION_THRESHOLD = 15;
+const CLOSE_DELAY_SECONDS = 5;
 
 function getActionCount() {
   if (typeof localStorage === 'undefined') return 0;
@@ -26,6 +27,7 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
   const { isPremium, setPlan } = usePlan();
   const [dismissed, setDismissed] = useState(true);
   const [ready, setReady] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(CLOSE_DELAY_SECONDS);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,11 +57,28 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
     return () => document.removeEventListener('click', onAction, true);
   }, [isPremium]);
 
+  useEffect(() => {
+    if (dismissed || isPremium) return;
+    setSecondsLeft(CLOSE_DELAY_SECONDS);
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [dismissed, isPremium]);
+
   if (!ready || isPremium || dismissed) return null;
 
   const ad = ADS[index % ADS.length];
+  const canClose = secondsLeft <= 0;
 
   const close = () => {
+    if (!canClose) return;
     setDismissed(true);
     if (typeof localStorage !== 'undefined') localStorage.setItem(DISMISS_KEY, 'true');
   };
@@ -69,7 +88,8 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
       <div ref={ref} className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl shadow-primary/10 animate-in zoom-in-95">
         <button
           onClick={close}
-          className="absolute right-3 top-3 rounded-full p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"
+          disabled={!canClose}
+          className="absolute right-3 top-3 rounded-full p-2 text-muted-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:bg-secondary hover:enabled:text-foreground"
           aria-label="Cerrar anuncio"
         >
           <X className="h-5 w-5" />
@@ -88,14 +108,21 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
           >
             <Crown className="h-5 w-5" /> Quitar anuncios
           </button>
-          <button
-            onClick={close}
-            className="text-sm font-body text-muted-foreground underline hover:text-foreground"
-          >
-            Cerrar anuncio
-          </button>
+          {canClose ? (
+            <button
+              onClick={close}
+              className="text-sm font-body text-muted-foreground underline hover:text-foreground"
+            >
+              Cerrar anuncio
+            </button>
+          ) : (
+            <p className="text-sm font-body text-muted-foreground">
+              Podés cerrar este anuncio en {secondsLeft} segundos
+            </p>
+          )}
         </div>
       </div>
     </div>
   );
 }
+
