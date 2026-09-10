@@ -76,7 +76,8 @@ export default function Tryon() {
       items.filter(
         (i: any) =>
           (!categoryFilter || i.category === categoryFilter) &&
-          (!subFilter || i.subcategory === subFilter)
+          (!subFilter ||
+            (subFilter === '__none__' ? !i.subcategory : i.subcategory === subFilter))
       ),
     [items, categoryFilter, subFilter]
   );
