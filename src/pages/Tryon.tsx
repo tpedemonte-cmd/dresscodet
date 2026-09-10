@@ -139,6 +139,7 @@ export default function Tryon() {
     shoeSize: '',
   });
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
+  const [showVariantPicker, setShowVariantPicker] = useState(false);
 
   const { data: items = [] } = useQuery({
     queryKey: ['clothing_items', user?.id],
@@ -290,8 +291,7 @@ export default function Tryon() {
       bodyType: v.bodyType,
     }));
     setSelfie(v.image);
-    setVariants([]);
-
+    setShowVariantPicker(false);
     setResultImage(null);
     toast.success('¡Listo! Ya podés probarte prendas con este modelo.');
   };
@@ -507,6 +507,7 @@ export default function Tryon() {
     setSelectedItems([]);
     setResultImage(null);
     setVariants([]);
+    setShowVariantPicker(false);
   };
 
   return (
@@ -547,7 +548,7 @@ export default function Tryon() {
         )}
 
 
-        {selfie ? (
+        {selfie && !showVariantPicker ? (
           <div className="space-y-3">
             <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card">
               <img src={resultImage || selfie} alt="Tu modelo" className="w-full h-full object-cover" />
@@ -558,10 +559,9 @@ export default function Tryon() {
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto">
+            <div className="flex flex-col gap-2 max-w-sm mx-auto">
               <Button
                 variant="outline"
-                className="flex-1"
                 disabled={savingModel}
                 onClick={() => saveModelMutation.mutate()}
               >
@@ -571,19 +571,26 @@ export default function Tryon() {
                   <><Save className="h-4 w-4 mr-2" /> {resultImage ? 'Guardar modelo con esta ropa' : 'Guardar este modelo'}</>
                 )}
               </Button>
+              {variants.length > 0 && (
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowVariantPicker(true)}
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" /> Cambiar modelo
+                </Button>
+              )}
               <Button
-                variant="secondary"
-                className="flex-1"
+                variant="ghost"
                 onClick={reset}
               >
-                <RotateCcw className="h-4 w-4 mr-2" /> Cambiar modelo
+                Volver a los datos
               </Button>
             </div>
 
           </div>
         ) : (
           <div className="space-y-4">
-            {variants.length > 0 && (
+            {variants.length > 0 && (showVariantPicker || !selfie) ? (
               <div className="space-y-3">
                 <p className="text-sm font-body font-medium text-foreground text-center">
                   Elegí el modelo con el que más te identificás
@@ -602,8 +609,13 @@ export default function Tryon() {
                     </button>
                   ))}
                 </div>
-                <div className="flex justify-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setVariants([])}>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {selfie && (
+                    <Button variant="outline" size="sm" onClick={() => setShowVariantPicker(false)}>
+                      Volver al modelo actual
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" onClick={reset}>
                     Volver a los datos
                   </Button>
                   <Button variant="warm" size="sm" disabled={generatingAvatar} onClick={handleGenerateAvatar}>
@@ -615,9 +627,7 @@ export default function Tryon() {
                   </Button>
                 </div>
               </div>
-            )}
-
-            {variants.length > 0 ? null : modelMode === 'selfie' ? (
+            ) : modelMode === 'selfie' ? (
               isPremium ? (
                 <div className="max-w-sm mx-auto bg-secondary rounded-xl p-4 border-2 border-dashed border-border space-y-3 text-center">
                   <p className="text-muted-foreground font-body text-xs">
