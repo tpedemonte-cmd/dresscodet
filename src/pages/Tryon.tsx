@@ -120,9 +120,9 @@ export default function Tryon() {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [subFilter, setSubFilter] = useState<string | null>(null);
   const [avatarData, setAvatarData] = useState({
-    height: '170',
-    weight: '65',
-    age: '28',
+    height: '',
+    weight: '',
+    age: '',
     gender: '',
     hairColor: '',
     hairStyle: '',
@@ -138,6 +138,9 @@ export default function Tryon() {
     thigh: '',
     shoeSize: '',
   });
+
+  const effectiveNumber = (value: string, fallback: number) =>
+    value === '' || value == null ? fallback : Number(value);
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
   const [showVariantPicker, setShowVariantPicker] = useState(false);
 
@@ -203,9 +206,9 @@ export default function Tryon() {
   const buildAvatarBody = (overrides: Partial<typeof avatarData> = {}) => {
     const d = { ...avatarData, ...overrides };
     return {
-      height: Number(d.height),
-      weight: Number(d.weight),
-      age: Number(d.age),
+      height: effectiveNumber(d.height, 170),
+      weight: effectiveNumber(d.weight, 65),
+      age: effectiveNumber(d.age, 28),
       gender: d.gender,
       ...(isPremium
         ? {
@@ -224,9 +227,9 @@ export default function Tryon() {
   };
 
   const handleGenerateAvatar = async () => {
-    const { weight, age, gender } = avatarData;
-    if (!weight || !age || !gender) {
-      toast.error('Completá peso, edad y género');
+    const { gender } = avatarData;
+    if (!gender) {
+      toast.error('Seleccioná un género para continuar');
       return;
     }
     setGeneratingAvatar(true);
@@ -328,9 +331,9 @@ export default function Tryon() {
         .insert({
           user_id: user.id,
           image_url: urlData.publicUrl,
-          height: Number(avatarData.height),
-          weight: Number(avatarData.weight),
-          age: Number(avatarData.age),
+          height: effectiveNumber(avatarData.height, 170),
+          weight: effectiveNumber(avatarData.weight, 65),
+          age: effectiveNumber(avatarData.age, 28),
           gender: avatarData.gender,
           is_active: true,
         })
@@ -678,7 +681,7 @@ export default function Tryon() {
                     value={avatarData.height}
                     onChange={e => setAvatarData(d => ({ ...d, height: e.target.value }))}
                     placeholder="170"
-                    className="w-full mt-1 px-2 py-1.5 text-sm font-bold rounded-md border border-input bg-background"
+                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground/60"
                   />
                 </div>
                 <div>
@@ -688,7 +691,7 @@ export default function Tryon() {
                     value={avatarData.weight}
                     onChange={e => setAvatarData(d => ({ ...d, weight: e.target.value }))}
                     placeholder="65"
-                    className="w-full mt-1 px-2 py-1.5 text-sm font-bold rounded-md border border-input bg-background"
+                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground/60"
                   />
                 </div>
                 <div>
@@ -698,7 +701,7 @@ export default function Tryon() {
                     value={avatarData.age}
                     onChange={e => setAvatarData(d => ({ ...d, age: e.target.value }))}
                     placeholder="28"
-                    className="w-full mt-1 px-2 py-1.5 text-sm font-bold rounded-md border border-input bg-background"
+                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground/60"
                   />
                 </div>
                 <div>
