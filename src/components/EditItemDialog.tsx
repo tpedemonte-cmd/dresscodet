@@ -25,7 +25,7 @@ const CATEGORIES = [
 ];
 
 interface EditItemDialogProps {
-  item: { id: string; name: string; category: string; color: string | null; image_url: string };
+  item: { id: string; name: string; category: string; color: string | null; image_url: string; subcategory?: string | null };
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -34,13 +34,14 @@ export default function EditItemDialog({ item, open, onOpenChange }: EditItemDia
   const queryClient = useQueryClient();
   const [name, setName] = useState(item.name);
   const [category, setCategory] = useState(item.category);
+  const [subcategory, setSubcategory] = useState(item.subcategory || '');
   const [color, setColor] = useState(item.color || '');
 
   const mutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
         .from('clothing_items')
-        .update({ name, category, color: color || null })
+        .update({ name, category, subcategory: subcategory || null, color: color || null })
         .eq('id', item.id);
       if (error) throw error;
     },
