@@ -15,7 +15,8 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { height, weight, age, gender } = await req.json();
+    const { height, weight, age, gender, hairColor, hairStyle, skinTone, eyeColor, bodyType } =
+      await req.json();
 
     if (!height || !weight || !age || !gender) {
       return new Response(
