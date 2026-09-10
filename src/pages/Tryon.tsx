@@ -22,14 +22,12 @@ const CATEGORIES: Record<string, string> = {
   zapatillas: '👟', zapatos: '👞', medias: '🧦', accesorio: '🎒', otro: '📦',
 };
 
-// Ejemplos de modelos para que el usuario elija con cuál se identifica (Premium)
-const MODEL_PRESETS = [
+// Versiones que se generan juntas para que el usuario elija con cuál se identifica (Premium)
+const VARIANT_LOOKS = [
   { id: 'rubio', label: 'Rubio/a', emoji: '👱', hairColor: 'rubio', hairStyle: 'lacio media melena', skinTone: 'clara', eyeColor: 'celestes' },
   { id: 'morocho', label: 'Morocho/a', emoji: '🧑', hairColor: 'negro', hairStyle: 'lacio corto', skinTone: 'trigueña', eyeColor: 'marrones' },
   { id: 'pelirrojo', label: 'Pelirrojo/a', emoji: '🧑‍🦰', hairColor: 'pelirrojo', hairStyle: 'ondulado', skinTone: 'muy clara con pecas', eyeColor: 'verdes' },
-  { id: 'castano', label: 'Castaño/a', emoji: '🙂', hairColor: 'castaño', hairStyle: 'lacio largo', skinTone: 'clara', eyeColor: 'marrones' },
-  { id: 'rulos', label: 'Con rulos', emoji: '🧑‍🦱', hairColor: 'castaño oscuro', hairStyle: 'rulos', skinTone: 'morena', eyeColor: 'marrones' },
-  { id: 'canoso', label: 'Canoso/a', emoji: '🧑‍🦳', hairColor: 'canoso', hairStyle: 'corto', skinTone: 'clara', eyeColor: 'grises' },
+  { id: 'castano', label: 'Castaño/a', emoji: '🙂', hairColor: 'castaño', hairStyle: 'lacio largo', skinTone: 'morena', eyeColor: 'marrones' },
 ];
 
 const HAIR_COLORS = ['rubio', 'castaño', 'negro', 'pelirrojo', 'canoso'];
@@ -56,7 +54,10 @@ export default function Tryon() {
   const { isPremium, setPlan } = usePlan();
   const queryClient = useQueryClient();
   const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
-  const [presetId, setPresetId] = useState<string | null>(null);
+  
+  const [variants, setVariants] = useState<
+    { id: string; label: string; emoji: string; hairColor: string; hairStyle: string; skinTone: string; eyeColor: string; image: string }[]
+  >([]);
 
   const [selfie, setSelfie] = useState<string | null>(null);
   const [activeModelId, setActiveModelId] = useState<string | null>(null);
@@ -136,16 +137,6 @@ export default function Tryon() {
     [items, categoryFilter, subFilter]
   );
 
-  const applyPreset = (preset: typeof MODEL_PRESETS[number]) => {
-    setPresetId(preset.id);
-    setAvatarData((d) => ({
-      ...d,
-      hairColor: preset.hairColor,
-      hairStyle: preset.hairStyle,
-      skinTone: preset.skinTone,
-      eyeColor: preset.eyeColor,
-    }));
-  };
 
   const handleSelfieUpload = (file: File) => {
     const reader = new FileReader();
@@ -158,40 +149,71 @@ export default function Tryon() {
     reader.readAsDataURL(file);
   };
 
+  const buildAvatarBody = (overrides: Partial<typeof avatarData> = {}) => {
+    const d = { ...avatarData, ...overrides };
+    return {
+      height: Number(d.height),
+      weight: Number(d.weight),
+      age: Number(d.age),
+      gender: d.gender,
+      ...(isPremium
+        ? {
+            hairColor: d.hairColor,
+            hairStyle: d.hairStyle,
+            skinTone: d.skinTone,
+            eyeColor: d.eyeColor,
+            bodyType: d.bodyType,
+            measurements: Object.fromEntries(
+              MEASUREMENTS.map((m) => [m.key, (d as any)[m.key]]).filter(
+                ([, v]) => v !== '' && v != null
+              )
+            ),
+          }
+        : {}),
+    };
+  };
+
   const handleGenerateAvatar = async () => {
-    const { height, weight, age, gender, hairColor, hairStyle, skinTone, eyeColor, bodyType } = avatarData;
+    const { height, weight, age } = avatarData;
     if (!height || !weight || !age) {
       toast.error('Completá altura, peso y edad');
       return;
     }
     setGeneratingAvatar(true);
-    try {
+    setVariants([]);
+
+    const generateOne = async (overrides: Partial<typeof avatarData> = {}) => {
       const { data, error } = await supabase.functions.invoke('generate-avatar', {
-        body: {
-          height: Number(height),
-          weight: Number(weight),
-          age: Number(age),
-          gender,
-          ...(isPremium
-            ? {
-                hairColor,
-                hairStyle,
-                skinTone,
-                eyeColor,
-                bodyType,
-                measurements: Object.fromEntries(
-                  MEASUREMENTS.map((m) => [m.key, (avatarData as any)[m.key]]).filter(
-                    ([, v]) => v !== '' && v != null
-                  )
-                ),
-              }
-            : {}),
-        },
+        body: buildAvatarBody(overrides),
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      if (data?.image) {
-        setSelfie(data.image);
+      if (!data?.image) throw new Error('No se pudo generar el modelo');
+      return data.image as string;
+    };
+
+    try {
+      if (isPremium) {
+        // Generamos varias versiones con distintos tonos de pelo y piel para que el usuario elija
+        const results = await Promise.allSettled(
+          VARIANT_LOOKS.map((look) =>
+            generateOne({ hairColor: look.hairColor, hairStyle: look.hairStyle, skinTone: look.skinTone, eyeColor: look.eyeColor })
+          )
+        );
+        const ok = results
+          .map((r, i) => (r.status === 'fulfilled' ? { ...VARIANT_LOOKS[i], image: r.value } : null))
+          .filter(Boolean) as { id: string; label: string; emoji: string; hairColor: string; hairStyle: string; skinTone: string; eyeColor: string; image: string }[];
+        if (ok.length === 0) {
+          const firstError = results.find((r) => r.status === 'rejected') as PromiseRejectedResult | undefined;
+          throw new Error(firstError?.reason?.message || 'No se pudieron generar los modelos');
+        }
+        setVariants(ok);
+        setActiveModelId(null);
+        setResultImage(null);
+        toast.success(`Se generaron ${ok.length} modelos. Elegí con cuál te identificás.`);
+      } else {
+        const image = await generateOne();
+        setSelfie(image);
         setActiveModelId(null);
         setResultImage(null);
         toast.success('¡Modelo generado! Ahora podés guardarlo.');
@@ -202,6 +224,21 @@ export default function Tryon() {
     } finally {
       setGeneratingAvatar(false);
     }
+  };
+
+  const chooseVariant = (v: { id: string; hairColor: string; hairStyle: string; skinTone: string; eyeColor: string; image: string }) => {
+
+    setAvatarData((d) => ({
+      ...d,
+      hairColor: v.hairColor,
+      hairStyle: v.hairStyle,
+      skinTone: v.skinTone,
+      eyeColor: v.eyeColor,
+    }));
+    setSelfie(v.image);
+    setVariants([]);
+    setResultImage(null);
+    toast.success('¡Listo! Ya podés probarte prendas con este modelo.');
   };
 
   const saveModelMutation = useMutation({
@@ -414,6 +451,7 @@ export default function Tryon() {
     setActiveModelId(null);
     setSelectedItems([]);
     setResultImage(null);
+    setVariants([]);
   };
 
   return (
@@ -486,7 +524,41 @@ export default function Tryon() {
           </div>
         ) : (
           <div className="space-y-4">
-            {modelMode === 'selfie' ? (
+            {variants.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-sm font-body font-medium text-foreground text-center">
+                  Elegí el modelo con el que más te identificás
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {variants.map((v) => (
+                    <button
+                      key={v.id}
+                      onClick={() => chooseVariant(v)}
+                      className="rounded-xl overflow-hidden bg-secondary shadow-card hover:shadow-elevated hover:ring-2 hover:ring-primary transition-all text-left"
+                    >
+                      <img src={v.image} alt={v.label} className="w-full aspect-[3/4] object-cover" />
+                      <p className="text-[11px] font-body text-center py-1 text-foreground">
+                        {v.emoji} {v.label}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+                <div className="flex justify-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setVariants([])}>
+                    Volver a los datos
+                  </Button>
+                  <Button variant="warm" size="sm" disabled={generatingAvatar} onClick={handleGenerateAvatar}>
+                    {generatingAvatar ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
+                    ) : (
+                      <><RotateCcw className="h-4 w-4 mr-2" /> Generar otras opciones</>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {variants.length > 0 ? null : modelMode === 'selfie' ? (
               isPremium ? (
                 <div className="max-w-sm mx-auto bg-secondary rounded-xl p-4 border-2 border-dashed border-border space-y-3 text-center">
                   <p className="text-muted-foreground font-body text-xs">
@@ -529,31 +601,33 @@ export default function Tryon() {
                 Completá tus datos para generar un modelo realista con IA
               </p>
 
-              {/* Ejemplos de modelos (Premium) */}
+              {/* Varias versiones para elegir (Premium) */}
               <div className="space-y-2">
                 <div className="flex items-center justify-center gap-2">
-                  <p className="text-xs font-body font-medium text-foreground">Elegí con quién te identificás</p>
+                  <p className="text-xs font-body font-medium text-foreground text-center">
+                    {isPremium
+                      ? 'Vas a recibir varias versiones con distintos tonos de pelo y piel para elegir'
+                      : 'Elegir entre varias versiones con distinto pelo y piel'}
+                  </p>
                   {!isPremium && <PremiumBadge />}
                 </div>
                 <div className={`flex flex-wrap justify-center gap-2 ${isPremium ? '' : 'opacity-60'}`}>
-                  {MODEL_PRESETS.map((p) => (
-                    <button
+                  {VARIANT_LOOKS.map((p) => (
+                    <span
                       key={p.id}
-                      onClick={() => (isPremium ? applyPreset(p) : setPlan('premium'))}
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-body transition-colors ${
-                        presetId === p.id && isPremium
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-background text-muted-foreground hover:text-foreground'
-                      }`}
+                      className="inline-flex items-center gap-1 rounded-full bg-background px-2.5 py-1 text-[11px] font-body text-muted-foreground"
                     >
                       {isPremium ? p.emoji : '🔒'} {p.label}
-                    </button>
+                    </span>
                   ))}
                 </div>
                 {!isPremium && (
-                  <p className="text-[11px] font-body text-muted-foreground text-center">
-                    Los modelos de ejemplo y los datos avanzados son parte del plan Premium.
-                  </p>
+                  <button
+                    onClick={() => setPlan('premium')}
+                    className="w-full text-[11px] font-body text-muted-foreground hover:text-foreground text-center"
+                  >
+                    Con el plan gratis se genera un solo modelo. Pasar a Premium →
+                  </button>
                 )}
               </div>
 
@@ -615,7 +689,7 @@ export default function Tryon() {
                       <label className="text-xs font-body text-foreground">{f.label}</label>
                       <select
                         value={(avatarData as any)[f.key]}
-                        onChange={e => { setPresetId(null); setAvatarData(d => ({ ...d, [f.key]: e.target.value })); }}
+                        onChange={e => { setAvatarData(d => ({ ...d, [f.key]: e.target.value })); }}
                         className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
                       >
                         <option value="">Sin preferencia</option>
