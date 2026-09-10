@@ -480,7 +480,7 @@ export default function Tryon() {
               .map(([key, emoji]) => (
                 <button
                   key={key}
-                  onClick={() => setCategoryFilter(prev => prev === key ? null : key)}
+                  onClick={() => { setCategoryFilter(prev => prev === key ? null : key); setSubFilter(null); }}
                   className={`text-xs font-body px-3 py-1 rounded-full transition-colors ${
                     categoryFilter === key ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
                   }`}
@@ -490,6 +490,32 @@ export default function Tryon() {
               ))}
           </div>
         )}
+
+        {/* Subtype filter chips */}
+        {subOptions.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSubFilter(null)}
+              className={`text-xs font-body px-3 py-1 rounded-full border transition-colors ${
+                subFilter === null ? 'border-primary text-primary bg-primary/10' : 'border-border text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Todos los tipos
+            </button>
+            {subOptions.map((o) => (
+              <button
+                key={o.value}
+                onClick={() => setSubFilter(prev => prev === o.value ? null : o.value)}
+                className={`text-xs font-body px-3 py-1 rounded-full border transition-colors ${
+                  subFilter === o.value ? 'border-primary text-primary bg-primary/10' : 'border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        )}
+
 
         {selectedItems.length > 0 && (
           <div className="flex flex-wrap gap-2">
