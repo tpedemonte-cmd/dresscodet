@@ -25,14 +25,37 @@ function setActionCount(n: number) {
 export default function AdBanner({ index = 0 }: { index?: number }) {
   const { isPremium, setPlan } = usePlan();
   const [dismissed, setDismissed] = useState(true);
+  const [ready, setReady] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof localStorage !== 'undefined') {
       setDismissed(localStorage.getItem(DISMISS_KEY) === 'true');
     }
-  }, []);
+    setReady(true);
 
-  if (isPremium || dismissed) return null;
+    const onAction = (e: MouseEvent | TouchEvent) => {
+      if (isPremium) return;
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (ref.current && ref.current.contains(target)) return;
+
+      const interactive = target.closest('button, a, [role="button"], input[type="submit"]');
+      if (!interactive) return;
+
+      const count = getActionCount() + 1;
+      setActionCount(count);
+      if (count >= ACTION_THRESHOLD) {
+        setDismissed(false);
+        setActionCount(0);
+      }
+    };
+
+    document.addEventListener('click', onAction, true);
+    return () => document.removeEventListener('click', onAction, true);
+  }, [isPremium]);
+
+  if (!ready || isPremium || dismissed) return null;
 
   const ad = ADS[index % ADS.length];
 
