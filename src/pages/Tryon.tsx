@@ -451,6 +451,7 @@ export default function Tryon() {
     setActiveModelId(null);
     setSelectedItems([]);
     setResultImage(null);
+    setVariants([]);
   };
 
   return (
