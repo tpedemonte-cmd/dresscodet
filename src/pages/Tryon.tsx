@@ -205,7 +205,7 @@ export default function Tryon() {
   const buildAvatarBody = (overrides: Partial<typeof avatarData> = {}) => {
     const d = { ...avatarData, ...overrides };
     return {
-      height: Number(d.height),
+      height: effectiveHeight(d.height),
       weight: Number(d.weight),
       age: Number(d.age),
       gender: d.gender,
