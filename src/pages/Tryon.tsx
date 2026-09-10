@@ -566,7 +566,7 @@ export default function Tryon() {
               </div>
             )}
 
-            {modelMode === 'selfie' ? (
+            {variants.length > 0 ? null : modelMode === 'selfie' ? (
               isPremium ? (
                 <div className="max-w-sm mx-auto bg-secondary rounded-xl p-4 border-2 border-dashed border-border space-y-3 text-center">
                   <p className="text-muted-foreground font-body text-xs">
