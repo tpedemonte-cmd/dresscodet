@@ -22,18 +22,71 @@ const CATEGORIES: Record<string, string> = {
   zapatillas: '👟', zapatos: '👞', medias: '🧦', accesorio: '🎒', otro: '📦',
 };
 
-// Versiones que se generan juntas para que el usuario elija con cuál se identifica (Premium)
-const VARIANT_LOOKS = [
-  { id: 'rubio', label: 'Rubio/a', emoji: '👱', hairColor: 'rubio', hairStyle: 'lacio media melena', skinTone: 'clara' },
-  { id: 'morocho', label: 'Morocho/a', emoji: '🧑', hairColor: 'negro', hairStyle: 'lacio corto', skinTone: 'morena' },
-  { id: 'pelirrojo', label: 'Pelirrojo/a', emoji: '🧑‍🦰', hairColor: 'pelirrojo', hairStyle: 'ondulado', skinTone: 'muy clara con pecas' },
-  { id: 'castano', label: 'Castaño/a', emoji: '🙂', hairColor: 'castaño', hairStyle: 'lacio largo', skinTone: 'morena' },
-];
-
 const HAIR_COLORS = ['rubio', 'castaño', 'negro', 'pelirrojo', 'canoso'];
 const HAIR_STYLES = ['lacio corto', 'lacio largo', 'ondulado', 'rulos', 'recogido'];
 const SKIN_TONES = ['muy clara', 'clara', 'morena', 'oscura'];
 const BODY_TYPES = ['delgado', 'atlético', 'promedio', 'curvilíneo', 'robusto'];
+
+type Look = {
+  id: string;
+  label: string;
+  emoji: string;
+  hairColor: string;
+  hairStyle: string;
+  skinTone: string;
+  bodyType: string;
+};
+
+const HAIR_EMOJI: Record<string, string> = {
+  rubio: '👱',
+  castaño: '🙂',
+  negro: '🧑',
+  pelirrojo: '🧑‍🦰',
+  canoso: '🧓',
+};
+
+const shuffle = <T,>(arr: T[]) => [...arr].sort(() => Math.random() - 0.5);
+
+// Arma 4 versiones: respeta lo que el usuario aclaró y varía al azar lo que dejó vacío
+const buildVariantLooks = (data: {
+  hairColor: string;
+  hairStyle: string;
+  skinTone: string;
+  bodyType: string;
+}): Look[] => {
+  const pick = (fixed: string, pool: string[], i: number) => {
+    if (fixed) return fixed;
+    return shuffle(pool)[i % pool.length];
+  };
+  const hairPool = shuffle(HAIR_COLORS);
+  const stylePool = shuffle(HAIR_STYLES);
+  const skinPool = shuffle(SKIN_TONES);
+  const bodyPool = shuffle(BODY_TYPES);
+
+  return Array.from({ length: 4 }, (_, i) => {
+    const hairColor = data.hairColor || hairPool[i % hairPool.length];
+    const hairStyle = data.hairStyle || stylePool[i % stylePool.length];
+    const skinTone = data.skinTone || skinPool[i % skinPool.length];
+    const bodyType = data.bodyType || bodyPool[i % bodyPool.length];
+    const labelParts = [
+      !data.hairColor ? `Pelo ${hairColor}` : null,
+      !data.hairStyle ? hairStyle : null,
+      !data.skinTone ? `piel ${skinTone}` : null,
+      !data.bodyType ? bodyType : null,
+    ].filter(Boolean) as string[];
+    const label = labelParts.length > 0 ? labelParts.join(' · ') : `Opción ${i + 1}`;
+    return {
+      id: `v${i}`,
+      label: label.charAt(0).toUpperCase() + label.slice(1),
+      emoji: HAIR_EMOJI[hairColor] || '🙂',
+      hairColor,
+      hairStyle,
+      skinTone,
+      bodyType,
+    };
+  });
+};
+
 
 // Medidas corporales usadas en la industria para el calce (Premium)
 const MEASUREMENTS = [
