@@ -1,5 +1,6 @@
 import { usePlan } from '@/lib/plan';
-import { Crown, Megaphone } from 'lucide-react';
+import { Crown, Megaphone, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const ADS = [
   { title: 'Zapatillas urbanas 30% OFF', text: 'Envío gratis a todo el país · Publicidad' },
@@ -7,27 +8,59 @@ const ADS = [
   { title: 'Lavandería a domicilio', text: 'Tu ropa lista en 24hs · Publicidad' },
 ];
 
+const DISMISS_KEY = 'dresscode_ad_dismissed';
+
 export default function AdBanner({ index = 0 }: { index?: number }) {
   const { isPremium, setPlan } = usePlan();
-  if (isPremium) return null;
+  const [dismissed, setDismissed] = useState(true);
+
+  useEffect(() => {
+    if (typeof localStorage !== 'undefined') {
+      setDismissed(localStorage.getItem(DISMISS_KEY) === 'true');
+    }
+  }, []);
+
+  if (isPremium || dismissed) return null;
 
   const ad = ADS[index % ADS.length];
 
+  const close = () => {
+    setDismissed(true);
+    if (typeof localStorage !== 'undefined') localStorage.setItem(DISMISS_KEY, 'true');
+  };
+
   return (
-    <div className="rounded-xl border border-dashed border-border bg-secondary/60 p-4 flex items-center gap-3">
-      <div className="rounded-lg bg-background p-2.5">
-        <Megaphone className="h-6 w-6 text-muted-foreground" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+      <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl shadow-primary/10 animate-in zoom-in-95">
+        <button
+          onClick={close}
+          className="absolute right-3 top-3 rounded-full p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"
+          aria-label="Cerrar anuncio"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="rounded-2xl bg-secondary p-4">
+            <Megaphone className="h-10 w-10 text-primary" />
+          </div>
+          <div>
+            <p className="text-lg font-body font-semibold text-foreground">{ad.title}</p>
+            <p className="text-base font-body text-muted-foreground mt-1">{ad.text}</p>
+          </div>
+          <button
+            onClick={() => setPlan('premium')}
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-base font-body font-semibold text-primary-foreground transition-transform hover:scale-105 active:scale-95"
+          >
+            <Crown className="h-5 w-5" /> Quitar anuncios
+          </button>
+          <button
+            onClick={close}
+            className="text-sm font-body text-muted-foreground underline hover:text-foreground"
+          >
+            Cerrar anuncio
+          </button>
+        </div>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-base font-body font-medium text-foreground truncate">{ad.title}</p>
-        <p className="text-sm font-body text-muted-foreground truncate">{ad.text}</p>
-      </div>
-      <button
-        onClick={() => setPlan('premium')}
-        className="shrink-0 inline-flex items-center gap-1 text-sm font-body font-medium text-primary hover:underline"
-      >
-        <Crown className="h-4 w-4" /> Quitar anuncios
-      </button>
     </div>
   );
 }
