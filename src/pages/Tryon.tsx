@@ -678,7 +678,7 @@ export default function Tryon() {
                     value={avatarData.height}
                     onChange={e => setAvatarData(d => ({ ...d, height: e.target.value }))}
                     placeholder="170"
-                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background placeholder:font-bold placeholder:text-foreground/80"
+                    className="w-full mt-1 px-2 py-1.5 text-sm font-bold rounded-md border border-input bg-background"
                   />
                 </div>
                 <div>
@@ -688,7 +688,7 @@ export default function Tryon() {
                     value={avatarData.weight}
                     onChange={e => setAvatarData(d => ({ ...d, weight: e.target.value }))}
                     placeholder="65"
-                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                    className="w-full mt-1 px-2 py-1.5 text-sm font-bold rounded-md border border-input bg-background"
                   />
                 </div>
                 <div>
@@ -698,7 +698,7 @@ export default function Tryon() {
                     value={avatarData.age}
                     onChange={e => setAvatarData(d => ({ ...d, age: e.target.value }))}
                     placeholder="28"
-                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                    className="w-full mt-1 px-2 py-1.5 text-sm font-bold rounded-md border border-input bg-background"
                   />
                 </div>
                 <div>
