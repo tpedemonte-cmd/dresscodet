@@ -227,7 +227,7 @@ export default function Tryon() {
   };
 
   const chooseVariant = (v: { id: string; hairColor: string; hairStyle: string; skinTone: string; eyeColor: string; image: string }) => {
-    setPresetId(v.id);
+
     setAvatarData((d) => ({
       ...d,
       hairColor: v.hairColor,
@@ -688,7 +688,7 @@ export default function Tryon() {
                       <label className="text-xs font-body text-foreground">{f.label}</label>
                       <select
                         value={(avatarData as any)[f.key]}
-                        onChange={e => { setPresetId(null); setAvatarData(d => ({ ...d, [f.key]: e.target.value })); }}
+                        onChange={e => { setAvatarData(d => ({ ...d, [f.key]: e.target.value })); }}
                         className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
                       >
                         <option value="">Sin preferencia</option>
