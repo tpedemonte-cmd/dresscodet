@@ -38,6 +38,19 @@ const SKIN_TONES = ['muy clara', 'clara', 'trigueña', 'morena', 'oscura'];
 const EYE_COLORS = ['marrones', 'celestes', 'verdes', 'grises'];
 const BODY_TYPES = ['delgado', 'atlético', 'promedio', 'curvilíneo', 'robusto'];
 
+// Medidas corporales usadas en la industria para el calce (Premium)
+const MEASUREMENTS = [
+  { key: 'chest', label: 'Pecho / busto (cm)', placeholder: '92' },
+  { key: 'waist', label: 'Cintura (cm)', placeholder: '76' },
+  { key: 'hips', label: 'Cadera (cm)', placeholder: '98' },
+  { key: 'shoulders', label: 'Ancho de hombros (cm)', placeholder: '42' },
+  { key: 'inseam', label: 'Entrepierna / largo pierna (cm)', placeholder: '78' },
+  { key: 'armLength', label: 'Largo de brazo (cm)', placeholder: '60' },
+  { key: 'neck', label: 'Cuello (cm)', placeholder: '37' },
+  { key: 'thigh', label: 'Muslo (cm)', placeholder: '55' },
+  { key: 'shoeSize', label: 'Calzado (AR)', placeholder: '39' },
+] as const;
+
 export default function Tryon() {
   const { user } = useAuth();
   const { isPremium, setPlan } = usePlan();
@@ -64,6 +77,15 @@ export default function Tryon() {
     skinTone: '',
     eyeColor: '',
     bodyType: '',
+    chest: '',
+    waist: '',
+    hips: '',
+    shoulders: '',
+    inseam: '',
+    armLength: '',
+    neck: '',
+    thigh: '',
+    shoeSize: '',
   });
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
 
@@ -150,7 +172,20 @@ export default function Tryon() {
           weight: Number(weight),
           age: Number(age),
           gender,
-          ...(isPremium ? { hairColor, hairStyle, skinTone, eyeColor, bodyType } : {}),
+          ...(isPremium
+            ? {
+                hairColor,
+                hairStyle,
+                skinTone,
+                eyeColor,
+                bodyType,
+                measurements: Object.fromEntries(
+                  MEASUREMENTS.map((m) => [m.key, (avatarData as any)[m.key]]).filter(
+                    ([, v]) => v !== '' && v != null
+                  )
+                ),
+              }
+            : {}),
         },
       });
       if (error) throw error;
@@ -596,8 +631,35 @@ export default function Tryon() {
                   onClick={() => setPlan('premium')}
                   className="w-full rounded-lg bg-background/70 border border-dashed border-border px-3 py-2 text-[11px] font-body text-muted-foreground hover:text-foreground"
                 >
-                  <Lock className="h-3.5 w-3.5 inline mr-1" /> Color de pelo, tono de piel, ojos y contextura — Premium
+                  <Lock className="h-3.5 w-3.5 inline mr-1" /> Pelo, piel, ojos, contextura y tus medidas — Premium
                 </button>
+              )}
+
+              {/* Medidas corporales (Premium) */}
+              {isPremium && (
+                <div className="space-y-2 rounded-lg bg-background/60 p-3">
+                  <p className="text-xs font-body font-medium text-foreground">
+                    Tus medidas (opcional, para un calce más realista)
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {MEASUREMENTS.map((m) => (
+                      <div key={m.key}>
+                        <label className="text-xs font-body text-foreground">{m.label}</label>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          value={(avatarData as any)[m.key]}
+                          onChange={e => setAvatarData(d => ({ ...d, [m.key]: e.target.value }))}
+                          placeholder={m.placeholder}
+                          className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[11px] font-body text-muted-foreground">
+                    Todas en centímetros. Las que dejes vacías se estiman con tu altura y peso.
+                  </p>
+                </div>
               )}
 
               <Button variant="warm" size="sm" className="w-full" disabled={generatingAvatar} onClick={handleGenerateAvatar}>
