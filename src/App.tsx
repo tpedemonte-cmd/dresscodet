@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
+import { PlanProvider } from "@/lib/plan";
 import AppLayout from "@/components/AppLayout";
 import Auth from "./pages/Auth";
 import Wardrobe from "./pages/Wardrobe";
@@ -59,7 +60,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <PlanProvider>
+            <AppRoutes />
+          </PlanProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
