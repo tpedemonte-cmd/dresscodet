@@ -54,7 +54,7 @@ export default function Tryon() {
   const { isPremium, setPlan } = usePlan();
   const queryClient = useQueryClient();
   const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
-  const [presetId, setPresetId] = useState<string | null>(null);
+  
   const [variants, setVariants] = useState<
     { id: string; label: string; emoji: string; hairColor: string; hairStyle: string; skinTone: string; eyeColor: string; image: string }[]
   >([]);
