@@ -120,9 +120,9 @@ export default function Tryon() {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [subFilter, setSubFilter] = useState<string | null>(null);
   const [avatarData, setAvatarData] = useState({
-    height: '',
+    height: '170',
     weight: '65',
-    age: '',
+    age: '28',
     gender: '',
     hairColor: '',
     hairStyle: '',
@@ -138,8 +138,6 @@ export default function Tryon() {
     thigh: '',
     shoeSize: '',
   });
-
-  const effectiveHeight = (h: string) => Number(h) || 170;
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
   const [showVariantPicker, setShowVariantPicker] = useState(false);
 
@@ -205,7 +203,7 @@ export default function Tryon() {
   const buildAvatarBody = (overrides: Partial<typeof avatarData> = {}) => {
     const d = { ...avatarData, ...overrides };
     return {
-      height: effectiveHeight(d.height),
+      height: Number(d.height),
       weight: Number(d.weight),
       age: Number(d.age),
       gender: d.gender,
@@ -330,7 +328,7 @@ export default function Tryon() {
         .insert({
           user_id: user.id,
           image_url: urlData.publicUrl,
-          height: effectiveHeight(avatarData.height),
+          height: Number(avatarData.height),
           weight: Number(avatarData.weight),
           age: Number(avatarData.age),
           gender: avatarData.gender,
@@ -680,7 +678,7 @@ export default function Tryon() {
                     value={avatarData.height}
                     onChange={e => setAvatarData(d => ({ ...d, height: e.target.value }))}
                     placeholder="170"
-                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background placeholder:font-bold placeholder:text-foreground/80"
+                    className="w-full mt-1 px-2 py-1.5 text-sm font-bold rounded-md border border-input bg-background"
                   />
                 </div>
                 <div>
@@ -690,7 +688,7 @@ export default function Tryon() {
                     value={avatarData.weight}
                     onChange={e => setAvatarData(d => ({ ...d, weight: e.target.value }))}
                     placeholder="65"
-                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                    className="w-full mt-1 px-2 py-1.5 text-sm font-bold rounded-md border border-input bg-background"
                   />
                 </div>
                 <div>
@@ -700,7 +698,7 @@ export default function Tryon() {
                     value={avatarData.age}
                     onChange={e => setAvatarData(d => ({ ...d, age: e.target.value }))}
                     placeholder="28"
-                    className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
+                    className="w-full mt-1 px-2 py-1.5 text-sm font-bold rounded-md border border-input bg-background"
                   />
                 </div>
                 <div>
