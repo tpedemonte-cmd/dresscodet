@@ -575,31 +575,33 @@ export default function Tryon() {
                 Completá tus datos para generar un modelo realista con IA
               </p>
 
-              {/* Ejemplos de modelos (Premium) */}
+              {/* Varias versiones para elegir (Premium) */}
               <div className="space-y-2">
                 <div className="flex items-center justify-center gap-2">
-                  <p className="text-xs font-body font-medium text-foreground">Elegí con quién te identificás</p>
+                  <p className="text-xs font-body font-medium text-foreground text-center">
+                    {isPremium
+                      ? 'Vas a recibir varias versiones con distintos tonos de pelo y piel para elegir'
+                      : 'Elegir entre varias versiones con distinto pelo y piel'}
+                  </p>
                   {!isPremium && <PremiumBadge />}
                 </div>
                 <div className={`flex flex-wrap justify-center gap-2 ${isPremium ? '' : 'opacity-60'}`}>
-                  {MODEL_PRESETS.map((p) => (
-                    <button
+                  {VARIANT_LOOKS.map((p) => (
+                    <span
                       key={p.id}
-                      onClick={() => (isPremium ? applyPreset(p) : setPlan('premium'))}
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-body transition-colors ${
-                        presetId === p.id && isPremium
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-background text-muted-foreground hover:text-foreground'
-                      }`}
+                      className="inline-flex items-center gap-1 rounded-full bg-background px-2.5 py-1 text-[11px] font-body text-muted-foreground"
                     >
                       {isPremium ? p.emoji : '🔒'} {p.label}
-                    </button>
+                    </span>
                   ))}
                 </div>
                 {!isPremium && (
-                  <p className="text-[11px] font-body text-muted-foreground text-center">
-                    Los modelos de ejemplo y los datos avanzados son parte del plan Premium.
-                  </p>
+                  <button
+                    onClick={() => setPlan('premium')}
+                    className="w-full text-[11px] font-body text-muted-foreground hover:text-foreground text-center"
+                  >
+                    Con el plan gratis se genera un solo modelo. Pasar a Premium →
+                  </button>
                 )}
               </div>
 
