@@ -1,6 +1,6 @@
 import { usePlan } from '@/lib/plan';
 import { Crown, Megaphone, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const ADS = [
   { title: 'Zapatillas urbanas 30% OFF', text: 'Envío gratis a todo el país · Publicidad' },
@@ -9,18 +9,53 @@ const ADS = [
 ];
 
 const DISMISS_KEY = 'dresscode_ad_dismissed';
+const ACTION_COUNT_KEY = 'dresscode_ad_action_count';
+const ACTION_THRESHOLD = 15;
+
+function getActionCount() {
+  if (typeof localStorage === 'undefined') return 0;
+  const v = localStorage.getItem(ACTION_COUNT_KEY);
+  return v ? parseInt(v, 10) || 0 : 0;
+}
+
+function setActionCount(n: number) {
+  if (typeof localStorage !== 'undefined') localStorage.setItem(ACTION_COUNT_KEY, String(n));
+}
 
 export default function AdBanner({ index = 0 }: { index?: number }) {
   const { isPremium, setPlan } = usePlan();
   const [dismissed, setDismissed] = useState(true);
+  const [ready, setReady] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof localStorage !== 'undefined') {
       setDismissed(localStorage.getItem(DISMISS_KEY) === 'true');
     }
-  }, []);
+    setReady(true);
 
-  if (isPremium || dismissed) return null;
+    const onAction = (e: MouseEvent | TouchEvent) => {
+      if (isPremium) return;
+      if (ref.current) return; // no contar mientras el anuncio está abierto
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      const interactive = target.closest('button, a, [role="button"], input[type="submit"]');
+      if (!interactive) return;
+
+      const count = getActionCount() + 1;
+      setActionCount(count);
+      if (count >= ACTION_THRESHOLD) {
+        setDismissed(false);
+        setActionCount(0);
+      }
+    };
+
+    document.addEventListener('click', onAction, true);
+    return () => document.removeEventListener('click', onAction, true);
+  }, [isPremium]);
+
+  if (!ready || isPremium || dismissed) return null;
 
   const ad = ADS[index % ADS.length];
 
@@ -31,7 +66,7 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl shadow-primary/10 animate-in zoom-in-95">
+      <div ref={ref} className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl shadow-primary/10 animate-in zoom-in-95">
         <button
           onClick={close}
           className="absolute right-3 top-3 rounded-full p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"
