@@ -556,15 +556,12 @@ export default function Tryon() {
                   ✨ Resultado IA
                 </div>
               )}
-              <button onClick={reset} className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full p-1.5">
-                <RotateCcw className="h-4 w-4 text-foreground" />
-              </button>
             </div>
 
-            {(!activeModelId || resultImage) && (
+            <div className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto">
               <Button
                 variant="outline"
-                className="w-full max-w-sm mx-auto"
+                className="flex-1"
                 disabled={savingModel}
                 onClick={() => saveModelMutation.mutate()}
               >
@@ -574,7 +571,14 @@ export default function Tryon() {
                   <><Save className="h-4 w-4 mr-2" /> {resultImage ? 'Guardar modelo con esta ropa' : 'Guardar este modelo'}</>
                 )}
               </Button>
-            )}
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={reset}
+              >
+                <RotateCcw className="h-4 w-4 mr-2" /> Cambiar modelo
+              </Button>
+            </div>
 
           </div>
         ) : (
