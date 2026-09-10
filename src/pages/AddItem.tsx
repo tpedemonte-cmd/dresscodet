@@ -35,6 +35,7 @@ export default function AddItem() {
 
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
+  const [subcategory, setSubcategory] = useState('');
   const [color, setColor] = useState('');
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
