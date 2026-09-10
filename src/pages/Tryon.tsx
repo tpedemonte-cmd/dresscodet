@@ -227,9 +227,9 @@ export default function Tryon() {
   };
 
   const handleGenerateAvatar = async () => {
-    const { weight, age, gender } = avatarData;
-    if (!weight || !age || !gender) {
-      toast.error('Completá peso, edad y género');
+    const { gender } = avatarData;
+    if (!gender) {
+      toast.error('Seleccioná un género para continuar');
       return;
     }
     setGeneratingAvatar(true);
