@@ -524,15 +524,20 @@ export default function Tryon() {
                         <span className="flex-1">Todas</span>
                         {isActive && !subFilter && <Check className="h-3.5 w-3.5 ml-2" />}
                       </DropdownMenuItem>
-                      {subsForCat.map((o) => (
-                        <DropdownMenuItem
-                          key={o.value}
-                          onClick={() => { setCategoryFilter(key); setSubFilter(o.value); }}
-                        >
-                          <span className="flex-1">{o.label}</span>
-                          {isActive && subFilter === o.value && <Check className="h-3.5 w-3.5 ml-2" />}
-                        </DropdownMenuItem>
-                      ))}
+                      {subsForCat.map((o) => {
+                        const hasItems = presentSubsForCat.has(o.value);
+                        return (
+                          <DropdownMenuItem
+                            key={o.value}
+                            disabled={!hasItems}
+                            onClick={() => { setCategoryFilter(key); setSubFilter(o.value); }}
+                            className={hasItems ? '' : 'opacity-50'}
+                          >
+                            <span className="flex-1">{o.label}</span>
+                            {isActive && subFilter === o.value && <Check className="h-3.5 w-3.5 ml-2" />}
+                          </DropdownMenuItem>
+                        );
+                      })}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 );
