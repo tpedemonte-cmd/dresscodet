@@ -539,6 +539,14 @@ export default function Tryon() {
                           </DropdownMenuItem>
                         );
                       })}
+                      {items.some((i) => i.category === key && !i.subcategory) && (
+                        <DropdownMenuItem
+                          onClick={() => { setCategoryFilter(key); setSubFilter('__none__'); }}
+                        >
+                          <span className="flex-1 italic">Sin clasificar</span>
+                          {isActive && subFilter === '__none__' && <Check className="h-3.5 w-3.5 ml-2" />}
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 );
