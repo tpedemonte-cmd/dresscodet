@@ -55,6 +55,9 @@ export default function Tryon() {
   const queryClient = useQueryClient();
   const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
   const [presetId, setPresetId] = useState<string | null>(null);
+  const [variants, setVariants] = useState<
+    { id: string; label: string; emoji: string; hairColor: string; hairStyle: string; skinTone: string; eyeColor: string; image: string }[]
+  >([]);
 
   const [selfie, setSelfie] = useState<string | null>(null);
   const [activeModelId, setActiveModelId] = useState<string | null>(null);
@@ -134,16 +137,6 @@ export default function Tryon() {
     [items, categoryFilter, subFilter]
   );
 
-  const applyPreset = (preset: typeof MODEL_PRESETS[number]) => {
-    setPresetId(preset.id);
-    setAvatarData((d) => ({
-      ...d,
-      hairColor: preset.hairColor,
-      hairStyle: preset.hairStyle,
-      skinTone: preset.skinTone,
-      eyeColor: preset.eyeColor,
-    }));
-  };
 
   const handleSelfieUpload = (file: File) => {
     const reader = new FileReader();
