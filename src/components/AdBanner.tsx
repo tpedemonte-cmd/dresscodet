@@ -66,7 +66,7 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl shadow-primary/10 animate-in zoom-in-95">
+      <div ref={ref} className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl shadow-primary/10 animate-in zoom-in-95">
         <button
           onClick={close}
           className="absolute right-3 top-3 rounded-full p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"
