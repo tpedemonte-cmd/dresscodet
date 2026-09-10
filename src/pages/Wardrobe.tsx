@@ -142,10 +142,18 @@ export default function Wardrobe() {
   const filtered = items.filter(
     (i) =>
       (!filter || i.category === filter) &&
+      (!subFilter || (i as any).subcategory === subFilter) &&
       (!availFilter || ((i as any).availability ?? 'disponible') === availFilter)
   );
 
   const categories = [...new Set(items.map((i) => i.category))];
+
+  // Subtipos presentes en el placard (filtrados por categoría si hay una elegida)
+  const subPool = filter ? items.filter((i) => i.category === filter) : items;
+  const presentSubs = new Set(subPool.map((i: any) => i.subcategory).filter(Boolean) as string[]);
+  const subOptions = filter
+    ? getSubcategories(filter).filter((o) => presentSubs.has(o.value))
+    : Array.from(presentSubs).map((v) => ({ value: v, label: getSubcategoryLabel(null, v) || v }));
 
   if (isLoading) {
     return (
