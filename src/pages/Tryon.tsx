@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check } from 'lucide-react';
+import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 
