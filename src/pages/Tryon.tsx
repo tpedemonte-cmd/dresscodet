@@ -77,6 +77,15 @@ export default function Tryon() {
     skinTone: '',
     eyeColor: '',
     bodyType: '',
+    chest: '',
+    waist: '',
+    hips: '',
+    shoulders: '',
+    inseam: '',
+    armLength: '',
+    neck: '',
+    thigh: '',
+    shoeSize: '',
   });
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
 
