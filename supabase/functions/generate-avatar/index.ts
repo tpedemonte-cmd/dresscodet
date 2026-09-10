@@ -15,8 +15,11 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { height, weight, age, gender, hairColor, hairStyle, skinTone, eyeColor, bodyType } =
-      await req.json();
+    const {
+      height, weight, age, gender,
+      hairColor, hairStyle, skinTone, eyeColor, bodyType,
+      measurements,
+    } = await req.json();
 
     if (!height || !weight || !age || !gender) {
       return new Response(
@@ -45,7 +48,25 @@ serve(async (req) => {
       ? `\nPersonal features (in Spanish terms, follow them closely): ${traits.join(", ")}.`
       : "";
 
-    const prompt = `Generate a realistic full-body photograph of a ${genderText} of ${age} years old, ${height}cm tall, weighing ${weight}kg, with a ${bodyType || build} body build.${traitsText}
+    const MEASURE_LABELS: Record<string, string> = {
+      chest: "chest/bust circumference",
+      waist: "waist circumference",
+      hips: "hip circumference",
+      shoulders: "shoulder width",
+      inseam: "inseam (leg length)",
+      armLength: "arm length",
+      neck: "neck circumference",
+      thigh: "thigh circumference",
+      shoeSize: "shoe size (AR)",
+    };
+    const measureList = Object.entries(measurements ?? {})
+      .filter(([k, v]) => MEASURE_LABELS[k] && v !== "" && v != null && !isNaN(Number(v)))
+      .map(([k, v]) => `${MEASURE_LABELS[k]}: ${Number(v)}${k === "shoeSize" ? "" : "cm"}`);
+    const measureText = measureList.length
+      ? `\nBody measurements to respect accurately in the silhouette proportions: ${measureList.join(", ")}.`
+      : "";
+
+    const prompt = `Generate a realistic full-body photograph of a ${genderText} of ${age} years old, ${height}cm tall, weighing ${weight}kg, with a ${bodyType || build} body build.${traitsText}${measureText}
 
 The person should:
 - Stand in a neutral relaxed pose, facing the camera, arms slightly away from the body
