@@ -710,6 +710,7 @@ export default function Tryon() {
                     onChange={e => setAvatarData(d => ({ ...d, gender: e.target.value }))}
                     className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border border-input bg-background"
                   >
+                    <option value="">Seleccioná uno</option>
                     <option value="femenino">Femenino</option>
                     <option value="masculino">Masculino</option>
                   </select>
