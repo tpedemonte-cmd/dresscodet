@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Camera, Upload, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getSubcategories } from '@/lib/subcategories';
 
 const CATEGORIES = [
   { value: 'remera', label: '👕 Remera' },
@@ -34,6 +35,7 @@ export default function AddItem() {
 
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
+  const [subcategory, setSubcategory] = useState('');
   const [color, setColor] = useState('');
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -53,8 +55,9 @@ export default function AddItem() {
       if (data?.color) {
         setColor(data.color);
       }
+      setSubcategory(data?.subcategory ?? '');
       setAutoDetected(true);
-      toast.success('Categoría y color detectados automáticamente');
+      toast.success('Tipo, subtipo y color detectados automáticamente');
     } catch (err) {
       console.error('Auto-detect failed:', err);
       // Silently fail — user can still fill manually
@@ -97,6 +100,7 @@ export default function AddItem() {
         user_id: user.id,
         name,
         category,
+        subcategory: subcategory || null,
         color: color || null,
         image_url: publicUrl,
       });
@@ -171,7 +175,7 @@ export default function AddItem() {
         />
         
         <div className="relative">
-          <Select value={category} onValueChange={setCategory}>
+          <Select value={category} onValueChange={(v) => { setCategory(v); setSubcategory(''); }}>
             <SelectTrigger>
               <SelectValue placeholder="Categoría" />
             </SelectTrigger>
@@ -189,6 +193,22 @@ export default function AddItem() {
             </div>
           )}
         </div>
+
+        {getSubcategories(category).length > 0 && (
+          <Select value={subcategory} onValueChange={setSubcategory}>
+            <SelectTrigger>
+              <SelectValue placeholder="Tipo específico (opcional)" />
+            </SelectTrigger>
+            <SelectContent>
+              {getSubcategories(category).map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  {s.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
 
         <div className="relative">
           <Input

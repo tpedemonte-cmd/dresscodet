@@ -7,6 +7,7 @@ import { useState } from 'react';
 import EditItemDialog from '@/components/EditItemDialog';
 import DeleteItemConfirmDialog from '@/components/DeleteItemConfirmDialog';
 import { AVAILABILITY_OPTIONS, getAvailability, type Availability } from '@/lib/availability';
+import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +39,7 @@ export default function Wardrobe() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<string | null>(null);
+  const [subFilter, setSubFilter] = useState<string | null>(null);
   const [availFilter, setAvailFilter] = useState<Availability | null>(null);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
@@ -140,10 +142,18 @@ export default function Wardrobe() {
   const filtered = items.filter(
     (i) =>
       (!filter || i.category === filter) &&
+      (!subFilter || (i as any).subcategory === subFilter) &&
       (!availFilter || ((i as any).availability ?? 'disponible') === availFilter)
   );
 
   const categories = [...new Set(items.map((i) => i.category))];
+
+  // Subtipos presentes en el placard (filtrados por categoría si hay una elegida)
+  const subPool = filter ? items.filter((i) => i.category === filter) : items;
+  const presentSubs = new Set(subPool.map((i: any) => i.subcategory).filter(Boolean) as string[]);
+  const subOptions = filter
+    ? getSubcategories(filter).filter((o) => presentSubs.has(o.value))
+    : Array.from(presentSubs).map((v) => ({ value: v, label: getSubcategoryLabel(null, v) || v }));
 
   if (isLoading) {
     return (
@@ -165,7 +175,7 @@ export default function Wardrobe() {
       {categories.length > 0 && (
         <div className="flex gap-2 flex-wrap">
           <button
-            onClick={() => setFilter(null)}
+            onClick={() => { setFilter(null); setSubFilter(null); }}
             className={`px-3 py-1.5 rounded-full text-xs font-body font-medium transition-colors ${
               !filter ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
             }`}
@@ -175,7 +185,7 @@ export default function Wardrobe() {
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setFilter(cat)}
+              onClick={() => { setFilter(cat); setSubFilter(null); }}
               className={`px-3 py-1.5 rounded-full text-xs font-body font-medium transition-colors ${
                 filter === cat ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
               }`}
@@ -185,6 +195,31 @@ export default function Wardrobe() {
           ))}
         </div>
       )}
+
+      {subOptions.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => setSubFilter(null)}
+            className={`px-3 py-1.5 rounded-full text-xs font-body font-medium border transition-colors ${
+              !subFilter ? 'border-primary text-primary bg-primary/10' : 'border-border text-muted-foreground'
+            }`}
+          >
+            Todos los tipos
+          </button>
+          {subOptions.map((o) => (
+            <button
+              key={o.value}
+              onClick={() => setSubFilter(subFilter === o.value ? null : o.value)}
+              className={`px-3 py-1.5 rounded-full text-xs font-body font-medium border transition-colors ${
+                subFilter === o.value ? 'border-primary text-primary bg-primary/10' : 'border-border text-muted-foreground'
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+
 
       <div className="flex gap-2 flex-wrap">
         <button
@@ -237,7 +272,12 @@ export default function Wardrobe() {
               <div className="p-3 space-y-2">
                 <div>
                   <p className="font-body font-medium text-sm text-foreground truncate">{item.name}</p>
-                  <p className="text-xs text-muted-foreground">{CATEGORIES[item.category] || item.category}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {CATEGORIES[item.category] || item.category}
+                    {getSubcategoryLabel(item.category, (item as any).subcategory)
+                      ? ` · ${getSubcategoryLabel(item.category, (item as any).subcategory)}`
+                      : ''}
+                  </p>
                   {item.color && <p className="text-xs text-muted-foreground mt-0.5">{item.color}</p>}
                 </div>
                 <DropdownMenu>

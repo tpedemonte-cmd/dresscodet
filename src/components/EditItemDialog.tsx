@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { getSubcategories } from '@/lib/subcategories';
 
 const CATEGORIES = [
   { value: 'remera', label: '👕 Remera' },
@@ -24,7 +25,7 @@ const CATEGORIES = [
 ];
 
 interface EditItemDialogProps {
-  item: { id: string; name: string; category: string; color: string | null; image_url: string };
+  item: { id: string; name: string; category: string; color: string | null; image_url: string; subcategory?: string | null };
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -33,13 +34,14 @@ export default function EditItemDialog({ item, open, onOpenChange }: EditItemDia
   const queryClient = useQueryClient();
   const [name, setName] = useState(item.name);
   const [category, setCategory] = useState(item.category);
+  const [subcategory, setSubcategory] = useState(item.subcategory || '');
   const [color, setColor] = useState(item.color || '');
 
   const mutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
         .from('clothing_items')
-        .update({ name, category, color: color || null })
+        .update({ name, category, subcategory: subcategory || null, color: color || null })
         .eq('id', item.id);
       if (error) throw error;
     },
@@ -62,7 +64,7 @@ export default function EditItemDialog({ item, open, onOpenChange }: EditItemDia
         </div>
         <div className="space-y-3">
           <Input placeholder="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
-          <Select value={category} onValueChange={setCategory}>
+          <Select value={category} onValueChange={(v) => { setCategory(v); setSubcategory(''); }}>
             <SelectTrigger>
               <SelectValue placeholder="Categoría" />
             </SelectTrigger>
@@ -72,6 +74,18 @@ export default function EditItemDialog({ item, open, onOpenChange }: EditItemDia
               ))}
             </SelectContent>
           </Select>
+          {getSubcategories(category).length > 0 && (
+            <Select value={subcategory} onValueChange={setSubcategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Tipo específico (opcional)" />
+              </SelectTrigger>
+              <SelectContent>
+                {getSubcategories(category).map((s) => (
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <Input placeholder="Color (opcional)" value={color} onChange={(e) => setColor(e.target.value)} />
           <Button variant="warm" className="w-full" disabled={!name || !category || mutation.isPending} onClick={() => mutation.mutate()}>
             {mutation.isPending ? 'Guardando...' : 'Guardar cambios'}

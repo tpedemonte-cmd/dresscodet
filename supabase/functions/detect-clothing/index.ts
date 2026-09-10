@@ -9,6 +9,22 @@ const VALID_CATEGORIES = [
   'medias', 'accesorio', 'otro',
 ];
 
+const SUBCATEGORIES: Record<string, string[]> = {
+  remera: ['manga_corta', 'manga_larga', 'musculosa', 'oversize', 'deportiva'],
+  pantalon: ['jean', 'jogging', 'chino', 'cargo', 'vestir', 'calza'],
+  campera: ['inflable', 'jean', 'cuero', 'rompeviento', 'sobretodo', 'liviana'],
+  buzo: ['lana', 'frisa', 'canguro', 'medio_cierre'],
+  camisa: ['manga_corta', 'manga_larga', 'lino', 'jean', 'franela'],
+  short: ['jean', 'deportivo', 'bermuda', 'baño'],
+  vestido: ['corto', 'midi', 'largo', 'fiesta'],
+  pollera: ['corta', 'midi', 'larga', 'jean'],
+  zapatillas: ['urbanas', 'deportivas', 'botitas', 'lona'],
+  zapatos: ['vestir', 'mocasines', 'botas', 'sandalias', 'chatitas'],
+  medias: ['cortas', 'largas', 'deportivas', 'termicas'],
+  accesorio: ['gorra', 'bufanda', 'cinturon', 'bolso', 'lentes', 'joya'],
+  otro: [],
+};
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -40,12 +56,16 @@ Deno.serve(async (req) => {
             content: [
               {
                 type: 'text',
-                text: `Analyze this clothing item photo. Return ONLY a JSON object with two fields:
+                text: `Analyze this clothing item photo. Return ONLY a JSON object with three fields:
 - "category": one of these exact values: ${VALID_CATEGORIES.join(', ')}
+- "subcategory": the specific type of the garment. It MUST be one of the allowed values for the chosen category, using these exact strings:
+${Object.entries(SUBCATEGORIES).map(([c, subs]) => `  ${c}: ${subs.length ? subs.join(', ') : '(none)'}`).join('\n')}
+  If you cannot tell the subtype confidently, use null.
 - "color": the main color in Spanish (e.g. "negro", "blanco", "azul", "rojo", "verde", "gris", "beige", "marrón", "rosa", "celeste", "naranja", "amarillo", "violeta", "bordo")
 
 If you see multiple colors, pick the dominant one. If unsure about category, use "otro".
 Use "medias" for socks of any kind (ankle socks, crew socks, sport socks, stockings, thigh-highs).
+Pay attention to sleeve length (manga_corta vs manga_larga), fabric (jean, lana, frisa, cuero, lino) and shape to decide the subcategory.
 Respond with ONLY the JSON, no extra text.`,
               },
               {
@@ -74,9 +94,11 @@ Respond with ONLY the JSON, no extra text.`,
     const parsed = JSON.parse(jsonMatch[0]);
     const category = VALID_CATEGORIES.includes(parsed.category) ? parsed.category : 'otro';
     const color = typeof parsed.color === 'string' ? parsed.color.toLowerCase().trim() : '';
+    const rawSub = typeof parsed.subcategory === 'string' ? parsed.subcategory.toLowerCase().trim() : '';
+    const subcategory = (SUBCATEGORIES[category] ?? []).includes(rawSub) ? rawSub : null;
 
     return new Response(
-      JSON.stringify({ category, color }),
+      JSON.stringify({ category, color, subcategory }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {

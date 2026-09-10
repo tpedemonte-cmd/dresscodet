@@ -1,10 +1,11 @@
-import { useState, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, RotateCcw, ChevronLeft, ChevronRight, X, Save, Trash2, Check } from 'lucide-react';
+import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 
 const CATEGORIES: Record<string, string> = {
   remera: '👕', pantalon: '👖', campera: '🧥', buzo: '🧶',
@@ -15,7 +16,6 @@ const CATEGORIES: Record<string, string> = {
 export default function Tryon() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const [selfie, setSelfie] = useState<string | null>(null);
   const [activeModelId, setActiveModelId] = useState<string | null>(null);
@@ -25,6 +25,7 @@ export default function Tryon() {
   const [saving, setSaving] = useState(false);
   const [savingModel, setSavingModel] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [subFilter, setSubFilter] = useState<string | null>(null);
   const [avatarData, setAvatarData] = useState({ height: '170', weight: '65', age: '', gender: 'femenino' });
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
 
@@ -53,6 +54,26 @@ export default function Tryon() {
     },
     enabled: !!user,
   });
+
+  // Subtipos disponibles según la categoría elegida (o todos los presentes en el placard)
+  const subOptions = useMemo(() => {
+    const pool = categoryFilter ? items.filter((i) => i.category === categoryFilter) : items;
+    const present = new Set(pool.map((i: any) => i.subcategory).filter(Boolean) as string[]);
+    if (categoryFilter) {
+      return getSubcategories(categoryFilter).filter((o) => present.has(o.value));
+    }
+    return Array.from(present).map((v) => ({ value: v, label: getSubcategoryLabel(null, v) || v }));
+  }, [items, categoryFilter]);
+
+  const visibleItems = useMemo(
+    () =>
+      items.filter(
+        (i: any) =>
+          (!categoryFilter || i.category === categoryFilter) &&
+          (!subFilter || i.subcategory === subFilter)
+      ),
+    [items, categoryFilter, subFilter]
+  );
 
   const handleGenerateAvatar = async () => {
     const { height, weight, age, gender } = avatarData;
@@ -284,10 +305,6 @@ export default function Tryon() {
     }
   };
 
-  const scroll = (dir: 'left' | 'right') => {
-    if (!scrollRef.current) return;
-    scrollRef.current.scrollBy({ left: dir === 'left' ? -200 : 200, behavior: 'smooth' });
-  };
 
   const reset = () => {
     setSelfie(null);
@@ -463,7 +480,7 @@ export default function Tryon() {
               .map(([key, emoji]) => (
                 <button
                   key={key}
-                  onClick={() => setCategoryFilter(prev => prev === key ? null : key)}
+                  onClick={() => { setCategoryFilter(prev => prev === key ? null : key); setSubFilter(null); }}
                   className={`text-xs font-body px-3 py-1 rounded-full transition-colors ${
                     categoryFilter === key ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
                   }`}
@@ -473,6 +490,32 @@ export default function Tryon() {
               ))}
           </div>
         )}
+
+        {/* Subtype filter chips */}
+        {subOptions.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSubFilter(null)}
+              className={`text-xs font-body px-3 py-1 rounded-full border transition-colors ${
+                subFilter === null ? 'border-primary text-primary bg-primary/10' : 'border-border text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Todos los tipos
+            </button>
+            {subOptions.map((o) => (
+              <button
+                key={o.value}
+                onClick={() => setSubFilter(prev => prev === o.value ? null : o.value)}
+                className={`text-xs font-body px-3 py-1 rounded-full border transition-colors ${
+                  subFilter === o.value ? 'border-primary text-primary bg-primary/10' : 'border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        )}
+
 
         {selectedItems.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -489,44 +532,44 @@ export default function Tryon() {
 
         {items.length === 0 ? (
           <p className="text-sm text-muted-foreground font-body">No tenés prendas todavía. ¡Agregá una primero!</p>
+        ) : visibleItems.length === 0 ? (
+          <p className="text-sm text-muted-foreground font-body">No hay prendas con esos filtros.</p>
         ) : (
-          <div className="relative">
-            <button onClick={() => scroll('left')} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm rounded-full p-1 shadow-card">
-              <ChevronLeft className="h-4 w-4 text-foreground" />
-            </button>
-            <div ref={scrollRef} className="flex gap-3 overflow-x-auto scrollbar-hide px-6 py-1" style={{ scrollbarWidth: 'none' }}>
-              {items.filter(item => !categoryFilter || item.category === categoryFilter).map((item) => {
+          <div className="max-h-[26rem] overflow-y-auto rounded-xl bg-secondary/40 p-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+              {visibleItems.map((item: any) => {
                 const isSelected = selectedItems.some(i => i.id === item.id);
+                const subLabel = getSubcategoryLabel(item.category, item.subcategory);
                 return (
                   <button
                     key={item.id}
                     onClick={() => toggleItem(item)}
-                    className={`flex-shrink-0 w-20 rounded-xl overflow-hidden transition-all relative ${
+                    className={`rounded-xl overflow-hidden bg-card text-left transition-all relative ${
                       isSelected
-                        ? 'ring-2 ring-primary scale-105 shadow-elevated'
+                        ? 'ring-2 ring-primary shadow-elevated'
                         : 'shadow-card hover:shadow-elevated'
                     }`}
                   >
                     {isSelected && (
-                      <div className="absolute top-1 right-1 z-10 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
-                        ✓
+                      <div className="absolute top-1.5 right-1.5 z-10 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center">
+                        <Check className="h-3 w-3" />
                       </div>
                     )}
                     <div className="aspect-square">
                       <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
                     </div>
-                    <div className="p-1 bg-card">
-                      <p className="text-[10px] font-body text-foreground truncate text-center">
+                    <div className="p-2 space-y-0.5">
+                      <p className="text-xs font-body font-medium text-foreground truncate">
                         {CATEGORIES[item.category] || '📦'} {item.name}
                       </p>
+                      {subLabel && (
+                        <p className="text-[11px] font-body text-muted-foreground truncate">{subLabel}</p>
+                      )}
                     </div>
                   </button>
                 );
               })}
             </div>
-            <button onClick={() => scroll('right')} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm rounded-full p-1 shadow-card">
-              <ChevronRight className="h-4 w-4 text-foreground" />
-            </button>
           </div>
         )}
       </div>
