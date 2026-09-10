@@ -172,7 +172,20 @@ export default function Tryon() {
           weight: Number(weight),
           age: Number(age),
           gender,
-          ...(isPremium ? { hairColor, hairStyle, skinTone, eyeColor, bodyType } : {}),
+          ...(isPremium
+            ? {
+                hairColor,
+                hairStyle,
+                skinTone,
+                eyeColor,
+                bodyType,
+                measurements: Object.fromEntries(
+                  MEASUREMENTS.map((m) => [m.key, (avatarData as any)[m.key]]).filter(
+                    ([, v]) => v !== '' && v != null
+                  )
+                ),
+              }
+            : {}),
         },
       });
       if (error) throw error;
