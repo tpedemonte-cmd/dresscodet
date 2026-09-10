@@ -532,44 +532,44 @@ export default function Tryon() {
 
         {items.length === 0 ? (
           <p className="text-sm text-muted-foreground font-body">No tenés prendas todavía. ¡Agregá una primero!</p>
+        ) : visibleItems.length === 0 ? (
+          <p className="text-sm text-muted-foreground font-body">No hay prendas con esos filtros.</p>
         ) : (
-          <div className="relative">
-            <button onClick={() => scroll('left')} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm rounded-full p-1 shadow-card">
-              <ChevronLeft className="h-4 w-4 text-foreground" />
-            </button>
-            <div ref={scrollRef} className="flex gap-3 overflow-x-auto scrollbar-hide px-6 py-1" style={{ scrollbarWidth: 'none' }}>
-              {items.filter(item => !categoryFilter || item.category === categoryFilter).map((item) => {
+          <div className="max-h-[26rem] overflow-y-auto rounded-xl bg-secondary/40 p-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+              {visibleItems.map((item: any) => {
                 const isSelected = selectedItems.some(i => i.id === item.id);
+                const subLabel = getSubcategoryLabel(item.category, item.subcategory);
                 return (
                   <button
                     key={item.id}
                     onClick={() => toggleItem(item)}
-                    className={`flex-shrink-0 w-20 rounded-xl overflow-hidden transition-all relative ${
+                    className={`rounded-xl overflow-hidden bg-card text-left transition-all relative ${
                       isSelected
-                        ? 'ring-2 ring-primary scale-105 shadow-elevated'
+                        ? 'ring-2 ring-primary shadow-elevated'
                         : 'shadow-card hover:shadow-elevated'
                     }`}
                   >
                     {isSelected && (
-                      <div className="absolute top-1 right-1 z-10 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
-                        ✓
+                      <div className="absolute top-1.5 right-1.5 z-10 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center">
+                        <Check className="h-3 w-3" />
                       </div>
                     )}
                     <div className="aspect-square">
                       <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
                     </div>
-                    <div className="p-1 bg-card">
-                      <p className="text-[10px] font-body text-foreground truncate text-center">
+                    <div className="p-2 space-y-0.5">
+                      <p className="text-xs font-body font-medium text-foreground truncate">
                         {CATEGORIES[item.category] || '📦'} {item.name}
                       </p>
+                      {subLabel && (
+                        <p className="text-[11px] font-body text-muted-foreground truncate">{subLabel}</p>
+                      )}
                     </div>
                   </button>
                 );
               })}
             </div>
-            <button onClick={() => scroll('right')} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm rounded-full p-1 shadow-card">
-              <ChevronRight className="h-4 w-4 text-foreground" />
-            </button>
           </div>
         )}
       </div>
