@@ -24,6 +24,7 @@ export type Database = {
           image_url: string
           is_favorite: boolean
           name: string
+          subcategory: string | null
           user_id: string
         }
         Insert: {
@@ -35,6 +36,7 @@ export type Database = {
           image_url: string
           is_favorite?: boolean
           name: string
+          subcategory?: string | null
           user_id: string
         }
         Update: {
@@ -46,6 +48,7 @@ export type Database = {
           image_url?: string
           is_favorite?: boolean
           name?: string
+          subcategory?: string | null
           user_id?: string
         }
         Relationships: []

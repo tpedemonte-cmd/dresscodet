@@ -1,0 +1,1 @@
+ALTER TABLE public.clothing_items ADD COLUMN IF NOT EXISTS subcategory text;
