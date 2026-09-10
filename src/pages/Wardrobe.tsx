@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import EditItemDialog from '@/components/EditItemDialog';
 import DeleteItemConfirmDialog from '@/components/DeleteItemConfirmDialog';
+import ClassifySubcategoriesButton from '@/components/ClassifySubcategoriesButton';
 import { AVAILABILITY_OPTIONS, getAvailability, type Availability } from '@/lib/availability';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import {
@@ -170,7 +171,7 @@ export default function Wardrobe() {
         <p className="text-muted-foreground font-body">{items.length} prendas</p>
       </div>
 
-      
+      <ClassifySubcategoriesButton items={items as any} />
 
       {categories.length > 0 && (
         <div className="flex gap-2 flex-wrap">
