@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Camera, Upload, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getSubcategories } from '@/lib/subcategories';
 
 const CATEGORIES = [
   { value: 'remera', label: '👕 Remera' },
