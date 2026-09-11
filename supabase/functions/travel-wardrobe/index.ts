@@ -22,7 +22,7 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) throw new Error("Unauthorized");
 
-    const { destination, origin, tripType, month, days, activities, notes } = await req.json();
+    const { destination, origin, tripType, month } = await req.json();
     if (!destination || typeof destination !== "string") {
       return new Response(JSON.stringify({ error: "Falta el destino" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -56,10 +56,7 @@ Reglas:
 
     const userPrompt = `Destino: ${destination}
 Mes del viaje: ${month || "no especificado"}
-Duración: ${days ? days + " días" : "no especificada"}
 Tipo de viaje: ${tripType || "turismo"}
-Actividades previstas: ${(activities && activities.length ? activities.join(", ") : "no especificadas")}
-Aclaraciones: ${notes || "ninguna"}
 
 MI PLACARD:
 ${wardrobe}
