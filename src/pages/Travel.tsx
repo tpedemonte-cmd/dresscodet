@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Plane, Sparkles, Loader2, ExternalLink, Shirt, Ban, Globe2, ShoppingBag } from 'lucide-react';
@@ -20,8 +20,14 @@ const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 
 const getMLUrl = (query: string) =>
   `https://listado.mercadolibre.com.ar/${encodeURIComponent(query.replace(/ /g, '-'))}`;
 
+type Place = { name: string; label: string };
+
 export default function Travel() {
   const [destination, setDestination] = useState('');
+  const [suggestions, setSuggestions] = useState<Place[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const skipNextSearch = useRef(false);
   const [origin, setOrigin] = useState('Argentina');
   const [tripType, setTripType] = useState('Turismo');
   const [month, setMonth] = useState('');
