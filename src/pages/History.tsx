@@ -12,7 +12,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import OutfitFeedback from '@/components/OutfitFeedback';
 import DeleteHistoryConfirmDialog from '@/components/DeleteHistoryConfirmDialog';
-import AdBanner from '@/components/AdBanner';
+
 import { usePlan } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
 import { Crown } from 'lucide-react';
@@ -128,7 +128,7 @@ export default function History() {
         </p>
       </div>
 
-      <AdBanner index={2} />
+      
 
       {history.length > 0 && (() => {
         const availableEvents = Array.from(new Set(history.map((h: any) => h.event)));

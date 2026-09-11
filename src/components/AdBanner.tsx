@@ -10,6 +10,7 @@ const ADS = [
 ];
 
 const DISMISS_KEY = 'dresscode_ad_dismissed';
+const SHOW_AD_KEY = 'dresscode_ad_show';
 const ACTION_COUNT_KEY = 'dresscode_ad_action_count';
 const ACTION_THRESHOLD = 15;
 const CLOSE_DELAY_SECONDS = 5;
@@ -24,6 +25,15 @@ function setActionCount(n: number) {
   if (typeof localStorage !== 'undefined') localStorage.setItem(ACTION_COUNT_KEY, String(n));
 }
 
+function shouldShowAd() {
+  if (typeof localStorage === 'undefined') return false;
+  return localStorage.getItem(SHOW_AD_KEY) === 'true';
+}
+
+function setShowAd(show: boolean) {
+  if (typeof localStorage !== 'undefined') localStorage.setItem(SHOW_AD_KEY, String(show));
+}
+
 export default function AdBanner({ index = 0 }: { index?: number }) {
   const { isPremium } = usePlan();
   const navigate = useNavigate();
@@ -34,13 +44,13 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
 
   useEffect(() => {
     if (typeof localStorage !== 'undefined') {
-      setDismissed(localStorage.getItem(DISMISS_KEY) === 'true');
+      setDismissed(localStorage.getItem(DISMISS_KEY) === 'true' || !shouldShowAd());
     }
     setReady(true);
 
     const onAction = (e: MouseEvent | TouchEvent) => {
       if (isPremium) return;
-      if (ref.current) return; // no contar mientras el anuncio está abierto
+      if (shouldShowAd()) return; // ya debe mostrarse, no contar más
       const target = e.target as HTMLElement | null;
       if (!target) return;
 
@@ -50,8 +60,9 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
       const count = getActionCount() + 1;
       setActionCount(count);
       if (count >= ACTION_THRESHOLD) {
-        setDismissed(false);
+        setShowAd(true);
         setActionCount(0);
+        setDismissed(false);
       }
     };
 
@@ -82,6 +93,7 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
   const close = (force = false) => {
     if (!canClose && !force) return;
     setDismissed(true);
+    setShowAd(false);
     if (typeof localStorage !== 'undefined') localStorage.setItem(DISMISS_KEY, 'true');
   };
 

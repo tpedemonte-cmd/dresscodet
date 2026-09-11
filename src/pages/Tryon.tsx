@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
-import AdBanner from '@/components/AdBanner';
+
 import { PremiumBadge } from '@/components/PremiumGate';
 import {
   DropdownMenu,
@@ -541,7 +541,7 @@ export default function Tryon() {
         <p className="text-muted-foreground font-body">Elegí las prendas y armá tu outfit completo</p>
       </div>
 
-      <AdBanner index={0} />
+      
 
       {/* Step 1: Model */}
       <div className="space-y-3">
