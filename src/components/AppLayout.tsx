@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
-import { Shirt, Plus, Sparkles, LogOut, Clock, BarChart3, ShoppingBag, Heart, ScanFace, ImageIcon, CalendarDays, Star } from 'lucide-react';
+import { Shirt, Plus, Sparkles, LogOut, Clock, BarChart3, ShoppingBag, Heart, ScanFace, ImageIcon, CalendarDays, Star, Plane } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PlanSwitcher from '@/components/PlanSwitcher';
 
@@ -16,6 +16,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     { path: '/looks', icon: ImageIcon, label: 'Looks' },
     { path: '/recomendar', icon: Sparkles, label: 'Outfit' },
     { path: '/plan', icon: CalendarDays, label: 'Plan' },
+    { path: '/viaje', icon: Plane, label: 'Viajes' },
     { path: '/favoritos', icon: Star, label: 'Favoritos' },
     { path: '/historial', icon: Clock, label: 'Historial' },
     { path: '/estadisticas', icon: BarChart3, label: 'Stats' },
