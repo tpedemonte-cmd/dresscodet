@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getAiConfig } from "../_shared/ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,8 +12,7 @@ serve(async (req) => {
   try {
     const { wardrobe, wishlist, mood, event, formality, temperature, weather, season, windKmh, rainProbability, isNight, likedOutfits, dislikedOutfits } = await req.json();
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const ai = getAiConfig("google/gemini-3-flash-preview");
 
     const systemPrompt = `Sos un estilista personal argentino. El usuario te va a dar su guardarropas (cada prenda tiene un ID interno, y las marcadas con ⭐ FAVORITA son sus prendas preferidas). También puede tener una WISHLIST con productos que le gustan de tiendas online pero que todavía no compró. Estado de ánimo, tipo de evento, temperatura, clima y estación del año. 
 
@@ -71,14 +71,14 @@ Estación del año: ${season}
 
 ¿Qué me recomendás ponerme?`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch(ai.url, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${ai.key}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: ai.model,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
