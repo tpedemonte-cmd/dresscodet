@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Plane, Sparkles, Loader2, ExternalLink, Shirt, Ban, Globe2, ShoppingBag } from 'lucide-react';
@@ -20,13 +20,60 @@ const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 
 const getMLUrl = (query: string) =>
   `https://listado.mercadolibre.com.ar/${encodeURIComponent(query.replace(/ /g, '-'))}`;
 
+type Place = { name: string; label: string };
+
 export default function Travel() {
   const [destination, setDestination] = useState('');
+  const [suggestions, setSuggestions] = useState<Place[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const skipNextSearch = useRef(false);
   const [origin, setOrigin] = useState('Argentina');
   const [tripType, setTripType] = useState('Turismo');
   const [month, setMonth] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TravelResult | null>(null);
+
+  useEffect(() => {
+    if (skipNextSearch.current) {
+      skipNextSearch.current = false;
+      return;
+    }
+    const q = destination.trim();
+    if (q.length < 2) {
+      setSuggestions([]);
+      setSearching(false);
+      return;
+    }
+    let cancelled = false;
+    setSearching(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=es&format=json`
+        );
+        const json = await res.json();
+        if (cancelled) return;
+        const places: Place[] = (json?.results ?? []).map((r: any) => ({
+          name: r.name,
+          label: [r.name, r.admin1 && r.admin1 !== r.name ? r.admin1 : null, r.country]
+            .filter(Boolean)
+            .join(', '),
+        }));
+        const unique = places.filter((p, i) => places.findIndex((o) => o.label === p.label) === i);
+        setSuggestions(unique);
+      } catch {
+        if (!cancelled) setSuggestions([]);
+      } finally {
+        if (!cancelled) setSearching(false);
+      }
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      setSearching(false);
+    };
+  }, [destination]);
 
   const handleGenerate = async () => {
     if (!destination.trim()) {
@@ -69,14 +116,44 @@ export default function Travel() {
       </div>
 
       <div className="bg-card rounded-xl p-5 shadow-card space-y-4">
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 relative">
           <label className="text-sm font-body font-semibold text-foreground">¿A dónde viajás?</label>
           <input
             value={destination}
-            onChange={(e) => setDestination(e.target.value)}
+            onChange={(e) => {
+              setDestination(e.target.value);
+              setShowSuggestions(true);
+            }}
+            onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             placeholder="Ej: Estambul, Turquía"
             className="w-full rounded-lg border border-border bg-background px-3 py-2.5 font-body text-base"
           />
+          {searching && (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground absolute right-3 top-[2.4rem]" />
+          )}
+          {showSuggestions && suggestions.length > 0 && (
+            <ul className="absolute z-20 left-0 right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden max-h-64 overflow-y-auto">
+              {suggestions.map((p) => (
+                <li key={p.label}>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      skipNextSearch.current = true;
+                      setDestination(p.label);
+                      setShowSuggestions(false);
+                      setSuggestions([]);
+                    }}
+                    className="w-full text-left px-3 py-2.5 font-body text-sm text-foreground hover:bg-secondary/60 transition-colors flex items-center gap-2"
+                  >
+                    <Globe2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <span>{p.label}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
