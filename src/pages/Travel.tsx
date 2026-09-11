@@ -102,62 +102,15 @@ export default function Travel() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-sm font-body font-semibold text-foreground">Días</label>
-            <input
-              type="number"
-              min="0"
-              value={days}
-              onChange={(e) => {
-                const v = e.target.value;
-                if (v === '' || Number(v) >= 0) setDays(v);
-              }}
-              placeholder="10"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 font-body text-base"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-body font-semibold text-foreground">Tipo de viaje</label>
-            <select
-              value={tripType}
-              onChange={(e) => setTripType(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 font-body text-base"
-            >
-              {TRIP_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-body font-semibold text-foreground">¿Qué vas a hacer?</label>
-          <div className="flex flex-wrap gap-2">
-            {ACTIVITIES.map((a) => (
-              <button
-                key={a}
-                type="button"
-                onClick={() => toggleActivity(a)}
-                className={`px-3 py-1.5 rounded-full text-sm font-body border transition-colors ${
-                  activities.includes(a)
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-secondary/30 text-muted-foreground border-border hover:border-primary/40'
-                }`}
-              >
-                {a}
-              </button>
-            ))}
-          </div>
-        </div>
-
         <div className="space-y-1.5">
-          <label className="text-sm font-body font-semibold text-foreground">Aclaraciones (opcional)</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={2}
-            placeholder="Ej: voy a visitar mezquitas y zonas rurales"
+          <label className="text-sm font-body font-semibold text-foreground">Tipo de viaje</label>
+          <select
+            value={tripType}
+            onChange={(e) => setTripType(e.target.value)}
             className="w-full rounded-lg border border-border bg-background px-3 py-2.5 font-body text-base"
-          />
+          >
+            {TRIP_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
         </div>
 
         <Button className="w-full text-base py-6" onClick={handleGenerate} disabled={loading}>
