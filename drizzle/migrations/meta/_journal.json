@@ -43,6 +43,13 @@
       "when": 1789154297666,
       "tag": "0005_fix_look_images_ownership_and_job_locks",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789163358370,
+      "tag": "0006_catch_up_schema_for_self_hosted_project",
+      "breakpoints": true
     }
   ]
 }
