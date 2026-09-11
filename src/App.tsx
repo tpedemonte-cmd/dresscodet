@@ -59,6 +59,8 @@ const AppRoutes = () => {
   );
 };
 
+import AdBanner from '@/components/AdBanner';
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -68,6 +70,7 @@ const App = () => (
         <AuthProvider>
           <PlanProvider>
             <AppRoutes />
+            <AdBanner index={0} />
           </PlanProvider>
         </AuthProvider>
       </BrowserRouter>
