@@ -56,10 +56,7 @@ Reglas:
 
     const userPrompt = `Destino: ${destination}
 Mes del viaje: ${month || "no especificado"}
-Duración: ${days ? days + " días" : "no especificada"}
 Tipo de viaje: ${tripType || "turismo"}
-Actividades previstas: ${(activities && activities.length ? activities.join(", ") : "no especificadas")}
-Aclaraciones: ${notes || "ninguna"}
 
 MI PLACARD:
 ${wardrobe}

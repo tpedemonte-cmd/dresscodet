@@ -15,7 +15,6 @@ type TravelResult = {
 };
 
 const TRIP_TYPES = ['Turismo', 'Trabajo', 'Visita religiosa', 'Playa', 'Mochilero', 'Casamiento / evento'];
-const ACTIVITIES = ['Templos / mezquitas / iglesias', 'Ciudad y museos', 'Trekking / naturaleza', 'Playa o pileta', 'Salidas de noche', 'Reuniones de trabajo'];
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
 const getMLUrl = (query: string) =>
