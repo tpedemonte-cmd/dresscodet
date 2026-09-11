@@ -26,14 +26,8 @@ export default function Travel() {
   const [origin, setOrigin] = useState('Argentina');
   const [tripType, setTripType] = useState('Turismo');
   const [month, setMonth] = useState('');
-  const [days, setDays] = useState('');
-  const [activities, setActivities] = useState<string[]>([]);
-  const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TravelResult | null>(null);
-
-  const toggleActivity = (a: string) =>
-    setActivities((prev) => (prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]));
 
   const handleGenerate = async () => {
     if (!destination.trim()) {
@@ -49,9 +43,6 @@ export default function Travel() {
           origin,
           tripType,
           month,
-          days: days ? Number(days) : null,
-          activities,
-          notes: notes.trim(),
         },
       });
       if (error) throw error;
