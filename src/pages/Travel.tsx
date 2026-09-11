@@ -34,6 +34,47 @@ export default function Travel() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TravelResult | null>(null);
 
+  useEffect(() => {
+    if (skipNextSearch.current) {
+      skipNextSearch.current = false;
+      return;
+    }
+    const q = destination.trim();
+    if (q.length < 2) {
+      setSuggestions([]);
+      setSearching(false);
+      return;
+    }
+    let cancelled = false;
+    setSearching(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=es&format=json`
+        );
+        const json = await res.json();
+        if (cancelled) return;
+        const places: Place[] = (json?.results ?? []).map((r: any) => ({
+          name: r.name,
+          label: [r.name, r.admin1 && r.admin1 !== r.name ? r.admin1 : null, r.country]
+            .filter(Boolean)
+            .join(', '),
+        }));
+        const unique = places.filter((p, i) => places.findIndex((o) => o.label === p.label) === i);
+        setSuggestions(unique);
+      } catch {
+        if (!cancelled) setSuggestions([]);
+      } finally {
+        if (!cancelled) setSearching(false);
+      }
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      setSearching(false);
+    };
+  }, [destination]);
+
   const handleGenerate = async () => {
     if (!destination.trim()) {
       toast.error('Contanos a dónde viajás');
