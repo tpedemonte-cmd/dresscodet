@@ -17,6 +17,7 @@ import Marketplace from "./pages/Marketplace";
 import Wishlist from "./pages/Wishlist";
 import Looks from "./pages/Looks";
 import Plan from "./pages/Plan";
+import Travel from "./pages/Travel";
 import Favorites from "./pages/Favorites";
 import Premium from "./pages/Premium";
 import Checkout from "./pages/Checkout";
@@ -49,6 +50,7 @@ const AppRoutes = () => {
       <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
       <Route path="/looks" element={<ProtectedRoute><Looks /></ProtectedRoute>} />
       <Route path="/plan" element={<ProtectedRoute><Plan /></ProtectedRoute>} />
+      <Route path="/viaje" element={<ProtectedRoute><Travel /></ProtectedRoute>} />
       <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
       <Route path="/pago/:sessionId" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
       <Route path="/favoritos" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
