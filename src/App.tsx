@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { PlanProvider } from "@/lib/plan";
 import AppLayout from "@/components/AppLayout";
-import AdBanner from "@/components/AdBanner";
 import Auth from "./pages/Auth";
 import Wardrobe from "./pages/Wardrobe";
 import AddItem from "./pages/AddItem";
