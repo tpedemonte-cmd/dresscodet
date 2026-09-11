@@ -253,41 +253,60 @@ export default function Tryon() {
     setGeneratingAvatar(true);
     setVariants([]);
 
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
     const generateOne = async (overrides: Partial<typeof avatarData> = {}) => {
-      const { data, error } = await supabase.functions.invoke('generate-avatar', {
-        body: buildAvatarBody(overrides),
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      if (!data?.image) throw new Error('No se pudo generar el modelo');
-      return data.image as string;
+      // La IA de imágenes tiene límite de pedidos por minuto: reintentamos con espera
+      let lastError: any = null;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const { data, error } = await supabase.functions.invoke('generate-avatar', {
+          body: buildAvatarBody(overrides),
+        });
+        if (!error && !data?.error && data?.image) return data.image as string;
+        lastError = error || new Error(data?.error || 'No se pudo generar el modelo');
+        const msg = String(lastError?.message || '');
+        const rateLimited = /429|non-2xx|rate|límite|limite/i.test(msg);
+        if (!rateLimited || attempt === 3) break;
+        await sleep(4000 * (attempt + 1));
+      }
+      throw new Error(
+        /429|non-2xx/i.test(String(lastError?.message || ''))
+          ? 'La IA está recibiendo demasiados pedidos. Esperá unos segundos y volvé a intentar.'
+          : lastError?.message || 'No se pudo generar el modelo'
+      );
     };
 
     try {
       if (isPremium) {
         // Respetamos lo que el usuario aclaró y variamos al azar lo que dejó vacío
         const looks = buildVariantLooks(avatarData);
-        const results = await Promise.allSettled(
-          looks.map((look) =>
-            generateOne({
+        // De a uno y con pausa, para no pasarnos del límite de pedidos por minuto
+        const ok: (Look & { image: string })[] = [];
+        let firstError: any = null;
+        for (let i = 0; i < looks.length; i++) {
+          const look = looks[i];
+          try {
+            const image = await generateOne({
               hairColor: look.hairColor,
               hairStyle: look.hairStyle,
               skinTone: look.skinTone,
               bodyType: look.bodyType,
-            })
-          )
-        );
-        const ok = results
-          .map((r, i) => (r.status === 'fulfilled' ? { ...looks[i], image: r.value } : null))
-          .filter(Boolean) as (Look & { image: string })[];
+            });
+            ok.push({ ...look, image });
+            setVariants([...ok]);
+          } catch (e: any) {
+            if (!firstError) firstError = e;
+          }
+          if (i < looks.length - 1) await sleep(2500);
+        }
         if (ok.length === 0) {
-          const firstError = results.find((r) => r.status === 'rejected') as PromiseRejectedResult | undefined;
-          throw new Error(firstError?.reason?.message || 'No se pudieron generar los modelos');
+          throw new Error(firstError?.message || 'No se pudieron generar los modelos');
         }
         setVariants(ok);
         setActiveModelId(null);
         setResultImage(null);
         toast.success(`Se generaron ${ok.length} modelos. Elegí con cuál te identificás.`);
+
       } else {
         const image = await generateOne();
         setSelfie(image);
