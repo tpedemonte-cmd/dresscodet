@@ -81,7 +81,7 @@ function Body({ config }: { config: Avatar3DConfig }) {
   );
 
   return (
-    <group scale={scale} position={[0, -0.9, 0]}>
+    <group scale={scale} position={[0, -0.82, 0]}>
       {/* Cabeza y cuello */}
       <mesh position={[0, 1.66, 0]} castShadow>
         <sphereGeometry args={[0.105, 40, 32]} />
@@ -190,7 +190,7 @@ export default function Avatar3D({
         <Canvas
           shadows
           dpr={[1, 2]}
-          camera={{ position: [0, 0.15, 3.1], fov: 32 }}
+          camera={{ position: [0, 0.05, 3.7], fov: 30 }}
           gl={{ antialias: true, preserveDrawingBuffer: true }}
         >
           <ambientLight intensity={0.65} />
@@ -199,7 +199,7 @@ export default function Avatar3D({
           <Environment preset="city" />
           <Body config={config} />
           <ContactShadows
-            position={[0, -0.9, 0]}
+            position={[0, -0.82, 0]}
             opacity={0.35}
             scale={4}
             blur={2.4}
