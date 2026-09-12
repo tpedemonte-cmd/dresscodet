@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { supabase } from '@/integrations/supabase/client';
+import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
@@ -82,11 +82,15 @@ export default function Auth() {
           variant="outline"
           className="w-full"
           onClick={async () => {
-            const { error } = await supabase.auth.signInWithOAuth({
-              provider: 'google',
-              options: { redirectTo: window.location.origin },
+            const result = await lovable.auth.signInWithOAuth('google', {
+              redirect_uri: window.location.origin,
             });
-            if (error) toast.error(error.message);
+            if (result.error) {
+              toast.error(result.error.message || 'No se pudo iniciar sesión con Google');
+              return;
+            }
+            if (result.redirected) return;
+            navigate('/');
           }}
         >
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
