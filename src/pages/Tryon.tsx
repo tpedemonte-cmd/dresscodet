@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock } from 'lucide-react';
+import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock, Box } from 'lucide-react';
+import Avatar3D, { DEFAULT_AVATAR_3D, type Avatar3DConfig } from '@/components/Avatar3D';
 import { toast } from 'sonner';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan } from '@/lib/plan';
@@ -107,7 +108,8 @@ export default function Tryon() {
   const { isPremium } = usePlan();
   const navigatePremium = useNavigate();
   const queryClient = useQueryClient();
-  const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
+  const [modelMode, setModelMode] = useState<'ia' | 'selfie' | '3d'>('3d');
+  const [avatar3D, setAvatar3D] = useState<Avatar3DConfig>(DEFAULT_AVATAR_3D);
   
   const [variants, setVariants] = useState<(Look & { image: string })[]>([]);
 
@@ -566,29 +568,45 @@ export default function Tryon() {
       <div className="space-y-3">
         <p className="text-sm font-body font-medium text-foreground">1. Tu modelo</p>
 
-        {!selfie && (
-          <div className="max-w-sm mx-auto grid grid-cols-2 gap-2">
+        {(!selfie || modelMode === '3d') && (
+          <div className="max-w-sm mx-auto grid grid-cols-3 gap-2">
+            <button
+              onClick={() => setModelMode('3d')}
+              className={`inline-flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-body font-medium transition-colors ${
+                modelMode === '3d' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Box className="h-4 w-4" /> Modelo 3D
+            </button>
             <button
               onClick={() => setModelMode('ia')}
-              className={`rounded-xl px-3 py-2 text-xs font-body font-medium transition-colors ${
+              className={`inline-flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-body font-medium transition-colors ${
                 modelMode === 'ia' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Sparkles className="h-4 w-4 inline mr-1" /> Modelo con IA
+              <Sparkles className="h-4 w-4" /> Con IA
             </button>
             <button
               onClick={() => setModelMode('selfie')}
-              className={`inline-flex items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-body font-medium transition-colors ${
+              className={`inline-flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-body font-medium transition-colors ${
                 modelMode === 'selfie' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
               }`}
             >
-              {isPremium ? <Camera className="h-4 w-4" /> : <Lock className="h-3.5 w-3.5" />} Mi propia foto
+              {isPremium ? <Camera className="h-4 w-4" /> : <Lock className="h-3.5 w-3.5" />} Mi foto
             </button>
           </div>
         )}
 
 
-        {selfie && !showVariantPicker ? (
+        {modelMode === '3d' ? (
+          <div className="space-y-2">
+            <Avatar3D config={avatar3D} onChange={setAvatar3D} items={selectedItems} />
+            <p className="text-xs font-body text-muted-foreground text-center max-w-sm mx-auto">
+              Ajustá el cuerpo con los controles y elegí prendas abajo: se van a apoyar sobre el
+              modelo. No consume nada de IA.
+            </p>
+          </div>
+        ) : selfie && !showVariantPicker ? (
           <div className="space-y-3">
             <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card">
               <img src={resultImage || selfie} alt="Tu modelo" className="w-full h-full object-cover" />
@@ -1018,30 +1036,34 @@ export default function Tryon() {
       </div>
 
       {/* Action buttons */}
-      <div className="space-y-3">
-        <Button variant="warm" className="w-full" disabled={!selfie || selectedItems.length === 0 || loading} onClick={handleTryon}>
-          {loading ? (
-            <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando outfit virtual...</>
-          ) : (
-            <><Sparkles className="h-4 w-4 mr-2" /> Probarme {selectedItems.length > 1 ? `estas ${selectedItems.length} prendas` : 'esta prenda'}</>
-          )}
-        </Button>
-
-        {resultImage && (
-          <Button variant="outline" className="w-full" disabled={saving} onClick={handleSaveLook}>
-            {saving ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando...</>
+      {modelMode !== '3d' && (
+        <div className="space-y-3">
+          <Button variant="warm" className="w-full" disabled={!selfie || selectedItems.length === 0 || loading} onClick={handleTryon}>
+            {loading ? (
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando outfit virtual...</>
             ) : (
-              <><Save className="h-4 w-4 mr-2" /> Guardar este look</>
+              <><Sparkles className="h-4 w-4 mr-2" /> Probarme {selectedItems.length > 1 ? `estas ${selectedItems.length} prendas` : 'esta prenda'}</>
             )}
           </Button>
-        )}
-      </div>
+
+          {resultImage && (
+            <Button variant="outline" className="w-full" disabled={saving} onClick={handleSaveLook}>
+              {saving ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando...</>
+              ) : (
+                <><Save className="h-4 w-4 mr-2" /> Guardar este look</>
+              )}
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Info */}
       <div className="bg-card rounded-xl p-4 shadow-card text-center">
         <p className="text-sm text-muted-foreground font-body">
-          Seleccioná varias prendas para armar un outfit completo. La IA genera una imagen aproximada ✨
+          {modelMode === '3d'
+            ? 'El modelo 3D se dibuja en tu navegador: es gratis, instantáneo y podés girarlo. Las prendas se apoyan como capas, así que es una aproximación.'
+            : 'Seleccioná varias prendas para armar un outfit completo. La IA genera una imagen aproximada ✨'}
         </p>
       </div>
     </div>
