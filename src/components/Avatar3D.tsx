@@ -30,13 +30,17 @@ export const DEFAULT_AVATAR_3D: Avatar3DConfig = {
 
 /** Zonas del cuerpo (en % del alto/ancho del visor) donde se apoya cada tipo de prenda */
 const ZONES: Record<string, { top: number; height: number; width: number }> = {
-  torso: { top: 26, height: 26, width: 40 },
-  piernas: { top: 50, height: 32, width: 34 },
-  cuerpo: { top: 26, height: 50, width: 40 },
-  pies: { top: 82, height: 12, width: 30 },
-  cabeza: { top: 10, height: 14, width: 22 },
-  mano: { top: 40, height: 16, width: 22 },
+  cabeza: { top: 3, height: 10, width: 20 },
+  torso: { top: 12, height: 33, width: 42 },
+  piernas: { top: 45, height: 44, width: 32 },
+  cuerpo: { top: 12, height: 76, width: 42 },
+  pies: { top: 85, height: 11, width: 30 },
+  mano: { top: 40, height: 14, width: 20 },
 };
+
+/** Difumina los bordes de la foto para que el fondo del placard no se note como recuadro */
+const FEATHER =
+  'radial-gradient(ellipse 68% 72% at 50% 50%, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 100%)';
 
 const CATEGORY_ZONE: Record<string, keyof typeof ZONES> = {
   remera: 'torso',
