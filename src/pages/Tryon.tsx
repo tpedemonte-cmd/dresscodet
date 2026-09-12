@@ -568,29 +568,45 @@ export default function Tryon() {
       <div className="space-y-3">
         <p className="text-sm font-body font-medium text-foreground">1. Tu modelo</p>
 
-        {!selfie && (
-          <div className="max-w-sm mx-auto grid grid-cols-2 gap-2">
+        {(!selfie || modelMode === '3d') && (
+          <div className="max-w-sm mx-auto grid grid-cols-3 gap-2">
+            <button
+              onClick={() => setModelMode('3d')}
+              className={`inline-flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-body font-medium transition-colors ${
+                modelMode === '3d' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Box className="h-4 w-4" /> Modelo 3D
+            </button>
             <button
               onClick={() => setModelMode('ia')}
-              className={`rounded-xl px-3 py-2 text-xs font-body font-medium transition-colors ${
+              className={`inline-flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-body font-medium transition-colors ${
                 modelMode === 'ia' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Sparkles className="h-4 w-4 inline mr-1" /> Modelo con IA
+              <Sparkles className="h-4 w-4" /> Con IA
             </button>
             <button
               onClick={() => setModelMode('selfie')}
-              className={`inline-flex items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-body font-medium transition-colors ${
+              className={`inline-flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-body font-medium transition-colors ${
                 modelMode === 'selfie' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
               }`}
             >
-              {isPremium ? <Camera className="h-4 w-4" /> : <Lock className="h-3.5 w-3.5" />} Mi propia foto
+              {isPremium ? <Camera className="h-4 w-4" /> : <Lock className="h-3.5 w-3.5" />} Mi foto
             </button>
           </div>
         )}
 
 
-        {selfie && !showVariantPicker ? (
+        {modelMode === '3d' ? (
+          <div className="space-y-2">
+            <Avatar3D config={avatar3D} onChange={setAvatar3D} items={selectedItems} />
+            <p className="text-xs font-body text-muted-foreground text-center max-w-sm mx-auto">
+              Ajustá el cuerpo con los controles y elegí prendas abajo: se van a apoyar sobre el
+              modelo. No consume nada de IA.
+            </p>
+          </div>
+        ) : selfie && !showVariantPicker ? (
           <div className="space-y-3">
             <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card">
               <img src={resultImage || selfie} alt="Tu modelo" className="w-full h-full object-cover" />
