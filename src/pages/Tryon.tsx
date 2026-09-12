@@ -1036,30 +1036,34 @@ export default function Tryon() {
       </div>
 
       {/* Action buttons */}
-      <div className="space-y-3">
-        <Button variant="warm" className="w-full" disabled={!selfie || selectedItems.length === 0 || loading} onClick={handleTryon}>
-          {loading ? (
-            <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando outfit virtual...</>
-          ) : (
-            <><Sparkles className="h-4 w-4 mr-2" /> Probarme {selectedItems.length > 1 ? `estas ${selectedItems.length} prendas` : 'esta prenda'}</>
-          )}
-        </Button>
-
-        {resultImage && (
-          <Button variant="outline" className="w-full" disabled={saving} onClick={handleSaveLook}>
-            {saving ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando...</>
+      {modelMode !== '3d' && (
+        <div className="space-y-3">
+          <Button variant="warm" className="w-full" disabled={!selfie || selectedItems.length === 0 || loading} onClick={handleTryon}>
+            {loading ? (
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando outfit virtual...</>
             ) : (
-              <><Save className="h-4 w-4 mr-2" /> Guardar este look</>
+              <><Sparkles className="h-4 w-4 mr-2" /> Probarme {selectedItems.length > 1 ? `estas ${selectedItems.length} prendas` : 'esta prenda'}</>
             )}
           </Button>
-        )}
-      </div>
+
+          {resultImage && (
+            <Button variant="outline" className="w-full" disabled={saving} onClick={handleSaveLook}>
+              {saving ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando...</>
+              ) : (
+                <><Save className="h-4 w-4 mr-2" /> Guardar este look</>
+              )}
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Info */}
       <div className="bg-card rounded-xl p-4 shadow-card text-center">
         <p className="text-sm text-muted-foreground font-body">
-          Seleccioná varias prendas para armar un outfit completo. La IA genera una imagen aproximada ✨
+          {modelMode === '3d'
+            ? 'El modelo 3D se dibuja en tu navegador: es gratis, instantáneo y podés girarlo. Las prendas se apoyan como capas, así que es una aproximación.'
+            : 'Seleccioná varias prendas para armar un outfit completo. La IA genera una imagen aproximada ✨'}
         </p>
       </div>
     </div>
