@@ -227,8 +227,8 @@ export default function Avatar3D({
                 key={item.id}
                 src={item.image_url}
                 alt={item.name}
-                className={`absolute left-1/2 -translate-x-1/2 object-contain drop-shadow-md ${
-                  cutout ? 'mix-blend-multiply' : ''
+                className={`absolute left-1/2 -translate-x-1/2 object-contain ${
+                  cutout ? 'mix-blend-multiply' : 'drop-shadow-md'
                 }`}
                 style={{
                   top: `${z.top}%`,
@@ -236,6 +236,9 @@ export default function Avatar3D({
                   width: `${z.width}%`,
                   opacity: opacity / 100,
                   zIndex: ZONE_Z[zone] ?? 10,
+                  ...(cutout
+                    ? { maskImage: FEATHER, WebkitMaskImage: FEATHER }
+                    : {}),
                 }}
               />
             );
