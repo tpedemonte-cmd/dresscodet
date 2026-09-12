@@ -1019,8 +1019,7 @@ export default function Tryon() {
       </div>
 
       {/* Action buttons */}
-      {modelMode !== '3d' && (
-        <div className="space-y-3">
+      <div className="space-y-3">
           <Button variant="warm" className="w-full" disabled={!selfie || selectedItems.length === 0 || loading} onClick={handleTryon}>
             {loading ? (
               <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando outfit virtual...</>
@@ -1038,15 +1037,12 @@ export default function Tryon() {
               )}
             </Button>
           )}
-        </div>
-      )}
+      </div>
 
       {/* Info */}
       <div className="bg-card rounded-xl p-4 shadow-card text-center">
         <p className="text-sm text-muted-foreground font-body">
-          {modelMode === '3d'
-            ? 'El modelo 3D se dibuja en tu navegador: es gratis, instantáneo y podés girarlo. Las prendas se apoyan como capas, así que es una aproximación.'
-            : 'Seleccioná varias prendas para armar un outfit completo. La IA genera una imagen aproximada ✨'}
+          Seleccioná varias prendas para armar un outfit completo. La IA genera una imagen aproximada ✨
         </p>
       </div>
     </div>
