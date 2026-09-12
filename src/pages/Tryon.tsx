@@ -3,8 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock, Box } from 'lucide-react';
-import Avatar3D, { DEFAULT_AVATAR_3D, type Avatar3DConfig } from '@/components/Avatar3D';
+import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan } from '@/lib/plan';
@@ -108,8 +107,8 @@ export default function Tryon() {
   const { isPremium } = usePlan();
   const navigatePremium = useNavigate();
   const queryClient = useQueryClient();
-  const [modelMode, setModelMode] = useState<'ia' | 'selfie' | '3d'>('3d');
-  const [avatar3D, setAvatar3D] = useState<Avatar3DConfig>(DEFAULT_AVATAR_3D);
+  const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
+
   
   const [variants, setVariants] = useState<(Look & { image: string })[]>([]);
 
@@ -568,16 +567,8 @@ export default function Tryon() {
       <div className="space-y-3">
         <p className="text-sm font-body font-medium text-foreground">1. Tu modelo</p>
 
-        {(!selfie || modelMode === '3d') && (
-          <div className="max-w-sm mx-auto grid grid-cols-3 gap-2">
-            <button
-              onClick={() => setModelMode('3d')}
-              className={`inline-flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-body font-medium transition-colors ${
-                modelMode === '3d' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Box className="h-4 w-4" /> Modelo 3D
-            </button>
+        {!selfie && (
+          <div className="max-w-sm mx-auto grid grid-cols-2 gap-2">
             <button
               onClick={() => setModelMode('ia')}
               className={`inline-flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-body font-medium transition-colors ${
@@ -598,15 +589,7 @@ export default function Tryon() {
         )}
 
 
-        {modelMode === '3d' ? (
-          <div className="space-y-2">
-            <Avatar3D config={avatar3D} onChange={setAvatar3D} items={selectedItems} />
-            <p className="text-xs font-body text-muted-foreground text-center max-w-sm mx-auto">
-              Ajustá el cuerpo con los controles y elegí prendas abajo: se van a apoyar sobre el
-              modelo. No consume nada de IA.
-            </p>
-          </div>
-        ) : selfie && !showVariantPicker ? (
+        {selfie && !showVariantPicker ? (
           <div className="space-y-3">
             <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card">
               <img src={resultImage || selfie} alt="Tu modelo" className="w-full h-full object-cover" />
