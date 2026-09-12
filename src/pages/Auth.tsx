@@ -81,8 +81,12 @@ export default function Auth() {
           type="button"
           variant="outline"
           className="w-full"
-          onClick={() => {
-            toast.info('Login con Google: modo mock. Acá irá el OAuth real cuando configures las credenciales.');
+          onClick={async () => {
+            const { error } = await supabase.auth.signInWithOAuth({
+              provider: 'google',
+              options: { redirectTo: window.location.origin },
+            });
+            if (error) toast.error(error.message);
           }}
         >
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
