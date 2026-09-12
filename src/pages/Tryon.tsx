@@ -108,7 +108,8 @@ export default function Tryon() {
   const { isPremium } = usePlan();
   const navigatePremium = useNavigate();
   const queryClient = useQueryClient();
-  const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
+  const [modelMode, setModelMode] = useState<'ia' | 'selfie' | '3d'>('3d');
+  const [avatar3D, setAvatar3D] = useState<Avatar3DConfig>(DEFAULT_AVATAR_3D);
   
   const [variants, setVariants] = useState<(Look & { image: string })[]>([]);
 
