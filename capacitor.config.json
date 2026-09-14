@@ -1,0 +1,9 @@
+{
+  "appId": "app.lovable.p07691bb2f7f64d83873a9f4a4e51143a",
+  "appName": "dresscodet",
+  "webDir": "dist",
+  "server": {
+    "url": "https://07691bb2-f7f6-4d83-873a-9f4a4e51143a.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  }
+}
