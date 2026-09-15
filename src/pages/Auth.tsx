@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { supabase } from '@/integrations/supabase/client';
+import { startGoogleOAuth } from '@/lib/nativeAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
@@ -82,12 +82,10 @@ export default function Auth() {
           variant="outline"
           className="w-full"
           onClick={async () => {
-            const { error } = await supabase.auth.signInWithOAuth({
-              provider: 'google',
-              options: { redirectTo: window.location.origin },
-            });
-            if (error) {
-              toast.error(error.message || 'No se pudo iniciar sesión con Google');
+            try {
+              await startGoogleOAuth();
+            } catch (err: any) {
+              toast.error(err?.message || 'No se pudo iniciar sesión con Google');
             }
           }}
         >
