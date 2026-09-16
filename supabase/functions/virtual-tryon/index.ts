@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getAiConfig } from "../_shared/ai.ts";
+import { aiGenerateImage } from "../_shared/ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,8 +32,6 @@ serve(async (req) => {
   }
 
   try {
-    const ai = getAiConfig("google/gemini-3-pro-image-preview");
-
     const body = await req.json();
     const { userPhotoBase64 } = body;
 
@@ -90,56 +88,32 @@ Rules:
 - Keep the background from the first image
 - Output a full-body or upper-body photo of the person wearing the complete outfit`;
 
-    const contentParts: any[] = [
-      { type: "text", text: prompt },
-      { type: "image_url", image_url: { url: userPhotoBase64 } },
-      ...clothingImages.map(img => ({
-        type: "image_url",
-        image_url: { url: `data:${img.mime};base64,${img.base64}` },
-      })),
-    ];
+    const result = await aiGenerateImage(prompt, [
+      userPhotoBase64,
+      ...clothingImages.map(img => `data:${img.mime};base64,${img.base64}`),
+    ]);
 
-    const response = await fetch(ai.url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${ai.key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: ai.model,
-        messages: [{ role: "user", content: contentParts }],
-        modalities: ["image", "text"],
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
+    if (!result.ok) {
+      if (result.status === 429) {
         return new Response(
           JSON.stringify({ error: "Demasiadas solicitudes. Esperá un momento e intentá de nuevo." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402) {
+      if (result.status === 402) {
         return new Response(
           JSON.stringify({ error: "Créditos agotados. Contactá al administrador." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-      throw new Error("Error al procesar la imagen");
-    }
-
-    const data = await response.json();
-    const resultImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    const resultText = data.choices?.[0]?.message?.content || "";
-
-    if (!resultImage) {
-      throw new Error("No se pudo generar la imagen. Probá con otra foto o prendas.");
+      return new Response(
+        JSON.stringify({ error: "No se pudo generar la imagen. Probá con otra foto o prendas." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     return new Response(
-      JSON.stringify({ image: resultImage, text: resultText }),
+      JSON.stringify({ image: result.dataUrl, text: result.text || "" }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
