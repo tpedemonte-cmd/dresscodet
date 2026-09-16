@@ -14,6 +14,15 @@ const GEMINI_MODEL_MAP: Record<string, string> = {
   'gemini-3.8-flash': 'gemini-2.5-flash',
 };
 
+// Models the Lovable AI Gateway serves for image generation (same Nano Banana 2 Lite tier).
+function toLovableModel(model: string): string {
+  const bare = model.replace(/^google\//, '');
+  if (GEMINI_MODEL_MAP[bare] === 'gemini-3.1-flash-lite-image') {
+    return 'google/gemini-3.1-flash-lite-image';
+  }
+  return model;
+}
+
 function toGeminiModel(model: string): string {
   const bare = model.replace(/^google\//, '');
   return GEMINI_MODEL_MAP[bare] ?? bare;
