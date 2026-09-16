@@ -105,33 +105,57 @@ export async function aiGenerateImage(
       contentParts.push({ type: 'image_url', image_url: { url: img } });
     }
 
-    const res = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${geminiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: toGeminiModel(IMAGE_MODEL),
-          messages: [{ role: 'user', content: contentParts }],
-          modalities: ['image', 'text'],
-        }),
-      },
-    );
+    // Preferred model first; the rest are fallbacks that usually still have
+    // quota on the AI Studio free tier (429 / 404 on the newest models).
+    const candidates = [
+      toGeminiModel(IMAGE_MODEL),
+      'gemini-2.5-flash-image',
+      'gemini-2.5-flash-image-preview',
+      'gemini-2.0-flash-preview-image-generation',
+    ].filter((m, i, arr) => arr.indexOf(m) === i);
 
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('Gemini image error:', res.status, errText);
-      return { ok: false, status: res.status };
+    let lastStatus = 500;
+    let lastError = '';
+
+    for (const model of candidates) {
+      const res = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${geminiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'user', content: contentParts }],
+            modalities: ['image', 'text'],
+          }),
+        },
+      );
+
+      if (!res.ok) {
+        lastStatus = res.status;
+        lastError = await res.text();
+        console.error('Gemini image error:', model, res.status, lastError);
+        // Quota / model-not-available: try the next candidate.
+        if (res.status === 429 || res.status === 404 || res.status === 400) continue;
+        return { ok: false, status: res.status, text: lastError };
+      }
+
+      const data = await res.json();
+      const msg = data?.choices?.[0]?.message;
+      const url = msg?.images?.[0]?.image_url?.url;
+      if (!url) {
+        lastStatus = 500;
+        lastError = 'La respuesta del modelo no incluyó una imagen';
+        console.error('Gemini image: no image in response for', model);
+        continue;
+      }
+      return { ok: true, status: 200, dataUrl: url, text: msg?.content || '' };
     }
 
-    const data = await res.json();
-    const msg = data?.choices?.[0]?.message;
-    const url = msg?.images?.[0]?.image_url?.url;
-    if (!url) return { ok: false, status: 500 };
-    return { ok: true, status: 200, dataUrl: url, text: msg?.content || '' };
+    return { ok: false, status: lastStatus, text: lastError };
   }
 
   throw new Error('No hay clave de IA configurada (LOVABLE_API_KEY o GEMINI_API_KEY)');
