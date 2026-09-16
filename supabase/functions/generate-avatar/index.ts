@@ -79,7 +79,7 @@ The person should:
     if (!result.ok) {
       if (result.status === 429) {
         return new Response(
-          JSON.stringify({ error: "Demasiadas solicitudes. Esperá un momento." }),
+          JSON.stringify({ error: "Se agotó la cuota de generación de imágenes por ahora. Si usás la clave gratuita de Google AI Studio, esperá unos minutos (o hasta mañana) y volvé a intentar." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
