@@ -41,7 +41,7 @@ export function getAiConfig(model: string): AiConfig {
     return {
       url: 'https://ai.gateway.lovable.dev/v1/chat/completions',
       key: lovableKey,
-      model,
+      model: toLovableModel(model),
       provider: 'lovable',
     };
   }
