@@ -74,43 +74,29 @@ The person should:
 - Be shown from head to toe, fully visible, centered in the frame
 - Photorealistic quality, like a fashion catalog base model`;
 
-    const response = await fetch(ai.url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${ai.key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: ai.model,
-        messages: [{ role: "user", content: prompt }],
-        modalities: ["image", "text"],
-      }),
-    });
+    const result = await aiGenerateImage(prompt);
 
-    if (!response.ok) {
-      if (response.status === 429) {
+    if (!result.ok) {
+      if (result.status === 429) {
         return new Response(
           JSON.stringify({ error: "Demasiadas solicitudes. Esperá un momento." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402) {
+      if (result.status === 402) {
         return new Response(
           JSON.stringify({ error: "Créditos agotados. Contactá al administrador." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-      throw new Error("Error al generar avatar");
+      return new Response(
+        JSON.stringify({ error: "No se pudo generar el avatar" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const data = await response.json();
-    const image = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    if (!image) throw new Error("No se pudo generar el avatar");
-
     return new Response(
-      JSON.stringify({ image }),
+      JSON.stringify({ image: result.dataUrl }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
