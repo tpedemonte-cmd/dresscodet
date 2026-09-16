@@ -88,15 +88,6 @@ Rules:
 - Keep the background from the first image
 - Output a full-body or upper-body photo of the person wearing the complete outfit`;
 
-    const contentParts: any[] = [
-      { type: "text", text: prompt },
-      { type: "image_url", image_url: { url: userPhotoBase64 } },
-      ...clothingImages.map(img => ({
-        type: "image_url",
-        image_url: { url: `data:${img.mime};base64,${img.base64}` },
-      })),
-    ];
-
     const result = await aiGenerateImage(prompt, [
       userPhotoBase64,
       ...clothingImages.map(img => `data:${img.mime};base64,${img.base64}`),
