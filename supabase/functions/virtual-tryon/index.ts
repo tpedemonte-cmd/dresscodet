@@ -32,8 +32,6 @@ serve(async (req) => {
   }
 
   try {
-    const ai = getAiConfig("google/gemini-3-pro-image-preview");
-
     const body = await req.json();
     const { userPhotoBase64 } = body;
 
