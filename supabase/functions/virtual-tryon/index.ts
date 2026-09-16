@@ -97,47 +97,32 @@ Rules:
       })),
     ];
 
-    const response = await fetch(ai.url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${ai.key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: ai.model,
-        messages: [{ role: "user", content: contentParts }],
-        modalities: ["image", "text"],
-      }),
-    });
+    const result = await aiGenerateImage(prompt, [
+      userPhotoBase64,
+      ...clothingImages.map(img => `data:${img.mime};base64,${img.base64}`),
+    ]);
 
-    if (!response.ok) {
-      if (response.status === 429) {
+    if (!result.ok) {
+      if (result.status === 429) {
         return new Response(
           JSON.stringify({ error: "Demasiadas solicitudes. Esperá un momento e intentá de nuevo." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402) {
+      if (result.status === 402) {
         return new Response(
           JSON.stringify({ error: "Créditos agotados. Contactá al administrador." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-      throw new Error("Error al procesar la imagen");
-    }
-
-    const data = await response.json();
-    const resultImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    const resultText = data.choices?.[0]?.message?.content || "";
-
-    if (!resultImage) {
-      throw new Error("No se pudo generar la imagen. Probá con otra foto o prendas.");
+      return new Response(
+        JSON.stringify({ error: "No se pudo generar la imagen. Probá con otra foto o prendas." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     return new Response(
-      JSON.stringify({ image: resultImage, text: resultText }),
+      JSON.stringify({ image: result.dataUrl, text: result.text || "" }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
