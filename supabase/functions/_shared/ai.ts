@@ -4,10 +4,12 @@
 // works on a self-hosted Supabase project.
 
 const GEMINI_MODEL_MAP: Record<string, string> = {
-  'gemini-3.1-flash-image-preview': 'gemini-2.5-flash-image',
-  'gemini-3-pro-image-preview': 'gemini-2.5-flash-image',
-  'gemini-3.1-flash-image': 'gemini-2.5-flash-image',
-  'gemini-3-pro-image': 'gemini-2.5-flash-image',
+  // Image generation: Nano Banana 2 Lite (gemini-3.1-flash-lite-image) —
+  // cheapest of the family with better quality than Nano Banana 1.
+  'gemini-3.1-flash-image-preview': 'gemini-3.1-flash-lite-image',
+  'gemini-3-pro-image-preview': 'gemini-3.1-flash-lite-image',
+  'gemini-3.1-flash-image': 'gemini-3.1-flash-lite-image',
+  'gemini-3-pro-image': 'gemini-3.1-flash-lite-image',
   'gemini-3-flash-preview': 'gemini-2.5-flash',
   'gemini-3.8-flash': 'gemini-2.5-flash',
 };
