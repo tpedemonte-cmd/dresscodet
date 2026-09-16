@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getAiConfig } from "../_shared/ai.ts";
+import { aiGenerateImage } from "../_shared/ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,8 +13,6 @@ serve(async (req) => {
   }
 
   try {
-    const ai = getAiConfig("google/gemini-3.1-flash-image-preview");
-
     const {
       height, weight, age, gender,
       hairColor, hairStyle, skinTone, bodyType,
