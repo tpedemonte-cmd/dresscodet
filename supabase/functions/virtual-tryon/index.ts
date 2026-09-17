@@ -109,9 +109,9 @@ Rules:
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (result.status === 402) {
+      if (result.status === 402 || result.status === 403) {
         return new Response(
-          JSON.stringify({ error: "Créditos agotados. Contactá al administrador." }),
+          JSON.stringify({ error: "Se agotaron los créditos de IA de este entorno. Recargá el límite del workspace (o usá tu propia clave de Gemini) y volvé a intentar." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
