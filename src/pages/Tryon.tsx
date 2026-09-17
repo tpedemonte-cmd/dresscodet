@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
-import { usePlan } from '@/lib/plan';
+import { usePlan, LIMITS } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
 
 import { PremiumBadge } from '@/components/PremiumGate';
@@ -104,7 +104,7 @@ const MEASUREMENTS = [
 
 export default function Tryon() {
   const { user } = useAuth();
-  const { isPremium } = usePlan();
+  const { isPremium, quota, refreshQuota } = usePlan();
   const navigatePremium = useNavigate();
   const queryClient = useQueryClient();
   const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
@@ -251,6 +251,17 @@ export default function Tryon() {
       toast.error('Seleccioná un género para continuar');
       return;
     }
+    if (quota.avatarsLeft <= 0) {
+      if (isPremium) {
+        toast.error(
+          `Llegaste al límite de modelos (${LIMITS.premium.avatarsPerDay} por día, ${LIMITS.premium.avatarsPerMonth} por mes). Probá más tarde.`,
+        );
+      } else {
+        toast.error('Ya usaste tu modelo gratis. Sumá avatares para armar otro.');
+        navigatePremium('/premium');
+      }
+      return;
+    }
     setGeneratingAvatar(true);
     setVariants([]);
 
@@ -280,7 +291,7 @@ export default function Tryon() {
     try {
       if (isPremium) {
         // Respetamos lo que el usuario aclaró y variamos al azar lo que dejó vacío
-        const looks = buildVariantLooks(avatarData);
+        const looks = buildVariantLooks(avatarData).slice(0, Math.max(1, quota.avatarsLeft));
         // De a uno y con pausa, para no pasarnos del límite de pedidos por minuto
         const ok: (Look & { image: string })[] = [];
         let firstError: any = null;
@@ -320,6 +331,7 @@ export default function Tryon() {
       toast.error(err.message || 'Error al generar el modelo');
     } finally {
       setGeneratingAvatar(false);
+      refreshQuota();
     }
   };
 
@@ -342,6 +354,13 @@ export default function Tryon() {
       // Guardamos la imagen que se está viendo: si hay resultado de IA (con la ropa puesta), esa
       const source = resultImage || selfie;
       if (!source || !user) throw new Error('No hay modelo para guardar');
+      if (savedModels.length >= quota.savedModelsLimit) {
+        throw new Error(
+          isPremium
+            ? `Podés guardar hasta ${quota.savedModelsLimit} modelos. Borrá uno para guardar este.`
+            : 'El plan gratis guarda 1 modelo. Borrá el que tenés o sumá avatares desde Premium.',
+        );
+      }
       setSavingModel(true);
 
       let blob: Blob;
@@ -391,6 +410,7 @@ export default function Tryon() {
     onSuccess: (data) => {
       setActiveModelId(data.id);
       queryClient.invalidateQueries({ queryKey: ['user_models'] });
+      refreshQuota();
       toast.success('¡Modelo guardado!');
     },
     onError: (err: any) => {
@@ -441,6 +461,7 @@ export default function Tryon() {
         setActiveModelId(null);
       }
       queryClient.invalidateQueries({ queryKey: ['user_models'] });
+      refreshQuota();
       toast.success('Modelo eliminado');
     },
     onError: () => toast.error('Error al eliminar el modelo'),
@@ -487,6 +508,7 @@ export default function Tryon() {
       if (data?.image) {
         setResultImage(data.image);
         toast.success('¡Mirá cómo te queda el outfit!');
+        refreshQuota();
       } else {
         throw new Error('No se pudo generar la imagen');
       }
@@ -820,7 +842,38 @@ export default function Tryon() {
                 </div>
               )}
 
-              <Button variant="warm" size="sm" className="w-full" disabled={generatingAvatar} onClick={handleGenerateAvatar}>
+              <div className="rounded-xl bg-secondary p-3 space-y-2">
+                {isPremium ? (
+                  <p className="text-[11px] font-body text-muted-foreground">
+                    Te quedan {quota.avatarsLeft} modelos para hoy · {Math.max(0, LIMITS.premium.avatarsPerMonth - quota.avatarsThisMonth)} este mes ·
+                    {' '}{quota.savedModels}/{quota.savedModelsLimit} modelos guardados
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-[11px] font-body text-muted-foreground">
+                      {quota.avatarsLeft > 0
+                        ? `Podés armar ${quota.avatarsLeft} modelo${quota.avatarsLeft === 1 ? '' : 's'}${quota.avatarCredits > 0 ? ` (incluye ${quota.avatarCredits} comprado${quota.avatarCredits === 1 ? '' : 's'})` : ' gratis'}.`
+                        : 'Ya usaste tu modelo gratis. Sumá avatares para armar otro.'}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => navigatePremium('/premium')}
+                    >
+                      Avatar extra 0,99 USD · Pack de 3 1,99 USD
+                    </Button>
+                  </>
+                )}
+              </div>
+
+              <Button
+                variant="warm"
+                size="sm"
+                className="w-full"
+                disabled={generatingAvatar || quota.avatarsLeft <= 0}
+                onClick={handleGenerateAvatar}
+              >
                 {generatingAvatar ? (
                   <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando modelo...</>
                 ) : (

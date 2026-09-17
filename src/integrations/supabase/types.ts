@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_usage_events: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          used_credit: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          used_credit?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          used_credit?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      avatar_credits: {
+        Row: {
+          balance: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       clothing_items: {
         Row: {
           availability: string
@@ -135,6 +177,7 @@ export type Database = {
           currency: string
           id: string
           paid_at: string | null
+          product: string
           status: string
           user_id: string
         }
@@ -144,6 +187,7 @@ export type Database = {
           currency?: string
           id?: string
           paid_at?: string | null
+          product?: string
           status?: string
           user_id: string
         }
@@ -153,6 +197,7 @@ export type Database = {
           currency?: string
           id?: string
           paid_at?: string | null
+          product?: string
           status?: string
           user_id?: string
         }

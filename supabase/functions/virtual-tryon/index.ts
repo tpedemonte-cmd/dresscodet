@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { aiGenerateImage } from "../_shared/ai.ts";
+import { checkQuota, recordUsage } from "../_shared/quotas.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,6 +33,14 @@ serve(async (req) => {
   }
 
   try {
+    const quota = await checkQuota(req, "tryon");
+    if (!quota.ok) {
+      return new Response(
+        JSON.stringify({ error: quota.error, quota_exceeded: true }),
+        { status: quota.status ?? 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const body = await req.json();
     const { userPhotoBase64 } = body;
 
@@ -111,6 +120,8 @@ Rules:
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    await recordUsage(quota, "tryon");
 
     return new Response(
       JSON.stringify({ image: result.dataUrl, text: result.text || "" }),

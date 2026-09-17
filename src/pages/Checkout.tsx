@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { usePlan, PREMIUM_PRICE, PREMIUM_CURRENCY } from '@/lib/plan';
+import { usePlan } from '@/lib/plan';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CreditCard, Loader2, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface SessionInfo {
+  amount: number;
+  currency: string;
+  product: string;
+  product_label: string;
+}
 
 export default function Checkout() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -14,7 +21,7 @@ export default function Checkout() {
   const { refreshPlan } = usePlan();
 
   const [loading, setLoading] = useState(true);
-  const [valid, setValid] = useState(false);
+  const [session, setSession] = useState<SessionInfo | null>(null);
   const [paying, setPaying] = useState(false);
   const [paid, setPaid] = useState(false);
   const [card, setCard] = useState('4242 4242 4242 4242');
@@ -30,9 +37,14 @@ export default function Checkout() {
       });
       if (!active) return;
       if (error || data?.error) {
-        setValid(false);
+        setSession(null);
       } else {
-        setValid(true);
+        setSession({
+          amount: Number(data.amount),
+          currency: data.currency,
+          product: data.product ?? 'premium',
+          product_label: data.product_label ?? 'DressCode',
+        });
         if (data.status === 'paid') setPaid(true);
       }
       setLoading(false);
@@ -41,6 +53,9 @@ export default function Checkout() {
       active = false;
     };
   }, [sessionId]);
+
+  const isSubscription = session?.product === 'premium';
+  const priceText = session ? `${session.amount.toFixed(2)} ${session.currency}` : '';
 
   const pay = async () => {
     setPaying(true);
@@ -52,7 +67,9 @@ export default function Checkout() {
       if (data?.error) throw new Error(data.error);
       setPaid(true);
       refreshPlan();
-      toast.success('¡Pago simulado aprobado! Ya sos Premium.');
+      toast.success(
+        isSubscription ? '¡Pago simulado aprobado! Ya sos Premium.' : '¡Pago simulado aprobado! Ya tenés tus avatares.'
+      );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'No pudimos procesar el pago');
     } finally {
@@ -68,7 +85,7 @@ export default function Checkout() {
     );
   }
 
-  if (!valid) {
+  if (!session) {
     return (
       <div className="max-w-md mx-auto text-center space-y-4 py-10">
         <p className="font-body text-foreground">No encontramos este pago.</p>
@@ -81,13 +98,17 @@ export default function Checkout() {
     return (
       <div className="max-w-md mx-auto text-center space-y-4 py-10">
         <CheckCircle2 className="h-14 w-14 text-primary mx-auto" />
-        <h2 className="text-2xl font-display font-bold text-foreground">¡Listo, sos Premium!</h2>
+        <h2 className="text-2xl font-display font-bold text-foreground">
+          {isSubscription ? '¡Listo, sos Premium!' : '¡Listo, ya tenés tus avatares!'}
+        </h2>
         <p className="font-body text-muted-foreground">
-          Tu suscripción de {PREMIUM_PRICE} {PREMIUM_CURRENCY} al mes quedó activa en esta cuenta.
+          {isSubscription
+            ? `Tu suscripción de ${priceText} al mes quedó activa en esta cuenta.`
+            : `Sumamos ${session.product_label.toLowerCase()} a tu cuenta. Podés usarlos cuando quieras.`}
         </p>
         <div className="flex flex-col gap-2">
           <Button variant="warm" onClick={() => navigate('/probador')}>Ir al probador</Button>
-          <Button variant="outline" onClick={() => navigate('/premium')}>Ver mi suscripción</Button>
+          <Button variant="outline" onClick={() => navigate('/premium')}>Ver mi plan</Button>
         </div>
       </div>
     );
@@ -96,9 +117,12 @@ export default function Checkout() {
   return (
     <div className="max-w-md mx-auto space-y-5">
       <div className="text-center space-y-1">
-        <h2 className="text-2xl font-display font-bold text-foreground">Pago de la suscripción</h2>
+        <h2 className="text-2xl font-display font-bold text-foreground">
+          {isSubscription ? 'Pago de la suscripción' : 'Pago de avatares'}
+        </h2>
         <p className="font-body text-muted-foreground">
-          DressCode Premium · {PREMIUM_PRICE} {PREMIUM_CURRENCY} por mes
+          {session.product_label} · {priceText}
+          {isSubscription ? ' por mes' : ' (pago único)'}
         </p>
       </div>
 
@@ -127,7 +151,7 @@ export default function Checkout() {
 
         <Button variant="warm" size="lg" className="w-full" onClick={pay} disabled={paying}>
           {paying ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : null}
-          Pagar {PREMIUM_PRICE} {PREMIUM_CURRENCY}
+          Pagar {priceText}
         </Button>
 
         <p className="flex items-center justify-center gap-1 text-xs font-body text-muted-foreground">
