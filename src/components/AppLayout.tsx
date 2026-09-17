@@ -1,13 +1,15 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
-import { Shirt, Plus, Sparkles, LogOut, Clock, BarChart3, ShoppingBag, Heart, ScanFace, ImageIcon, CalendarDays, Star, Plane } from 'lucide-react';
+import { Shirt, Plus, Sparkles, LogOut, Clock, BarChart3, ShoppingBag, Heart, ScanFace, ImageIcon, CalendarDays, Star, Plane, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PlanSwitcher from '@/components/PlanSwitcher';
 import AdBanner from '@/components/AdBanner';
+import { usePlan } from '@/lib/plan';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { signOut } = useAuth();
+  const { isPremium, loading: planLoading } = usePlan();
   const location = useLocation();
 
   const navItems = [
@@ -16,8 +18,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     { path: '/probador', icon: ScanFace, label: 'Probador' },
     { path: '/looks', icon: ImageIcon, label: 'Looks' },
     { path: '/recomendar', icon: Sparkles, label: 'Outfit' },
-    { path: '/plan', icon: CalendarDays, label: 'Plan' },
-    { path: '/viaje', icon: Plane, label: 'Viajes' },
+    { path: '/plan', icon: CalendarDays, label: 'Plan', premium: true },
+    { path: '/viaje', icon: Plane, label: 'Viajes', premium: true },
     { path: '/favoritos', icon: Star, label: 'Favoritos' },
     { path: '/historial', icon: Clock, label: 'Historial' },
     { path: '/estadisticas', icon: BarChart3, label: 'Stats' },
@@ -48,6 +50,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <div className="flex sm:justify-around min-w-max sm:min-w-0 px-2 py-2 gap-1">
             {navItems.map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path;
+              const isLocked = !planLoading && !isPremium && (path === '/plan' || path === '/viaje');
               return (
                 <Link
                   key={path}
@@ -56,7 +59,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <Icon className="h-5 w-5" />
+                  <span className="relative">
+                    <Icon className="h-5 w-5" />
+                    {isLocked && <Lock className="absolute -right-2 -top-1 h-3 w-3 rounded-full bg-card text-primary" />}
+                  </span>
                   <span className="text-[10px] sm:text-xs font-body font-medium whitespace-nowrap">{label}</span>
                 </Link>
               );

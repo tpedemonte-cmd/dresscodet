@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Plane, Sparkles, Loader2, ExternalLink, Shirt, Ban, Globe2, ShoppingBag } from 'lucide-react';
+import { Plane, Sparkles, Loader2, ExternalLink, Shirt, Ban, Globe2, ShoppingBag, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePlan } from '@/lib/plan';
+import PremiumGate from '@/components/PremiumGate';
 
 type BuyItem = { item: string; reason: string; search_query: string };
 type WardrobeItem = { item: string; reason: string };
@@ -23,6 +25,7 @@ const getMLUrl = (query: string) =>
 type Place = { name: string; label: string };
 
 export default function Travel() {
+  const { isPremium, loading: planLoading } = usePlan();
   const [destination, setDestination] = useState('');
   const [suggestions, setSuggestions] = useState<Place[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -76,6 +79,10 @@ export default function Travel() {
   }, [destination]);
 
   const handleGenerate = async () => {
+    if (!isPremium) {
+      toast.error('Viajes es para Premium');
+      return;
+    }
     if (!destination.trim()) {
       toast.error('Contanos a dónde viajás');
       return;
@@ -103,6 +110,48 @@ export default function Travel() {
       setLoading(false);
     }
   };
+
+  if (planLoading) {
+    return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  }
+
+  if (!isPremium) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="text-center space-y-2">
+          <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-body font-semibold text-primary">
+            <Lock className="h-3.5 w-3.5" /> Premium
+          </div>
+          <h2 className="text-2xl font-display font-bold text-foreground flex items-center justify-center gap-2">
+            <Plane className="h-6 w-6 text-primary" /> Viajes
+          </h2>
+          <p className="text-base text-muted-foreground font-body">Llegá con el placard correcto para cada destino.</p>
+        </div>
+
+        <PremiumGate
+          title="Tu guía de ropa para viajar"
+          description="Premium revisa cultura, clima y tipo de viaje para decirte qué llevar, qué evitar y qué comprar."
+          benefits={['Respeta costumbres locales', 'Lista de prendas para llevar', 'Compras sugeridas por destino']}
+          actionLabel="Activar Viajes Premium"
+        />
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          {[
+            { title: 'Estambul en octubre', text: 'Capas livianas, prendas recatadas y calzado cómodo.' },
+            { title: 'Casamiento en Río', text: 'Look de evento adaptado al clima y al lugar.' },
+          ].map((preview) => (
+            <div key={preview.title} className="rounded-xl border border-border bg-card/70 p-4 shadow-card opacity-80">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <p className="text-sm font-body font-semibold text-foreground">{preview.title}</p>
+                <Lock className="h-4 w-4 text-primary" />
+              </div>
+              <p className="text-xs font-body text-muted-foreground">{preview.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
