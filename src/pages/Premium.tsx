@@ -110,7 +110,7 @@ export default function Premium() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
+      {!isPremium && <div className="rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
         <div className="flex items-center gap-2">
           <div className="rounded-xl bg-primary/10 p-2">
             <Sparkles className="h-5 w-5 text-primary" />
@@ -152,7 +152,7 @@ export default function Premium() {
           Tenés {quota.avatarCredits} avatar{quota.avatarCredits === 1 ? '' : 'es'} comprado
           {quota.avatarCredits === 1 ? '' : 's'} sin usar.
         </div>
-      </div>
+      </div>}
     </div>
   );
 }
