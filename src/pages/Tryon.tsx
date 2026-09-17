@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
-import { usePlan } from '@/lib/plan';
+import { usePlan, LIMITS } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
 
 import { PremiumBadge } from '@/components/PremiumGate';
@@ -104,7 +104,7 @@ const MEASUREMENTS = [
 
 export default function Tryon() {
   const { user } = useAuth();
-  const { isPremium } = usePlan();
+  const { isPremium, quota, refreshQuota } = usePlan();
   const navigatePremium = useNavigate();
   const queryClient = useQueryClient();
   const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
