@@ -1,24 +1,43 @@
-import { usePlan, PREMIUM_PRICE, PREMIUM_CURRENCY } from '@/lib/plan';
+import { usePlan, PREMIUM_PRICE, PREMIUM_CURRENCY, LIMITS, AVATAR_PACKS, AvatarPackKey } from '@/lib/plan';
 import { Button } from '@/components/ui/button';
-import { Crown, Check, Loader2 } from 'lucide-react';
+import { Crown, Check, Loader2, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const BENEFITS = [
   'Sin anuncios en toda la app',
   'Historial completo de outfits (el plan gratis ve los últimos 5)',
-  'Varios modelos realistas para elegir en el probador',
+  `${LIMITS.premium.avatarsPerMonth} modelos por mes (hasta ${LIMITS.premium.avatarsPerDay} por día)`,
+  `${LIMITS.premium.savedModels} modelos guardados y ${LIMITS.premium.tryonsPerMonth} pruebas de outfit por mes`,
   'Probarte la ropa con tu propia foto',
   'Medidas corporales avanzadas para un calce más preciso',
 ];
 
 export default function Premium() {
-  const { isPremium, subscription, startCheckout, startingCheckout, cancelSubscription } = usePlan();
+  const {
+    isPremium,
+    subscription,
+    startCheckout,
+    startingCheckout,
+    cancelSubscription,
+    startAvatarCheckout,
+    startingAvatarCheckout,
+    quota,
+  } = usePlan();
   const navigate = useNavigate();
 
   const goCheckout = async () => {
     try {
       const url = await startCheckout();
+      navigate(url);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'No pudimos iniciar el pago');
+    }
+  };
+
+  const buyPack = async (pack: AvatarPackKey) => {
+    try {
+      const url = await startAvatarCheckout(pack);
       navigate(url);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'No pudimos iniciar el pago');
@@ -89,6 +108,50 @@ export default function Premium() {
         <p className="text-xs font-body text-muted-foreground text-center">
           Entorno de prueba: el pago es simulado y no se cobra dinero real.
         </p>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
+        <div className="flex items-center gap-2">
+          <div className="rounded-xl bg-primary/10 p-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <p className="font-body font-semibold text-foreground">Avatares extra</p>
+            <p className="text-sm font-body text-muted-foreground">
+              Pago único, sin suscripción. No vencen.
+            </p>
+          </div>
+        </div>
+
+        <p className="font-body text-sm text-muted-foreground">
+          El plan gratis incluye {LIMITS.free.avatarFreeTotal} modelo. Si querés armar otro, sumá avatares:
+        </p>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          {AVATAR_PACKS.map((p) => (
+            <div key={p.key} className="rounded-xl border border-border p-4 space-y-2">
+              <p className="font-body font-semibold text-foreground">{p.title}</p>
+              <p className="text-xl font-display font-bold text-foreground">
+                {p.price.toFixed(2)} {PREMIUM_CURRENCY}
+              </p>
+              <p className="text-xs font-body text-muted-foreground">{p.note}</p>
+              <Button
+                variant={p.key === 'avatar_3' ? 'warm' : 'outline'}
+                className="w-full"
+                onClick={() => buyPack(p.key)}
+                disabled={startingAvatarCheckout}
+              >
+                {startingAvatarCheckout ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                Comprar
+              </Button>
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-xl bg-secondary p-3 font-body text-sm text-foreground">
+          Tenés {quota.avatarCredits} avatar{quota.avatarCredits === 1 ? '' : 'es'} comprado
+          {quota.avatarCredits === 1 ? '' : 's'} sin usar.
+        </div>
       </div>
     </div>
   );
