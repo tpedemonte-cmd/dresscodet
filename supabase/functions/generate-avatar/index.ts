@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { aiGenerateImage } from "../_shared/ai.ts";
+import { checkQuota, recordUsage } from "../_shared/quotas.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,6 +19,14 @@ serve(async (req) => {
       hairColor, hairStyle, skinTone, bodyType,
       measurements,
     } = await req.json();
+
+    const quota = await checkQuota(req, "avatar");
+    if (!quota.ok) {
+      return new Response(
+        JSON.stringify({ error: quota.error, quota_exceeded: true }),
+        { status: quota.status ?? 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     if (!height || !weight || !age || !gender) {
       return new Response(
