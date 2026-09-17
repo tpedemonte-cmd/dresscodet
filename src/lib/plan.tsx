@@ -9,6 +9,19 @@ export const PREMIUM_PRICE = 1;
 export const PREMIUM_CURRENCY = 'USD';
 export const FREE_HISTORY_LIMIT = 5;
 
+/** Límites de uso de IA por plan (deben coincidir con supabase/functions/_shared/quotas.ts) */
+export const LIMITS = {
+  free: { avatarFreeTotal: 1, savedModels: 1, tryonsPerMonth: 3 },
+  premium: { avatarsPerMonth: 10, avatarsPerDay: 3, savedModels: 3, tryonsPerMonth: 15 },
+} as const;
+
+export type AvatarPackKey = 'avatar_1' | 'avatar_3';
+
+export const AVATAR_PACKS: { key: AvatarPackKey; credits: number; price: number; title: string; note: string }[] = [
+  { key: 'avatar_1', credits: 1, price: 0.99, title: '1 avatar extra', note: 'Para armar un modelo más' },
+  { key: 'avatar_3', credits: 3, price: 1.99, title: 'Pack de 3 avatares', note: 'La opción más conveniente' },
+];
+
 interface Subscription {
   plan: PlanTier;
   status: 'active' | 'canceled';
@@ -17,19 +30,48 @@ interface Subscription {
   currency: string;
 }
 
+export interface Quota {
+  avatarCredits: number;
+  avatarsTotal: number;
+  avatarsThisMonth: number;
+  avatarsToday: number;
+  tryonsThisMonth: number;
+  savedModels: number;
+  /** Cuántos modelos podés generar ahora mismo (0 = hay que comprar o esperar) */
+  avatarsLeft: number;
+  tryonsLeft: number;
+  savedModelsLimit: number;
+  canSaveModel: boolean;
+}
+
 interface PlanContextType {
   plan: PlanTier;
   isPremium: boolean;
   loading: boolean;
   subscription: Subscription | null;
+  quota: Quota;
+  quotaLoading: boolean;
+  refreshQuota: () => void;
   startCheckout: () => Promise<string>;
   startingCheckout: boolean;
+  startAvatarCheckout: (pack: AvatarPackKey) => Promise<string>;
+  startingAvatarCheckout: boolean;
   cancelSubscription: () => Promise<void>;
   refreshPlan: () => void;
   FREE_HISTORY_LIMIT: number;
 }
 
 const PlanContext = createContext<PlanContextType | undefined>(undefined);
+
+function startOfMonthISO() {
+  const d = new Date();
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString();
+}
+
+function startOfDayISO() {
+  const d = new Date();
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString();
+}
 
 export function PlanProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -59,10 +101,94 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   const expired = !!data?.current_period_end && new Date(data.current_period_end) < new Date();
   const isPremium = !!data && data.plan === 'premium' && data.status === 'active' && !expired;
 
+  const { data: usage, isLoading: usageLoading } = useQuery({
+    queryKey: ['ai_quota', user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const monthStart = startOfMonthISO();
+      const dayStart = startOfDayISO();
+
+      const [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models] = await Promise.all([
+        supabase.from('avatar_credits').select('balance').eq('user_id', user!.id).maybeSingle(),
+        supabase.from('ai_usage_events').select('id', { count: 'exact', head: true }).eq('kind', 'avatar'),
+        supabase
+          .from('ai_usage_events')
+          .select('id', { count: 'exact', head: true })
+          .eq('kind', 'avatar')
+          .gte('created_at', monthStart),
+        supabase
+          .from('ai_usage_events')
+          .select('id', { count: 'exact', head: true })
+          .eq('kind', 'avatar')
+          .gte('created_at', dayStart),
+        supabase
+          .from('ai_usage_events')
+          .select('id', { count: 'exact', head: true })
+          .eq('kind', 'tryon')
+          .gte('created_at', monthStart),
+        supabase.from('user_models').select('id', { count: 'exact', head: true }),
+      ]);
+
+      return {
+        avatarCredits: credits.data?.balance ?? 0,
+        avatarsTotal: avatarsTotal.count ?? 0,
+        avatarsThisMonth: avatarsMonth.count ?? 0,
+        avatarsToday: avatarsDay.count ?? 0,
+        tryonsThisMonth: tryonsMonth.count ?? 0,
+        savedModels: models.count ?? 0,
+      };
+    },
+  });
+
+  const base = usage ?? {
+    avatarCredits: 0,
+    avatarsTotal: 0,
+    avatarsThisMonth: 0,
+    avatarsToday: 0,
+    tryonsThisMonth: 0,
+    savedModels: 0,
+  };
+
+  const savedModelsLimit = isPremium ? LIMITS.premium.savedModels : LIMITS.free.savedModels;
+
+  const avatarsLeft = isPremium
+    ? Math.max(
+        0,
+        Math.min(
+          LIMITS.premium.avatarsPerMonth - base.avatarsThisMonth,
+          LIMITS.premium.avatarsPerDay - base.avatarsToday,
+        ),
+      )
+    : Math.max(0, LIMITS.free.avatarFreeTotal - base.avatarsTotal) + base.avatarCredits;
+
+  const tryonsLeft = Math.max(
+    0,
+    (isPremium ? LIMITS.premium.tryonsPerMonth : LIMITS.free.tryonsPerMonth) - base.tryonsThisMonth,
+  );
+
+  const quota: Quota = {
+    ...base,
+    avatarsLeft,
+    tryonsLeft,
+    savedModelsLimit,
+    canSaveModel: base.savedModels < savedModelsLimit,
+  };
+
   const checkout = useMutation({
-    mutationFn: async (): Promise<string> => {
+    mutationFn: async (product: 'premium' | AvatarPackKey): Promise<string> => {
       const { data, error } = await supabase.functions.invoke('mock-payments', {
-        body: { action: 'create_session' },
+        body: { action: 'create_session', product },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data.checkout_url as string;
+    },
+  });
+
+  const avatarCheckout = useMutation({
+    mutationFn: async (product: AvatarPackKey): Promise<string> => {
+      const { data, error } = await supabase.functions.invoke('mock-payments', {
+        body: { action: 'create_session', product },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -88,12 +214,20 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         isPremium,
         loading: isLoading,
         subscription: data ?? null,
-        startCheckout: () => checkout.mutateAsync(),
+        quota,
+        quotaLoading: usageLoading,
+        refreshQuota: () => queryClient.invalidateQueries({ queryKey: ['ai_quota'] }),
+        startCheckout: () => checkout.mutateAsync('premium'),
         startingCheckout: checkout.isPending,
+        startAvatarCheckout: (pack: AvatarPackKey) => avatarCheckout.mutateAsync(pack),
+        startingAvatarCheckout: avatarCheckout.isPending,
         cancelSubscription: async () => {
           await cancel.mutateAsync();
         },
-        refreshPlan: () => queryClient.invalidateQueries({ queryKey: ['subscription'] }),
+        refreshPlan: () => {
+          queryClient.invalidateQueries({ queryKey: ['subscription'] });
+          queryClient.invalidateQueries({ queryKey: ['ai_quota'] });
+        },
         FREE_HISTORY_LIMIT,
       }}
     >
