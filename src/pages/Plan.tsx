@@ -2,15 +2,17 @@ import { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { usePlan } from '@/lib/plan';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, ExternalLink, Loader2, MapPin, Plus, Search, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
+import { Calendar, ExternalLink, Loader2, Lock, MapPin, Plus, Search, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchForecastForDate, searchCity, type GeoResult } from '@/lib/weather';
 import OutfitFeedback from '@/components/OutfitFeedback';
 import { isAvailable } from '@/lib/availability';
+import PremiumGate from '@/components/PremiumGate';
 
 const EVENTS = [
   { value: 'trabajo', label: '💼 Trabajo' },
@@ -45,6 +47,7 @@ function formatDateLabel(iso: string) {
 
 export default function Plan() {
   const { user } = useAuth();
+  const { isPremium, loading: planLoading } = usePlan();
   const qc = useQueryClient();
 
   const [showForm, setShowForm] = useState(false);
@@ -73,7 +76,7 @@ export default function Plan() {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!user,
+    enabled: !!user && isPremium,
   });
 
   const { data: items = [] } = useQuery({
@@ -83,7 +86,7 @@ export default function Plan() {
       if (error) throw error;
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && isPremium,
   });
 
   const { data: wishlistItems = [] } = useQuery({
@@ -93,7 +96,7 @@ export default function Plan() {
       if (error) throw error;
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && isPremium,
   });
 
   // Búsqueda de ciudad con debounce
@@ -127,6 +130,7 @@ export default function Plan() {
 
   const handleCreate = async () => {
     if (!user) return;
+    if (!isPremium) return toast.error('El plan semanal es para Premium');
     if (!event) return toast.error('Elegí el tipo de salida');
     if (!selectedCity) return toast.error('Elegí una ciudad');
     if (items.length === 0) return toast.error('Primero agregá prendas a tu placard');
@@ -250,6 +254,47 @@ export default function Plan() {
     (acc[p.plan_date] = acc[p.plan_date] || []).push(p);
     return acc;
   }, {});
+
+  if (planLoading) {
+    return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  }
+
+  if (!isPremium) {
+    return (
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div className="text-center space-y-2">
+          <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-body font-semibold text-primary">
+            <Lock className="h-3.5 w-3.5" /> Premium
+          </div>
+          <h2 className="text-2xl font-display font-bold text-foreground">Plan semanal</h2>
+          <p className="text-muted-foreground font-body">Tus salidas, tu placard y el clima preparados antes de salir.</p>
+        </div>
+
+        <PremiumGate
+          title="Planificá la semana con outfits listos"
+          description="Premium arma cada salida con fecha, hora, ciudad, clima y prendas exactas de tu placard."
+          benefits={['Outfits por día y horario', 'Clima real del lugar', 'Compras sugeridas si falta algo']}
+          actionLabel="Activar Plan semanal"
+        />
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          {[
+            { title: 'Lunes · Trabajo', text: 'Outfit formal con abrigo liviano según temperatura.' },
+            { title: 'Miércoles · Cita', text: 'Look equilibrado con tus prendas favoritas.' },
+            { title: 'Sábado · Fiesta', text: 'Qué ponerte y qué comprar si falta una pieza.' },
+          ].map((preview) => (
+            <div key={preview.title} className="rounded-xl border border-border bg-card/70 p-4 shadow-card opacity-80">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <p className="text-sm font-body font-semibold text-foreground">{preview.title}</p>
+                <Lock className="h-4 w-4 text-primary" />
+              </div>
+              <p className="text-xs font-body text-muted-foreground">{preview.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
