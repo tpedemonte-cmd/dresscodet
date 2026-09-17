@@ -410,6 +410,7 @@ export default function Tryon() {
     onSuccess: (data) => {
       setActiveModelId(data.id);
       queryClient.invalidateQueries({ queryKey: ['user_models'] });
+      refreshQuota();
       toast.success('¡Modelo guardado!');
     },
     onError: (err: any) => {
@@ -460,6 +461,7 @@ export default function Tryon() {
         setActiveModelId(null);
       }
       queryClient.invalidateQueries({ queryKey: ['user_models'] });
+      refreshQuota();
       toast.success('Modelo eliminado');
     },
     onError: () => toast.error('Error al eliminar el modelo'),
@@ -506,6 +508,7 @@ export default function Tryon() {
       if (data?.image) {
         setResultImage(data.image);
         toast.success('¡Mirá cómo te queda el outfit!');
+        refreshQuota();
       } else {
         throw new Error('No se pudo generar la imagen');
       }
