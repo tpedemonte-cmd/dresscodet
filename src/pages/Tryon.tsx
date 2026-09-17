@@ -251,6 +251,17 @@ export default function Tryon() {
       toast.error('Seleccioná un género para continuar');
       return;
     }
+    if (quota.avatarsLeft <= 0) {
+      if (isPremium) {
+        toast.error(
+          `Llegaste al límite de modelos (${LIMITS.premium.avatarsPerDay} por día, ${LIMITS.premium.avatarsPerMonth} por mes). Probá más tarde.`,
+        );
+      } else {
+        toast.error('Ya usaste tu modelo gratis. Sumá avatares para armar otro.');
+        navigatePremium('/premium');
+      }
+      return;
+    }
     setGeneratingAvatar(true);
     setVariants([]);
 
