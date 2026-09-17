@@ -5,14 +5,26 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PRICE_AMOUNT = 1;
 const CURRENCY = 'USD';
+
+const PRODUCTS: Record<string, { amount: number; credits: number; label: string }> = {
+  premium: { amount: 1, credits: 0, label: 'DressCode Premium (mensual)' },
+  avatar_1: { amount: 0.99, credits: 1, label: '1 avatar extra' },
+  avatar_3: { amount: 1.99, credits: 3, label: 'Pack de 3 avatares' },
+};
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
+}
+
+function adminClient() {
+  return createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY')!,
+  );
 }
 
 Deno.serve(async (req) => {
@@ -38,10 +50,20 @@ Deno.serve(async (req) => {
     const action = body?.action as string;
 
     if (action === 'create_session') {
+      const productKey = (body?.product as string) || 'premium';
+      const product = PRODUCTS[productKey];
+      if (!product) return json({ error: 'Producto inválido' }, 400);
+
       const { data, error } = await supabase
         .from('payment_sessions')
-        .insert({ user_id: user.id, amount: PRICE_AMOUNT, currency: CURRENCY, status: 'pending' })
-        .select('id, amount, currency, status')
+        .insert({
+          user_id: user.id,
+          amount: product.amount,
+          currency: CURRENCY,
+          status: 'pending',
+          product: productKey,
+        })
+        .select('id, amount, currency, status, product')
         .single();
       if (error) return json({ error: error.message }, 400);
 
@@ -49,6 +71,8 @@ Deno.serve(async (req) => {
         session_id: data.id,
         amount: Number(data.amount),
         currency: data.currency,
+        product: data.product,
+        product_label: product.label,
         checkout_url: `/pago/${data.id}`,
         mode: 'sandbox',
       });
@@ -57,26 +81,32 @@ Deno.serve(async (req) => {
     if (action === 'get_session') {
       const { data, error } = await supabase
         .from('payment_sessions')
-        .select('id, amount, currency, status, paid_at')
+        .select('id, amount, currency, status, paid_at, product')
         .eq('id', body?.session_id)
         .maybeSingle();
       if (error) return json({ error: error.message }, 400);
       if (!data) return json({ error: 'Sesión de pago no encontrada' }, 404);
-      return json({ ...data, amount: Number(data.amount) });
+      return json({
+        ...data,
+        amount: Number(data.amount),
+        product_label: PRODUCTS[data.product ?? 'premium']?.label ?? 'DressCode',
+      });
     }
 
     if (action === 'confirm_payment') {
       const { data: session, error: sessionError } = await supabase
         .from('payment_sessions')
-        .select('id, status')
+        .select('id, status, product')
         .eq('id', body?.session_id)
         .maybeSingle();
       if (sessionError) return json({ error: sessionError.message }, 400);
       if (!session) return json({ error: 'Sesión de pago no encontrada' }, 404);
 
+      const productKey = session.product ?? 'premium';
+      const product = PRODUCTS[productKey];
+      if (!product) return json({ error: 'Producto inválido' }, 400);
+
       const paidAt = new Date();
-      const periodEnd = new Date(paidAt);
-      periodEnd.setMonth(periodEnd.getMonth() + 1);
 
       if (session.status !== 'paid') {
         const { error: payError } = await supabase
@@ -86,13 +116,35 @@ Deno.serve(async (req) => {
         if (payError) return json({ error: payError.message }, 400);
       }
 
+      if (product.credits > 0) {
+        const admin = adminClient();
+        const { data: current } = await admin
+          .from('avatar_credits')
+          .select('balance')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        const nextBalance = (current?.balance ?? 0) + product.credits;
+        const { error: creditError } = await admin
+          .from('avatar_credits')
+          .upsert(
+            { user_id: user.id, balance: nextBalance, updated_at: paidAt.toISOString() },
+            { onConflict: 'user_id' },
+          );
+        if (creditError) return json({ error: creditError.message }, 400);
+
+        return json({ ok: true, product: productKey, avatar_credits: nextBalance });
+      }
+
+      const periodEnd = new Date(paidAt);
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+
       const { error: subError } = await supabase
         .from('subscriptions')
         .upsert({
           user_id: user.id,
           plan: 'premium',
           status: 'active',
-          price_amount: PRICE_AMOUNT,
+          price_amount: product.amount,
           currency: CURRENCY,
           interval: 'month',
           current_period_end: periodEnd.toISOString(),
@@ -100,7 +152,7 @@ Deno.serve(async (req) => {
         }, { onConflict: 'user_id' });
       if (subError) return json({ error: subError.message }, 400);
 
-      return json({ ok: true, plan: 'premium', current_period_end: periodEnd.toISOString() });
+      return json({ ok: true, product: 'premium', plan: 'premium', current_period_end: periodEnd.toISOString() });
     }
 
     if (action === 'cancel_subscription') {
