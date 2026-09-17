@@ -842,7 +842,38 @@ export default function Tryon() {
                 </div>
               )}
 
-              <Button variant="warm" size="sm" className="w-full" disabled={generatingAvatar} onClick={handleGenerateAvatar}>
+              <div className="rounded-xl bg-secondary p-3 space-y-2">
+                {isPremium ? (
+                  <p className="text-[11px] font-body text-muted-foreground">
+                    Te quedan {quota.avatarsLeft} modelos para hoy · {Math.max(0, LIMITS.premium.avatarsPerMonth - quota.avatarsThisMonth)} este mes ·
+                    {' '}{quota.savedModels}/{quota.savedModelsLimit} modelos guardados
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-[11px] font-body text-muted-foreground">
+                      {quota.avatarsLeft > 0
+                        ? `Podés armar ${quota.avatarsLeft} modelo${quota.avatarsLeft === 1 ? '' : 's'}${quota.avatarCredits > 0 ? ` (incluye ${quota.avatarCredits} comprado${quota.avatarCredits === 1 ? '' : 's'})` : ' gratis'}.`
+                        : 'Ya usaste tu modelo gratis. Sumá avatares para armar otro.'}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => navigatePremium('/premium')}
+                    >
+                      Avatar extra 0,99 USD · Pack de 3 1,99 USD
+                    </Button>
+                  </>
+                )}
+              </div>
+
+              <Button
+                variant="warm"
+                size="sm"
+                className="w-full"
+                disabled={generatingAvatar || quota.avatarsLeft <= 0}
+                onClick={handleGenerateAvatar}
+              >
                 {generatingAvatar ? (
                   <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando modelo...</>
                 ) : (
