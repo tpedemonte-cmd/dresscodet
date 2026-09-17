@@ -291,7 +291,7 @@ export default function Tryon() {
     try {
       if (isPremium) {
         // Respetamos lo que el usuario aclaró y variamos al azar lo que dejó vacío
-        const looks = buildVariantLooks(avatarData);
+        const looks = buildVariantLooks(avatarData).slice(0, Math.max(1, quota.avatarsLeft));
         // De a uno y con pausa, para no pasarnos del límite de pedidos por minuto
         const ok: (Look & { image: string })[] = [];
         let firstError: any = null;
@@ -331,6 +331,7 @@ export default function Tryon() {
       toast.error(err.message || 'Error al generar el modelo');
     } finally {
       setGeneratingAvatar(false);
+      refreshQuota();
     }
   };
 
