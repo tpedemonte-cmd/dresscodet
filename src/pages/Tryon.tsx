@@ -354,6 +354,13 @@ export default function Tryon() {
       // Guardamos la imagen que se está viendo: si hay resultado de IA (con la ropa puesta), esa
       const source = resultImage || selfie;
       if (!source || !user) throw new Error('No hay modelo para guardar');
+      if (savedModels.length >= quota.savedModelsLimit) {
+        throw new Error(
+          isPremium
+            ? `Podés guardar hasta ${quota.savedModelsLimit} modelos. Borrá uno para guardar este.`
+            : 'El plan gratis guarda 1 modelo. Borrá el que tenés o sumá avatares desde Premium.',
+        );
+      }
       setSavingModel(true);
 
       let blob: Blob;
