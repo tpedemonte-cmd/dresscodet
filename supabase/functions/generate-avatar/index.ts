@@ -104,8 +104,10 @@ The person should:
       );
     }
 
+    await recordUsage(quota, "avatar");
+
     return new Response(
-      JSON.stringify({ image: result.dataUrl }),
+      JSON.stringify({ image: result.dataUrl, used_credit: quota.useCredit }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
