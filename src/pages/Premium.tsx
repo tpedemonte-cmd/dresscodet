@@ -136,7 +136,7 @@ export default function Premium() {
             <div key={p.key} className="rounded-xl border border-border p-4 space-y-2">
               <p className="font-body font-semibold text-foreground">{p.title}</p>
               <p className="text-xl font-display font-bold text-foreground">
-                {p.price.toFixed(2)} {PREMIUM_CURRENCY}
+                {formatPrice(p.price)}
               </p>
               <p className="text-xs font-body text-muted-foreground">{p.note}</p>
               <Button
