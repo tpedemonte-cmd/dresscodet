@@ -1,4 +1,4 @@
-import { usePlan, PREMIUM_PRICE, PREMIUM_CURRENCY, LIMITS, AVATAR_PACKS, AvatarPackKey } from '@/lib/plan';
+import { usePlan, PREMIUM_PRICE, formatPrice, LIMITS, AVATAR_PACKS, AvatarPackKey } from '@/lib/plan';
 import { Button } from '@/components/ui/button';
 import { Crown, Check, Loader2, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -6,11 +6,15 @@ import { toast } from 'sonner';
 
 const BENEFITS = [
   'Sin anuncios en toda la app',
-  'Historial completo de outfits (el plan gratis ve los últimos 5)',
-  `${LIMITS.premium.avatarsPerMonth} modelos por mes (hasta ${LIMITS.premium.avatarsPerDay} por día)`,
-  `${LIMITS.premium.savedModels} modelos guardados y ${LIMITS.premium.tryonsPerMonth} pruebas de outfit por mes`,
+  '15 outfits generados por mes en el probador, hasta 5 por día',
+  'Tu modelo se arma a partir de 3 opciones para que elijas la que más se te parece',
+  'Más datos para el modelo: pelo, piel, contextura y medidas corporales',
   'Probarte la ropa con tu propia foto',
-  'Medidas corporales avanzadas para un calce más preciso',
+  'Máxima calidad de imagen en el probador',
+  'Plan semanal con un outfit para cada salida',
+  'Viajes: qué llevar y qué comprar según el destino',
+  'Historial completo de outfits (el plan gratis ve los últimos 5)',
+  'Recomendaciones de outfit del momento sin límite diario',
 ];
 
 export default function Premium() {
@@ -72,8 +76,8 @@ export default function Premium() {
             </div>
           </div>
           <p className="text-2xl font-display font-bold text-foreground">
-            {PREMIUM_PRICE} {PREMIUM_CURRENCY}
-            <span className="text-base font-body font-normal text-muted-foreground">/mes</span>
+            {formatPrice(PREMIUM_PRICE)}
+            <span className="text-base font-body font-normal text-muted-foreground"> /mes</span>
           </p>
         </div>
 
@@ -101,7 +105,7 @@ export default function Premium() {
         ) : (
           <Button variant="warm" size="lg" className="w-full" onClick={goCheckout} disabled={startingCheckout}>
             {startingCheckout ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <Crown className="h-5 w-5 mr-2" />}
-            Suscribirme por {PREMIUM_PRICE} {PREMIUM_CURRENCY} al mes
+            Suscribirme por {formatPrice(PREMIUM_PRICE)} al mes
           </Button>
         )}
 
