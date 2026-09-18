@@ -1,4 +1,4 @@
-import { usePlan, PREMIUM_PRICE, PREMIUM_CURRENCY } from '@/lib/plan';
+import { usePlan, formatPrice } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
 import { Crown, Megaphone, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
@@ -123,7 +123,7 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
             }}
             className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-base font-body font-semibold text-primary-foreground transition-transform hover:scale-105 active:scale-95"
           >
-            <Crown className="h-5 w-5" /> Quitar anuncios · {PREMIUM_PRICE} {PREMIUM_CURRENCY}/mes
+            <Crown className="h-5 w-5" /> Quitar anuncios · {formatPrice(3.99)}/mes
           </button>
           {canClose ? (
             <button
