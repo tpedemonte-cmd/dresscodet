@@ -5,8 +5,13 @@ import { useAuth } from '@/lib/auth';
 
 export type PlanTier = 'free' | 'premium';
 
-export const PREMIUM_PRICE = 1;
+export const PREMIUM_PRICE = 3.99;
 export const PREMIUM_CURRENCY = 'USD';
+
+/** Formatea precios como "3,99 USD" */
+export function formatPrice(amount: number) {
+  return `${amount.toFixed(2).replace('.', ',')} ${PREMIUM_CURRENCY}`;
+}
 export const FREE_HISTORY_LIMIT = 5;
 
 /** Límites de uso de IA por plan (deben coincidir con supabase/functions/_shared/quotas.ts) */
