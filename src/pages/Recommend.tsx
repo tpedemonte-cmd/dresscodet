@@ -365,7 +365,7 @@ export default function Recommend() {
 
       <div className="space-y-5 bg-card p-6 rounded-xl shadow-card">
         {/* Clima detectado automáticamente */}
-        <div className="rounded-2xl border border-border bg-secondary/30 px-6 py-7">
+        <div className="rounded-2xl border border-border bg-secondary/30 px-4 py-5 sm:px-6 sm:py-7">
           {loadingWeather && !weather ? (
             <span className="text-base font-body text-muted-foreground flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" /> Detectando clima y ubicación...
@@ -441,9 +441,9 @@ export default function Recommend() {
         </div>
 
         <div className="space-y-3">
-          <label className="text-xl font-body font-semibold text-foreground">Tipo de juntada</label>
+          <label className="text-lg font-body font-semibold text-foreground">Tipo de juntada</label>
           <Select value={event} onValueChange={setEvent}>
-            <SelectTrigger className="h-14 text-lg"><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
+            <SelectTrigger className="h-12 text-base"><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
             <SelectContent>
               {EVENTS.map((e) => <SelectItem key={e.value} value={e.value} className="text-base py-3">{e.label}</SelectItem>)}
             </SelectContent>
@@ -452,7 +452,7 @@ export default function Recommend() {
 
         {event && (
           <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-            <label className="text-xl font-body font-semibold text-foreground">Estilo de la salida</label>
+            <label className="text-lg font-body font-semibold text-foreground">Estilo de la salida</label>
             <div className="grid grid-cols-3 gap-2">
               {[
                 { value: 'casual', label: '😎 Casual' },
@@ -463,7 +463,7 @@ export default function Recommend() {
                   key={opt.value}
                   type="button"
                   onClick={() => setFormality(opt.value)}
-                  className={`h-14 rounded-lg border text-base font-body font-medium transition-colors ${
+                  className={`h-12 rounded-lg border text-sm sm:text-base font-body font-medium transition-colors ${
                     formality === opt.value
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'bg-secondary/50 text-foreground border-border hover:bg-secondary'
@@ -476,7 +476,7 @@ export default function Recommend() {
           </div>
         )}
 
-        <Button variant="warm" className="w-full h-16 text-lg" disabled={loading || !event || !weather || !season} onClick={handleRecommend}>
+        <Button variant="warm" className="w-full h-14 text-base sm:text-lg" disabled={loading || !event || !weather || !season} onClick={handleRecommend}>
           {loading ? (
             <span className="flex items-center gap-2">
               <div className="animate-spin h-5 w-5 border-2 border-accent-foreground border-t-transparent rounded-full" />

@@ -858,7 +858,7 @@ export default function Tryon() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full"
+                      className="w-full h-auto py-2 whitespace-normal text-center"
                       onClick={() => navigatePremium('/premium')}
                     >
                       Avatar extra 0,99 USD · Pack de 3 1,99 USD
