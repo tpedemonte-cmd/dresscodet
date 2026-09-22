@@ -1,4 +1,4 @@
-import { usePlan, PREMIUM_PRICE, formatPrice } from '@/lib/plan';
+import { usePlan } from '@/lib/plan';
 import { Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
