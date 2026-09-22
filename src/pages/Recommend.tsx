@@ -387,47 +387,47 @@ export default function Recommend() {
               </Button>
             </div>
           ) : weather && season ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-8 gap-y-7">
-              <div className="flex flex-col min-w-0 gap-2">
-                <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
-                  <MapPin className="h-5 w-5" /> Ubicación
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-5">
+              <div className="flex flex-col min-w-0 gap-1">
+                <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4 shrink-0" /> Ubicación
                 </span>
-                <span className="text-xl font-body font-semibold text-foreground truncate">
+                <span className="text-base font-body font-semibold text-foreground break-words">
                   {weatherCity || 'Detectando...'}
                 </span>
               </div>
-              <div className="flex flex-col min-w-0 gap-2">
-                <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
-                  <span className="text-xl">🌡️</span> Temperatura
+              <div className="flex flex-col min-w-0 gap-1">
+                <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+                  <span>🌡️</span> Temperatura
                 </span>
-                <span className="text-xl font-body font-semibold text-foreground">
+                <span className="text-base font-body font-semibold text-foreground">
                   {temperature[0]} grados
                 </span>
               </div>
-              <div className="flex flex-col min-w-0 gap-2">
-                <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
-                  <span className="text-xl">{(weatherLabel || '').match(/^\p{Extended_Pictographic}/u)?.[0] || '🌤️'}</span> Clima
+              <div className="flex flex-col min-w-0 gap-1">
+                <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+                  <span>{(weatherLabel || '').match(/^\p{Extended_Pictographic}/u)?.[0] || '🌤️'}</span> Clima
                 </span>
-                <span className="text-xl font-body font-semibold text-foreground truncate">
+                <span className="text-base font-body font-semibold text-foreground break-words">
                   {(weatherLabel || weather).replace(/^\p{Extended_Pictographic}\s*/u, '')}
                 </span>
               </div>
               {windKmh !== null && (
-                <div className="flex flex-col min-w-0 gap-2">
-                  <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
-                    <span className="text-xl">💨</span> Viento
+                <div className="flex flex-col min-w-0 gap-1">
+                  <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+                    <span>💨</span> Viento
                   </span>
-                  <span className="text-xl font-body font-semibold text-foreground">
+                  <span className="text-base font-body font-semibold text-foreground">
                     {windKmh} km/h
                   </span>
                 </div>
               )}
               {rainProb !== null && (
-                <div className="flex flex-col min-w-0 gap-2">
-                  <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
-                    <span className="text-xl">🌧️</span> Lluvia
+                <div className="flex flex-col min-w-0 gap-1 col-span-2 sm:col-span-1">
+                  <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+                    <span>🌧️</span> Lluvia
                   </span>
-                  <span className="text-xl font-body font-semibold text-foreground">
+                  <span className="text-base font-body font-semibold text-foreground">
                     {rainProb}% de probabilidad
                   </span>
                 </div>
