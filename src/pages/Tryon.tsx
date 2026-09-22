@@ -858,10 +858,11 @@ export default function Tryon() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full h-auto py-2 whitespace-normal text-center"
+                      className="w-full h-auto py-2 text-center leading-snug"
                       onClick={() => navigatePremium('/premium')}
                     >
-                      Avatar extra 0,99 USD · Pack de 3 1,99 USD
+                      <span className="block">Avatar extra 0,99 USD</span>
+                      <span className="block">Pack de 3 avatares 1,99 USD</span>
                     </Button>
                   </>
                 )}
