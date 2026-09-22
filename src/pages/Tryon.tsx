@@ -1034,7 +1034,7 @@ export default function Tryon() {
           <p className="text-sm text-muted-foreground font-body">No hay prendas con esos filtros.</p>
         ) : (
           <div className="rounded-xl bg-secondary/40 p-3 -mx-1">
-            <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 px-1 scrollbar-none">
+            <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {visibleItems.map((item: any) => {
                 const isSelected = selectedItems.some(i => i.id === item.id);
                 const subLabel = getSubcategoryLabel(item.category, item.subcategory);
