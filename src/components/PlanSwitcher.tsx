@@ -1,4 +1,4 @@
-import { usePlan, PREMIUM_PRICE, formatPrice } from '@/lib/plan';
+import { usePlan } from '@/lib/plan';
 import { Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -17,11 +17,11 @@ export default function PlanSwitcher() {
   }
 
   return (
-    <Link
-      to="/premium"
-      className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1.5 text-[11px] font-body font-medium text-foreground hover:bg-secondary/70 transition-colors"
-    >
-      <Crown className="h-3 w-3 text-primary" /> Pasar a Premium · {formatPrice(PREMIUM_PRICE)}/mes
-    </Link>
+      <Link
+        to="/premium"
+        className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[10px] font-body font-medium text-foreground hover:bg-secondary/70 transition-colors"
+      >
+        <Crown className="h-3 w-3 text-primary" /> Pasar a Premium
+      </Link>
   );
 }
