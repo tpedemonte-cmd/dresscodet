@@ -1042,7 +1042,7 @@ export default function Tryon() {
                   <button
                     key={item.id}
                     onClick={() => toggleItem(item)}
-                    className={`w-full sm:w-auto shrink-0 snap-start rounded-xl overflow-hidden bg-card text-left transition-all relative ${
+                    className={`w-full sm:w-auto shrink-0 snap-start rounded-xl overflow-hidden bg-card text-left transition-all relative flex sm:block ${
                       isSelected
                         ? 'ring-2 ring-primary shadow-elevated'
                         : 'shadow-card hover:shadow-elevated'
@@ -1053,7 +1053,7 @@ export default function Tryon() {
                         <Check className="h-3 w-3" />
                       </div>
                     )}
-                    <div className="aspect-square">
+                    <div className="h-20 w-20 shrink-0 sm:h-auto sm:w-auto sm:aspect-square">
                       <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
                     </div>
                     <div className="p-2 space-y-0.5">
