@@ -365,7 +365,7 @@ export default function Recommend() {
 
       <div className="space-y-5 bg-card p-6 rounded-xl shadow-card">
         {/* Clima detectado automáticamente */}
-        <div className="rounded-2xl border border-border bg-secondary/30 px-6 py-7">
+        <div className="rounded-2xl border border-border bg-secondary/30 px-4 py-5 sm:px-6 sm:py-7">
           {loadingWeather && !weather ? (
             <span className="text-base font-body text-muted-foreground flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" /> Detectando clima y ubicación...
@@ -387,47 +387,47 @@ export default function Recommend() {
               </Button>
             </div>
           ) : weather && season ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-8 gap-y-7">
-              <div className="flex flex-col min-w-0 gap-2">
-                <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
-                  <MapPin className="h-5 w-5" /> Ubicación
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-5">
+              <div className="flex flex-col min-w-0 gap-1">
+                <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4 shrink-0" /> Ubicación
                 </span>
-                <span className="text-xl font-body font-semibold text-foreground truncate">
+                <span className="text-base font-body font-semibold text-foreground break-words">
                   {weatherCity || 'Detectando...'}
                 </span>
               </div>
-              <div className="flex flex-col min-w-0 gap-2">
-                <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
-                  <span className="text-xl">🌡️</span> Temperatura
+              <div className="flex flex-col min-w-0 gap-1">
+                <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+                  <span>🌡️</span> Temperatura
                 </span>
-                <span className="text-xl font-body font-semibold text-foreground">
+                <span className="text-base font-body font-semibold text-foreground">
                   {temperature[0]} grados
                 </span>
               </div>
-              <div className="flex flex-col min-w-0 gap-2">
-                <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
-                  <span className="text-xl">{(weatherLabel || '').match(/^\p{Extended_Pictographic}/u)?.[0] || '🌤️'}</span> Clima
+              <div className="flex flex-col min-w-0 gap-1">
+                <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+                  <span>{(weatherLabel || '').match(/^\p{Extended_Pictographic}/u)?.[0] || '🌤️'}</span> Clima
                 </span>
-                <span className="text-xl font-body font-semibold text-foreground truncate">
+                <span className="text-base font-body font-semibold text-foreground break-words">
                   {(weatherLabel || weather).replace(/^\p{Extended_Pictographic}\s*/u, '')}
                 </span>
               </div>
               {windKmh !== null && (
-                <div className="flex flex-col min-w-0 gap-2">
-                  <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
-                    <span className="text-xl">💨</span> Viento
+                <div className="flex flex-col min-w-0 gap-1">
+                  <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+                    <span>💨</span> Viento
                   </span>
-                  <span className="text-xl font-body font-semibold text-foreground">
+                  <span className="text-base font-body font-semibold text-foreground">
                     {windKmh} km/h
                   </span>
                 </div>
               )}
               {rainProb !== null && (
-                <div className="flex flex-col min-w-0 gap-2">
-                  <span className="text-base font-body text-muted-foreground flex items-center gap-1.5">
-                    <span className="text-xl">🌧️</span> Lluvia
+                <div className="flex flex-col min-w-0 gap-1 col-span-2 sm:col-span-1">
+                  <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+                    <span>🌧️</span> Lluvia
                   </span>
-                  <span className="text-xl font-body font-semibold text-foreground">
+                  <span className="text-base font-body font-semibold text-foreground">
                     {rainProb}% de probabilidad
                   </span>
                 </div>
@@ -441,9 +441,9 @@ export default function Recommend() {
         </div>
 
         <div className="space-y-3">
-          <label className="text-xl font-body font-semibold text-foreground">Tipo de juntada</label>
+          <label className="text-lg font-body font-semibold text-foreground">Tipo de juntada</label>
           <Select value={event} onValueChange={setEvent}>
-            <SelectTrigger className="h-14 text-lg"><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
+            <SelectTrigger className="h-12 text-base"><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
             <SelectContent>
               {EVENTS.map((e) => <SelectItem key={e.value} value={e.value} className="text-base py-3">{e.label}</SelectItem>)}
             </SelectContent>
@@ -452,7 +452,7 @@ export default function Recommend() {
 
         {event && (
           <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-            <label className="text-xl font-body font-semibold text-foreground">Estilo de la salida</label>
+            <label className="text-lg font-body font-semibold text-foreground">Estilo de la salida</label>
             <div className="grid grid-cols-3 gap-2">
               {[
                 { value: 'casual', label: '😎 Casual' },
@@ -463,7 +463,7 @@ export default function Recommend() {
                   key={opt.value}
                   type="button"
                   onClick={() => setFormality(opt.value)}
-                  className={`h-14 rounded-lg border text-base font-body font-medium transition-colors ${
+                  className={`h-12 rounded-lg border text-sm sm:text-base font-body font-medium transition-colors ${
                     formality === opt.value
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'bg-secondary/50 text-foreground border-border hover:bg-secondary'
@@ -476,7 +476,7 @@ export default function Recommend() {
           </div>
         )}
 
-        <Button variant="warm" className="w-full h-16 text-lg" disabled={loading || !event || !weather || !season} onClick={handleRecommend}>
+        <Button variant="warm" className="w-full h-14 text-base sm:text-lg" disabled={loading || !event || !weather || !season} onClick={handleRecommend}>
           {loading ? (
             <span className="flex items-center gap-2">
               <div className="animate-spin h-5 w-5 border-2 border-accent-foreground border-t-transparent rounded-full" />
