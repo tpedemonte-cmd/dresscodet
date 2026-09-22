@@ -1033,8 +1033,8 @@ export default function Tryon() {
         ) : visibleItems.length === 0 ? (
           <p className="text-sm text-muted-foreground font-body">No hay prendas con esos filtros.</p>
         ) : (
-          <div className="max-h-[26rem] overflow-y-auto rounded-xl bg-secondary/40 p-3">
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+          <div className="rounded-xl bg-secondary/40 p-3 -mx-1">
+            <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {visibleItems.map((item: any) => {
                 const isSelected = selectedItems.some(i => i.id === item.id);
                 const subLabel = getSubcategoryLabel(item.category, item.subcategory);
@@ -1042,7 +1042,7 @@ export default function Tryon() {
                   <button
                     key={item.id}
                     onClick={() => toggleItem(item)}
-                    className={`rounded-xl overflow-hidden bg-card text-left transition-all relative ${
+                    className={`w-28 shrink-0 snap-start rounded-xl overflow-hidden bg-card text-left transition-all relative ${
                       isSelected
                         ? 'ring-2 ring-primary shadow-elevated'
                         : 'shadow-card hover:shadow-elevated'
