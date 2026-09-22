@@ -11,6 +11,7 @@ import { recomendarPorHistorial, type ScoredOutfit } from '@/lib/outfitSimilarit
 import { analizarUsoPrendas, type ItemUsage } from '@/lib/wardrobeAnalysis';
 import { Clock, AlertTriangle } from 'lucide-react';
 import { fetchCurrentWeather, fetchWeatherFromCoords } from '@/lib/weather';
+import { getDeviceCoords } from '@/lib/geolocation';
 import OutfitFeedback from '@/components/OutfitFeedback';
 import { isAvailable } from '@/lib/availability';
 
