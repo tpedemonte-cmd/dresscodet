@@ -858,7 +858,7 @@ export default function Tryon() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full h-auto py-2 text-center leading-snug"
+                      className="w-full h-auto py-2 flex-col gap-0 leading-snug"
                       onClick={() => navigatePremium('/premium')}
                     >
                       <span className="block">Avatar extra 0,99 USD</span>
