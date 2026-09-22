@@ -42,18 +42,11 @@ function getSeason(latitude: number, date = new Date()): WeatherInfo['season'] {
   return 'otoño';
 }
 
-function getCurrentPosition(): Promise<GeolocationPosition> {
-  return new Promise((resolve, reject) => {
-    if (!('geolocation' in navigator)) {
-      reject(new Error('La geolocalización no está disponible en este dispositivo'));
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(resolve, reject, {
-      enableHighAccuracy: false,
-      timeout: 10000,
-      maximumAge: 5 * 60 * 1000,
-    });
-  });
+import { getDeviceCoords } from '@/lib/geolocation';
+
+async function getCurrentPosition(): Promise<{ coords: { latitude: number; longitude: number } }> {
+  const coords = await getDeviceCoords();
+  return { coords };
 }
 
 // Recibe coordenadas ya obtenidas y busca clima + ciudad.
