@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
-import { Shirt, Plus, Sparkles, LogOut, Clock, BarChart3, ShoppingBag, Heart, ScanFace, ImageIcon, CalendarDays, Star, Plane, Lock, Menu } from 'lucide-react';
+import { Shirt, Plus, Sparkles, LogOut, Clock, BarChart3, ShoppingBag, Heart, ScanFace, ImageIcon, CalendarDays, Star, Plane, Lock, Menu, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import PlanSwitcher from '@/components/PlanSwitcher';
@@ -28,6 +28,21 @@ const navItems = [
 // Los más importantes: quedan fijos en la barra de abajo del celular
 const primaryPaths = ['/', '/agregar', '/recomendar', '/probador', '/looks'];
 
+const functionGroups = [
+  {
+    label: 'Vestidor',
+    paths: ['/', '/agregar', '/probador', '/looks', '/recomendar'],
+  },
+  {
+    label: 'Organizá tu estilo',
+    paths: ['/plan', '/viaje', '/favoritos', '/historial', '/estadisticas'],
+  },
+  {
+    label: 'Compras',
+    paths: ['/tienda', '/wishlist'],
+  },
+];
+
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { signOut } = useAuth();
   const { isPremium, loading: planLoading } = usePlan();
@@ -51,6 +66,33 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           {isLocked && <Lock className="absolute -right-2 -top-1 h-3 w-3 rounded-full bg-card text-primary" />}
         </span>
         <span className="text-[10px] sm:text-xs font-body font-medium whitespace-nowrap">{label}</span>
+      </Link>
+    );
+  };
+
+  const renderFunctionRow = ({ path, icon: Icon, label, premium }: (typeof navItems)[number]) => {
+    const isActive = location.pathname === path;
+    const isLocked = !planLoading && !isPremium && premium;
+
+    return (
+      <Link
+        key={path}
+        to={path}
+        onClick={() => setMenuOpen(false)}
+        className={`flex min-h-16 items-center gap-4 px-5 py-3 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${
+          isActive ? 'text-primary' : 'text-foreground'
+        }`}
+      >
+        <span className="relative flex h-10 w-10 shrink-0 items-center justify-center">
+          <Icon className="h-7 w-7" strokeWidth={1.8} />
+          {isLocked && <Lock className="absolute -right-0.5 top-0 h-3.5 w-3.5 rounded-full bg-background text-primary" />}
+        </span>
+        <span className="min-w-0 flex-1 text-left font-body text-base font-medium">{label}</span>
+        {isLocked ? (
+          <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold uppercase text-primary">Premium</span>
+        ) : (
+          <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+        )}
       </Link>
     );
   };
@@ -81,7 +123,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-md border-t border-border z-40 max-w-full">
+      <nav className="fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-md border-t border-border z-[60] max-w-full">
         <div className="overflow-x-auto scrollbar-none">
           <div className="flex sm:justify-around min-w-max sm:min-w-0 px-2 py-2 gap-1">
             {navItems.map((item) =>
@@ -94,18 +136,35 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 <Button
                   variant="ghost"
                   aria-label="Ver todas las funciones"
-                  className="sm:hidden h-auto min-w-[56px] flex-shrink-0 flex-col gap-1 px-1 py-2 text-muted-foreground"
+                  className={`sm:hidden h-auto min-w-[56px] flex-shrink-0 flex-col gap-1 px-1 py-2 ${
+                    menuOpen ? 'text-primary' : 'text-muted-foreground'
+                  }`}
                 >
                   <Menu className="h-5 w-5" />
                   <span className="text-[10px] font-body font-medium">Funciones</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="top" className="rounded-b-2xl">
-                <SheetHeader className="pb-1">
-                  <SheetTitle className="text-base font-display">Todas las funciones</SheetTitle>
+              <SheetContent
+                side="top"
+                className="bottom-[65px] flex h-auto flex-col gap-0 overflow-hidden border-b-0 p-0 shadow-none sm:bottom-0 sm:left-auto sm:w-full sm:max-w-md sm:border-l"
+              >
+                <SheetHeader className="shrink-0 border-b border-border px-5 py-5 text-left">
+                  <SheetTitle className="pr-10 text-xl font-display">Todas las funciones</SheetTitle>
                 </SheetHeader>
-                <div className="grid grid-cols-3 gap-1 px-4 pb-6">
-                  {navItems.map((item) => renderNavItem(item, true))}
+                <div className="flex-1 overflow-y-auto overscroll-contain pb-5">
+                  {functionGroups.map((group, index) => (
+                    <section key={group.label} className={index > 0 ? 'border-t border-border' : undefined}>
+                      <h2 className="px-5 pb-2 pt-5 font-body text-sm font-semibold text-muted-foreground">
+                        {group.label}
+                      </h2>
+                      <div>
+                        {group.paths.map((path) => {
+                          const item = navItems.find((navItem) => navItem.path === path);
+                          return item ? renderFunctionRow(item) : null;
+                        })}
+                      </div>
+                    </section>
+                  ))}
                 </div>
               </SheetContent>
             </Sheet>
