@@ -41,7 +41,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         key={path}
         to={path}
         onClick={inSheet ? () => setMenuOpen(false) : undefined}
-        className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors flex-shrink-0 min-w-[64px] ${
+        className={`flex flex-col items-center gap-1 px-1 sm:px-3 py-2 rounded-lg transition-colors flex-shrink-0 min-w-[56px] sm:min-w-[64px] ${
           isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
         }`}
       >
@@ -60,21 +60,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <h1 className="text-xl font-display font-bold text-foreground">DressCode</h1>
           <div className="flex items-center gap-2">
-            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Ver todas las funciones" className="sm:hidden">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="top" className="rounded-b-2xl">
-                <SheetHeader className="pb-1">
-                  <SheetTitle className="text-base font-display">Todas las funciones</SheetTitle>
-                </SheetHeader>
-                <div className="grid grid-cols-3 gap-1 px-4 pb-6">
-                  {navItems.map((item) => renderNavItem(item, true))}
-                </div>
-              </SheetContent>
-            </Sheet>
             <PlanSwitcher />
             <Button variant="ghost" size="icon" onClick={signOut}>
               <LogOut className="h-5 w-5" />
@@ -95,6 +80,26 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 <div key={item.path} className="hidden sm:flex">{renderNavItem(item)}</div>
               )
             )}
+            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  aria-label="Ver todas las funciones"
+                  className="sm:hidden h-auto min-w-[56px] flex-shrink-0 flex-col gap-1 px-1 py-2 text-muted-foreground"
+                >
+                  <Menu className="h-5 w-5" />
+                  <span className="text-[10px] font-body font-medium">Funciones</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="top" className="rounded-b-2xl">
+                <SheetHeader className="pb-1">
+                  <SheetTitle className="text-base font-display">Todas las funciones</SheetTitle>
+                </SheetHeader>
+                <div className="grid grid-cols-3 gap-1 px-4 pb-6">
+                  {navItems.map((item) => renderNavItem(item, true))}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </nav>
