@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
-import { Shirt, Plus, Sparkles, LogOut, Clock, BarChart3, ShoppingBag, Heart, ScanFace, ImageIcon, CalendarDays, Star, Plane, Lock, Menu, ChevronRight } from 'lucide-react';
+import { Shirt, Plus, Sparkles, LogOut, Clock, BarChart3, ShoppingBag, Heart, ScanFace, ImageIcon, CalendarDays, Star, Plane, Lock, Menu, ChevronRight, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import PlanSwitcher from '@/components/PlanSwitcher';
@@ -44,10 +44,17 @@ const functionGroups = [
 ];
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const { isPremium, loading: planLoading } = usePlan();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const profileName = String(user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Mi perfil');
+  const profileInitials = profileName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('') || 'MP';
 
   const renderNavItem = ({ path, icon: Icon, label, premium }: (typeof navItems)[number], inSheet = false) => {
     const isActive = location.pathname === path;
@@ -148,8 +155,29 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 side="top"
                 className="bottom-[65px] flex h-auto flex-col gap-0 overflow-hidden border-b-0 p-0 shadow-none sm:bottom-0 sm:left-auto sm:w-full sm:max-w-md sm:border-l"
               >
-                <SheetHeader className="shrink-0 border-b border-border px-5 py-5 text-left">
-                  <SheetTitle className="pr-10 text-xl font-display">Todas las funciones</SheetTitle>
+                <SheetHeader className="shrink-0 space-y-4 border-b border-border bg-primary/10 px-5 pb-5 pt-6 text-left">
+                  <SheetTitle className="sr-only">Todas las funciones</SheetTitle>
+                  <div className="flex items-center gap-3 pr-10">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-border bg-background font-body text-lg font-semibold text-foreground shadow-sm">
+                      {profileInitials}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-body text-lg font-semibold leading-tight text-foreground">{profileName}</p>
+                      <p className="mt-0.5 font-body text-sm text-muted-foreground">Mi perfil</p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+                  </div>
+                  <Link
+                    to="/premium"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex min-h-12 items-center gap-3 rounded-lg bg-primary px-4 py-2.5 text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <Crown className="h-5 w-5 shrink-0" />
+                    <span className="min-w-0 flex-1 font-body text-sm font-semibold">
+                      {isPremium ? 'DressCode Premium activo' : 'Pasate a DressCode Premium'}
+                    </span>
+                    <ChevronRight className="h-5 w-5 shrink-0" />
+                  </Link>
                 </SheetHeader>
                 <div className="flex-1 overflow-y-auto overscroll-contain pb-5">
                   {functionGroups.map((group, index) => (
