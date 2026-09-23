@@ -155,7 +155,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               >
                 <SheetHeader className="shrink-0 space-y-4 border-b border-border bg-primary/10 px-5 pb-5 pt-6 text-left">
                   <SheetTitle className="sr-only">Todas las funciones</SheetTitle>
-                  <div className="flex items-center gap-3 pr-10">
+                  <Link
+                    to="/perfil"
+                    onClick={() => setMenuOpen(false)}
+                    aria-label="Ver información de tu perfil"
+                    className="flex w-full items-center gap-3 rounded-lg pr-10 transition-colors hover:bg-background/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
                     <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-border bg-background font-body text-lg font-semibold text-foreground shadow-sm">
                       {profileInitials}
                     </div>
@@ -164,7 +169,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       <p className="mt-0.5 font-body text-sm text-muted-foreground">Mi perfil</p>
                     </div>
                     <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
-                  </div>
+                  </Link>
                   <Link
                     to="/premium"
                     onClick={() => setMenuOpen(false)}

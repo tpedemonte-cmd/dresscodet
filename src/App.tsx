@@ -20,6 +20,7 @@ import Plan from "./pages/Plan";
 import Travel from "./pages/Travel";
 import Favorites from "./pages/Favorites";
 import Premium from "./pages/Premium";
+import Profile from "./pages/Profile";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
 
@@ -54,6 +55,7 @@ const AppRoutes = () => {
       <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
       <Route path="/pago/:sessionId" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
       <Route path="/favoritos" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
+      <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
