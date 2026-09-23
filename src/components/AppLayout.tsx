@@ -63,9 +63,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <img
               src={dressCodeLogo}
               alt="DressCode"
-              width={840}
-              height={201}
-              className="h-7 w-auto max-w-[8.75rem] object-contain sm:h-8 sm:max-w-[10rem]"
+              width={254}
+              height={225}
+              className="h-9 w-auto object-contain sm:h-10"
             />
           </Link>
           <div className="flex items-center gap-2">
