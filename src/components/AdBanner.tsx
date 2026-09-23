@@ -44,7 +44,7 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
 
   useEffect(() => {
     if (typeof localStorage !== 'undefined') {
-      setDismissed(localStorage.getItem(DISMISS_KEY) === 'true' || !shouldShowAd());
+      setDismissed(!shouldShowAd());
     }
     setReady(true);
 
@@ -94,7 +94,6 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
     if (!canClose && !force) return;
     setDismissed(true);
     setShowAd(false);
-    if (typeof localStorage !== 'undefined') localStorage.setItem(DISMISS_KEY, 'true');
   };
 
   return (
