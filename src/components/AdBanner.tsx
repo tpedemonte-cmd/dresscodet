@@ -9,7 +9,6 @@ const ADS = [
   { title: 'Lavandería a domicilio', text: 'Tu ropa lista en 24hs · Publicidad' },
 ];
 
-const DISMISS_KEY = 'dresscode_ad_dismissed';
 const SHOW_AD_KEY = 'dresscode_ad_show';
 const ACTION_COUNT_KEY = 'dresscode_ad_action_count';
 const ACTION_THRESHOLD = 15;
@@ -44,7 +43,7 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
 
   useEffect(() => {
     if (typeof localStorage !== 'undefined') {
-      setDismissed(localStorage.getItem(DISMISS_KEY) === 'true' || !shouldShowAd());
+      setDismissed(!shouldShowAd());
     }
     setReady(true);
 
@@ -94,7 +93,6 @@ export default function AdBanner({ index = 0 }: { index?: number }) {
     if (!canClose && !force) return;
     setDismissed(true);
     setShowAd(false);
-    if (typeof localStorage !== 'undefined') localStorage.setItem(DISMISS_KEY, 'true');
   };
 
   return (
