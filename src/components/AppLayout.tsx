@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import AdBanner from '@/components/AdBanner';
 import { usePlan } from '@/lib/plan';
-import dressCodeLogo from '@/assets/dresscode-logo-completo.png.asset.json';
+import dressCodeLogo from '@/assets/dresscode-logo-completo.png';
 
 const navItems = [
   { path: '/', icon: Shirt, label: 'DressCode' },
@@ -109,7 +109,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" aria-label="Ir al guardarropas" className="flex shrink-0 items-center">
             <img
-              src={dressCodeLogo.url}
+              src={dressCodeLogo}
               alt="DressCode"
               width={836}
               height={197}
