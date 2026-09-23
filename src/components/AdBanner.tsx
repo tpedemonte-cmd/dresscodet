@@ -9,7 +9,6 @@ const ADS = [
   { title: 'Lavandería a domicilio', text: 'Tu ropa lista en 24hs · Publicidad' },
 ];
 
-const DISMISS_KEY = 'dresscode_ad_dismissed';
 const SHOW_AD_KEY = 'dresscode_ad_show';
 const ACTION_COUNT_KEY = 'dresscode_ad_action_count';
 const ACTION_THRESHOLD = 15;
