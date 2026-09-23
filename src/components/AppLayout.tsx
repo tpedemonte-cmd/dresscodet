@@ -198,7 +198,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 </div>
               </SheetContent>
             </Sheet>
-          </div>
         </div>
       </nav>
       <AdBanner index={0} />
