@@ -10,7 +10,7 @@ import { usePlan } from '@/lib/plan';
 import dressCodeLogo from '@/assets/dresscode-logo-completo.png';
 
 const navItems = [
-  { path: '/', icon: Shirt, label: 'DressCode' },
+  { path: '/', icon: Shirt, label: 'Armario' },
   { path: '/agregar', icon: Plus, label: 'Agregar' },
   { path: '/probador', icon: ScanFace, label: 'Probador' },
   { path: '/looks', icon: ImageIcon, label: 'Looks' },
@@ -145,7 +145,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   }`}
                 >
                   <Menu className="h-5 w-5" />
-                  <span className="text-[10px] font-body font-medium">Funciones</span>
+                  <span className="text-[10px] font-body font-medium">+Más</span>
                 </Button>
               </SheetTrigger>
               <SheetContent
