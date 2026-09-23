@@ -128,9 +128,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-md border-t border-border z-[60] max-w-full">
-        <div className="overflow-x-auto scrollbar-none">
-          <div className="flex sm:justify-around min-w-max sm:min-w-0 px-2 py-2 gap-1">
+      <nav className="fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-md border-t border-border z-[60] max-w-full overflow-hidden">
+        <div className="w-full flex justify-between sm:justify-around px-1 py-2 sm:px-2 gap-0.5 sm:gap-1">
             {navItems.map((item) =>
               primaryPaths.includes(item.path) ? renderNavItem(item) : (
                 <div key={item.path} className="hidden sm:flex">{renderNavItem(item)}</div>
@@ -199,7 +198,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 </div>
               </SheetContent>
             </Sheet>
-          </div>
         </div>
       </nav>
       <AdBanner index={0} />
