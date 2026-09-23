@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import PlanSwitcher from '@/components/PlanSwitcher';
 import AdBanner from '@/components/AdBanner';
 import { usePlan } from '@/lib/plan';
+import dressCodeLogo from '@/assets/dresscode-logo.png';
 
 const navItems = [
   { path: '/', icon: Shirt, label: 'DressCode' },
@@ -58,7 +59,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-background overflow-x-hidden">
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <h1 className="text-xl font-display font-bold text-foreground">DressCode</h1>
+          <Link to="/" aria-label="Ir al guardarropas" className="flex shrink-0 items-center">
+            <img
+              src={dressCodeLogo}
+              alt="DressCode"
+              width={840}
+              height={201}
+              className="h-7 w-auto max-w-[8.75rem] object-contain sm:h-8 sm:max-w-[10rem]"
+            />
+          </Link>
           <div className="flex items-center gap-2">
             <PlanSwitcher />
             <Button variant="ghost" size="icon" onClick={signOut}>
