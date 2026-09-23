@@ -5,10 +5,9 @@ import { useAuth } from '@/lib/auth';
 import { Shirt, Plus, Sparkles, LogOut, Clock, BarChart3, ShoppingBag, Heart, ScanFace, ImageIcon, CalendarDays, Star, Plane, Lock, Menu, ChevronRight, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import PlanSwitcher from '@/components/PlanSwitcher';
 import AdBanner from '@/components/AdBanner';
 import { usePlan } from '@/lib/plan';
-import dressCodeLogo from '@/assets/dresscode-logo.png';
+import dressCodeLogo from '@/assets/dresscode-logo-completo.png';
 
 const navItems = [
   { path: '/', icon: Shirt, label: 'DressCode' },
@@ -112,13 +111,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <img
               src={dressCodeLogo}
               alt="DressCode"
-              width={254}
-              height={225}
-              className="h-9 w-auto object-contain sm:h-10"
+              width={836}
+              height={197}
+              className="h-8 w-auto max-w-[10rem] object-contain sm:h-9 sm:max-w-[11rem]"
             />
           </Link>
           <div className="flex items-center gap-2">
-            <PlanSwitcher />
             <Button variant="ghost" size="icon" onClick={signOut}>
               <LogOut className="h-5 w-5" />
             </Button>
