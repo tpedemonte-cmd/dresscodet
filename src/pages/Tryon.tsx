@@ -1102,7 +1102,7 @@ export default function Tryon() {
             {loading ? (
               <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando outfit virtual...</>
             ) : (
-              <><Sparkles className="h-4 w-4 mr-2" /> Probarme {selectedItems.length > 1 ? `estas ${selectedItems.length} prendas` : 'esta prenda'}</>
+              <><Sparkles className="h-4 w-4 mr-2" /> Generar con IA ({selectedItems.length > 1 ? `${selectedItems.length} prendas` : '1 prenda'})</>
             )}
           </Button>
 
