@@ -1074,6 +1074,30 @@ export default function Tryon() {
 
       {/* Action buttons */}
       <div className="space-y-3">
+          {selectedItems.length > 0 && (
+            <div className="rounded-xl bg-card shadow-card p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-display font-semibold text-foreground">Vista previa del outfit</p>
+                <span className="text-[11px] font-body text-muted-foreground">Gratis · sin usar pruebas</span>
+              </div>
+              <div className="flex gap-3">
+                {selfie && (
+                  <div className="w-1/3 shrink-0 rounded-lg overflow-hidden bg-secondary">
+                    <img src={selfie} alt="Tu modelo" className="w-full h-full object-cover aspect-[3/4]" />
+                  </div>
+                )}
+                <div className={`grid gap-2 flex-1 ${selectedItems.length > 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                  {selectedItems.map(item => (
+                    <div key={item.id} className="rounded-lg overflow-hidden bg-secondary">
+                      <img src={item.image_url} alt={item.name} className="w-full aspect-square object-cover" loading="lazy" />
+                      <p className="text-[11px] font-body text-foreground truncate px-1.5 py-1">{item.name}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[11px] font-body text-muted-foreground">¿Te convence la combinación? Recién ahí generala con IA.</p>
+            </div>
+          )}
           <Button variant="warm" className="w-full" disabled={!selfie || selectedItems.length === 0 || loading} onClick={handleTryon}>
             {loading ? (
               <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando outfit virtual...</>
