@@ -8,7 +8,7 @@ const corsHeaders = {
 const CURRENCY = 'USD';
 
 const PRODUCTS: Record<string, { amount: number; credits: number; label: string }> = {
-  premium: { amount: 3.99, credits: 0, label: 'DressCode Premium (mensual)' },
+  premium: { amount: 4.99, credits: 0, label: 'DressCode Premium (mensual)' },
   avatar_1: { amount: 0.99, credits: 1, label: '1 avatar extra' },
   avatar_3: { amount: 1.99, credits: 3, label: 'Pack de 3 avatares' },
 };
