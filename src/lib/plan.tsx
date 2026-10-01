@@ -5,10 +5,10 @@ import { useAuth } from '@/lib/auth';
 
 export type PlanTier = 'free' | 'premium';
 
-export const PREMIUM_PRICE = 3.99;
+export const PREMIUM_PRICE = 4.99;
 export const PREMIUM_CURRENCY = 'USD';
 
-/** Formatea precios como "3,99 USD" */
+/** Formatea precios como "4,99 USD" */
 export function formatPrice(amount: number) {
   return `${amount.toFixed(2).replace('.', ',')} ${PREMIUM_CURRENCY}`;
 }

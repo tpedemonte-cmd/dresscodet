@@ -1,0 +1,2 @@
+ALTER TABLE public.ai_usage_events DROP CONSTRAINT IF EXISTS ai_usage_events_kind_check;
+ALTER TABLE public.ai_usage_events ADD CONSTRAINT ai_usage_events_kind_check CHECK (kind IN ('avatar','tryon','outfit'));

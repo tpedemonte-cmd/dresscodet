@@ -278,7 +278,15 @@ export default function Recommend() {
       });
 
 
-      if (error) throw error;
+      if (error) {
+        let body: any = null;
+        try { body = await (error as any).context?.json?.(); } catch { /* noop */ }
+        if (body?.code === 'quota_exceeded') {
+          toast.error(body.error, { action: { label: 'Ver Premium', onClick: () => { window.location.href = '/premium'; } } });
+          return;
+        }
+        throw error;
+      }
 
       const fullText: string = data.recommendation || '';
 

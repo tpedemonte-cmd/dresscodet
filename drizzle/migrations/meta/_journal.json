@@ -57,6 +57,13 @@
       "when": 1789671459045,
       "tag": "0007_avatar_credits_and_usage",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790813426582,
+      "tag": "0008_usage_kind_outfit",
+      "breakpoints": true
     }
   ]
 }

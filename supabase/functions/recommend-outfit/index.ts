@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getAiConfig } from "../_shared/ai.ts";
+import { checkQuota, recordUsage } from "../_shared/quotas.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,6 +11,13 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    const quota = await checkQuota(req, "outfit");
+    if (!quota.ok) {
+      return new Response(JSON.stringify({ error: quota.error, code: "quota_exceeded" }), {
+        status: quota.status ?? 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const { wardrobe, wishlist, mood, event, formality, temperature, weather, season, windKmh, rainProbability, isNight, likedOutfits, dislikedOutfits } = await req.json();
 
     const ai = getAiConfig("google/gemini-3-flash-preview");
@@ -106,6 +114,7 @@ Estación del año: ${season}
 
     const data = await response.json();
     const recommendation = data.choices?.[0]?.message?.content || "No pude generar una recomendación.";
+    await recordUsage(quota, "outfit");
 
     return new Response(JSON.stringify({ recommendation }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
