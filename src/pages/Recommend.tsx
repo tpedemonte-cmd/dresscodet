@@ -288,6 +288,10 @@ export default function Recommend() {
         throw error;
       }
 
+      if (data?.code === 'quota_exceeded') {
+        toast.error(data.error, { action: { label: 'Ver Premium', onClick: () => { window.location.href = '/premium'; } } });
+        return;
+      }
       const fullText: string = data.recommendation || '';
 
       // Parse ITEMS_USADOS
