@@ -14,7 +14,7 @@ serve(async (req) => {
     const quota = await checkQuota(req, "outfit");
     if (!quota.ok) {
       return new Response(JSON.stringify({ error: quota.error, code: "quota_exceeded" }), {
-        status: quota.status ?? 403,
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
