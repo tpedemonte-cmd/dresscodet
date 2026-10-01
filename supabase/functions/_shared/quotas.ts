@@ -6,6 +6,7 @@ export const LIMITS = {
     avatarFreeTotal: 1, // un solo avatar gratis en toda la cuenta
     savedModels: 1,
     tryonsPerMonth: 3,
+    outfitsPerDay: 2,
   },
   premium: {
     avatarsPerMonth: 10,
@@ -15,7 +16,7 @@ export const LIMITS = {
   },
 } as const;
 
-export type UsageKind = 'avatar' | 'tryon';
+export type UsageKind = 'avatar' | 'tryon' | 'outfit';
 
 export function userClient(authHeader: string) {
   return createClient(
@@ -86,6 +87,21 @@ export async function checkQuota(req: Request, kind: UsageKind): Promise<QuotaDe
 
   const expired = !!sub?.current_period_end && new Date(sub.current_period_end) < new Date();
   const isPremium = sub?.plan === 'premium' && sub?.status === 'active' && !expired;
+
+  if (kind === 'outfit') {
+    if (isPremium) return { ok: true, useCredit: false, userId: user.id };
+    const used = await countUsage(sb, user.id, 'outfit', startOfDay());
+    if (used >= LIMITS.free.outfitsPerDay) {
+      return {
+        ok: false,
+        status: 403,
+        error: `El plan gratis incluye ${LIMITS.free.outfitsPerDay} outfits del momento por día. Volvé mañana o pasate a Premium para pedir sin límite.`,
+        useCredit: false,
+        userId: user.id,
+      };
+    }
+    return { ok: true, useCredit: false, userId: user.id };
+  }
 
   if (kind === 'tryon') {
     const limit = isPremium ? LIMITS.premium.tryonsPerMonth : LIMITS.free.tryonsPerMonth;
