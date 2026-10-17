@@ -65,25 +65,55 @@ export interface AiImageResult {
  * - Lovable AI Gateway: POST /v1/images/generations
  * - Direct Gemini key: chat/completions with modalities ["image","text"]
  */
+async function toInlineData(src: string): Promise<{ mimeType: string; data: string }> {
+  const m = src.match(/^data:([^;]+);base64,(.*)$/s);
+  if (m) return { mimeType: m[1], data: m[2] };
+  if (!/^https?:\/\//i.test(src)) return { mimeType: 'image/png', data: src };
+  const res = await fetch(src);
+  if (!res.ok) throw new Error(`No se pudo descargar la imagen (${res.status})`);
+  const mimeType = (res.headers.get('content-type') || 'image/png').split(';')[0];
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return { mimeType, data: btoa(bin) };
+}
+
 export async function aiGenerateImage(
   prompt: string,
   inputImages: string[] = [],
 ): Promise<AiImageResult> {
   const lovableKey = Deno.env.get('LOVABLE_API_KEY');
   if (lovableKey) {
+    // Con fotos de referencia, este modelo necesita el formato generate-content con inlineData
+    // (un campo `image` suelto se ignora y la IA inventa otra persona).
+    let body: Record<string, unknown>;
+    if (inputImages.length > 0) {
+      const encoded = await Promise.all(inputImages.map(toInlineData));
+      body = {
+        model: IMAGE_MODEL,
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              { text: prompt },
+              ...encoded.map(({ mimeType, data }) => ({ inlineData: { mimeType, data } })),
+            ],
+          },
+        ],
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+      };
+    } else {
+      body = { model: IMAGE_MODEL, prompt };
+    }
     const res = await fetch('https://ai.gateway.lovable.dev/v1/images/generations', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${lovableKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: IMAGE_MODEL,
-        prompt,
-        ...(inputImages.length > 0
-          ? { image: inputImages.length === 1 ? inputImages[0] : inputImages }
-          : {}),
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {
