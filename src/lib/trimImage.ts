@@ -133,6 +133,8 @@ export async function trimImage(src: string): Promise<string> {
     const bboxW = maxX - minX + 1;
     const bboxH = maxY - minY + 1;
     if (bboxW < 16 || bboxH < 32) return src;
+    // Fondo con muchos detalles (no es de estudio): la detección no es confiable
+    if (bboxW > w * 0.6) return src;
 
     // Encuadre retrato 3:4 centrado en la persona, con la cabeza y los pies completos
     let targetH = bboxH * 1.08;
@@ -172,11 +174,8 @@ export async function trimImage(src: string): Promise<string> {
     const ix1 = Math.min(w, sx + targetW), iy1 = Math.min(h, sy + targetH);
     const dx = (ix0 - sx) * scale, dy = (iy0 - sy) * scale;
     const dw = (ix1 - ix0) * scale, dh = (iy1 - iy0) * scale;
-    // Extender el fondo estirando los bordes de la foto (pared arriba, piso abajo) para que no se note
-    if (dy > 0) octx.drawImage(img, ix0, iy0, ix1 - ix0, 1, dx, 0, dw, dy + 1);
-    if (dy + dh < outH) octx.drawImage(img, ix0, iy1 - 1, ix1 - ix0, 1, dx, dy + dh - 1, dw, outH - dy - dh + 1);
-    if (dx > 0) octx.drawImage(img, ix0, iy0, 1, iy1 - iy0, 0, dy, dx + 1, dh);
-    if (dx + dw < outW) octx.drawImage(img, ix1 - 1, iy0, 1, iy1 - iy0, dx + dw - 1, dy, outW - dx - dw + 1, dh);
+    // Si el encuadre no entra completo en la foto, no inventar fondo: usar la original
+    if (dx > 1 || dy > 1 || dx + dw < outW - 1 || dy + dh < outH - 1) return src;
     octx.drawImage(img, ix0, iy0, ix1 - ix0, iy1 - iy0, dx, dy, dw, dh);
     const result = out.toDataURL('image/jpeg', 0.92);
 
