@@ -150,10 +150,20 @@ export async function trimImage(src: string): Promise<string> {
       targetW = bboxW * 1.06;
       targetH = targetW / 0.75;
     }
+    // Si el encuadre no entra en la foto, achicarlo (sin cortar a la persona) para no rellenar
+    const fit = Math.min(1, h / targetH, w / targetW);
+    const minFit = Math.max(bboxH / targetH, bboxW / targetW);
+    if (fit < 1) {
+      const f = Math.max(fit, minFit);
+      targetH *= f;
+      targetW *= f;
+    }
     const cx = minX + bboxW / 2;
     const cy = minY + bboxH / 2;
-    const sx = cx - targetW / 2;
-    const sy = cy - targetH / 2;
+    const clampPos = (start: number, size: number, total: number) =>
+      size <= total ? Math.min(Math.max(0, start), total - size) : (total - size) / 2;
+    const sx = clampPos(cx - targetW / 2, targetW, w);
+    const sy = clampPos(cy - targetH / 2, targetH, h);
 
     const scale = Math.min(1, 900 / targetW);
     const outW = Math.round(targetW * scale);
