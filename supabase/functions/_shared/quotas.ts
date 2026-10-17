@@ -1,5 +1,6 @@
 // Cuotas de uso de IA por plan (avatares y pruebas de outfit).
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { freeAvatarAllowance } from './avatarRules.ts';
 
 export const LIMITS = {
   free: {
@@ -50,7 +51,8 @@ async function countUsage(sb: any, userId: string, kind: UsageKind, since?: stri
     .eq('user_id', userId)
     .eq('kind', kind);
   if (since) q = q.gte('created_at', since);
-  const { count } = await q;
+  const { count, error } = await q;
+  if (error) throw error;
   return count ?? 0;
 }
 
@@ -144,6 +146,12 @@ export async function checkQuota(req: Request, kind: UsageKind): Promise<QuotaDe
     return { ok: true, useCredit: false, userId: user.id };
   }
 
+  const { count: savedModels, error: modelsError } = await sb.from('user_models')
+    .select('id', { count: 'exact', head: true }).eq('user_id', user.id);
+  if (modelsError) throw modelsError;
+  if (freeAvatarAllowance(0, 0, savedModels ?? 0) === 0) {
+    return { ok: false, status: 403, error: 'Eliminá tu modelo actual con un avatar extra disponible antes de generar otro.', useCredit: false, userId: user.id };
+  }
   const total = await countUsage(sb, user.id, 'avatar');
   if (total < LIMITS.free.avatarFreeTotal) {
     return { ok: true, useCredit: false, userId: user.id };
@@ -171,11 +179,20 @@ export async function checkQuota(req: Request, kind: UsageKind): Promise<QuotaDe
 /** Registra el consumo y descuenta el crédito comprado si corresponde. */
 export async function recordUsage(decision: QuotaDecision, kind: UsageKind) {
   const admin = adminClient();
-  await admin.from('ai_usage_events').insert({
+  if (kind === 'avatar') {
+    const { error } = await admin.rpc('record_avatar_generation', {
+      p_user_id: decision.userId,
+      p_use_credit: decision.useCredit,
+    });
+    if (error) throw error;
+    return;
+  }
+  const { error } = await admin.from('ai_usage_events').insert({
     user_id: decision.userId,
     kind,
     used_credit: decision.useCredit,
   });
+  if (error) throw error;
 
   if (decision.useCredit) {
     const { data } = await admin

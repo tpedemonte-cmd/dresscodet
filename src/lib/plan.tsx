@@ -2,6 +2,7 @@ import { createContext, useContext, ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { freeAvatarAllowance } from '../../supabase/functions/_shared/avatarRules';
 
 export type PlanTier = 'free' | 'premium';
 
@@ -66,7 +67,11 @@ interface PlanContextType {
   FREE_HISTORY_LIMIT: number;
 }
 
-const PlanContext = createContext<PlanContextType | undefined>(undefined);
+// Keep the same context identity when Vite refreshes this mixed hook/provider module.
+// Otherwise an existing provider can be paired with a newly created consumer context.
+const PlanContext = (import.meta.hot?.data.planContext as ReturnType<typeof createContext<PlanContextType | undefined>> | undefined)
+  ?? createContext<PlanContextType | undefined>(undefined);
+if (import.meta.hot) import.meta.hot.data.planContext = PlanContext;
 
 function startOfMonthISO() {
   const d = new Date();
@@ -164,7 +169,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
           LIMITS.premium.avatarsPerDay - base.avatarsToday,
         ),
       )
-    : Math.max(0, LIMITS.free.avatarFreeTotal - base.avatarsTotal) + base.avatarCredits;
+    : freeAvatarAllowance(base.avatarsTotal, base.avatarCredits, base.savedModels);
 
   const tryonsLeft = Math.max(
     0,

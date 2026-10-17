@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.4"
   }
   public: {
     Tables: {
@@ -52,6 +52,24 @@ export type Database = {
         Update: {
           balance?: number
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      avatar_generation_locks: {
+        Row: {
+          expires_at: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          expires_at: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          expires_at?: string
+          token?: string
           user_id?: string
         }
         Relationships: []
@@ -442,7 +460,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      acquire_avatar_generation_lock: {
+        Args: { p_token: string; p_user_id: string }
+        Returns: boolean
+      }
+      record_avatar_generation: {
+        Args: { p_use_credit: boolean; p_user_id: string }
+        Returns: undefined
+      }
+      release_avatar_generation_lock: {
+        Args: { p_token: string; p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
