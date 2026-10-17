@@ -546,6 +546,13 @@ export default function Tryon() {
       });
 
       if (error) throw error;
+      if (data?.quota_exceeded) {
+        toast.error(data.error, {
+          action: { label: 'Ver Premium', onClick: () => navigatePremium('/premium') },
+        });
+        refreshQuota();
+        return;
+      }
       if (data?.error) throw new Error(data.error);
 
       if (data?.image) {

@@ -48,7 +48,7 @@ serve(async (req) => {
     if (!quota.ok) {
       return new Response(
         JSON.stringify({ error: quota.error, quota_exceeded: true }),
-        { status: quota.status ?? 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
