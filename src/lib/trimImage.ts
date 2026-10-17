@@ -100,8 +100,8 @@ export async function trimImage(src: string): Promise<string> {
       cornerAvg(0, 0), cornerAvg(w - 8, 0),
       cornerAvg(0, h - 8), cornerAvg(w - 8, h - 8),
     ];
-    const bg = corners.reduce(
-      (acc, c) => [acc[0] + c[0] / 4, acc[1] + c[1] / 4, acc[2] + c[2] / 4] as number[],
+    const bg = corners.reduce<[number, number, number]>(
+      (acc, c) => [acc[0] + c[0] / 4, acc[1] + c[1] / 4, acc[2] + c[2] / 4],
       [0, 0, 0],
     );
 
