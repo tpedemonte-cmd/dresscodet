@@ -6,7 +6,7 @@ export const LIMITS = {
   free: {
     avatarFreeTotal: 1, // un solo avatar gratis en toda la cuenta
     savedModels: 1,
-    tryonsPerMonth: 3,
+    tryonsPerMonth: 2,
     outfitsPerDay: 2,
   },
   premium: {
