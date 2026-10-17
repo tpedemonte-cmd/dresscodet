@@ -644,8 +644,8 @@ export default function Tryon() {
 
         {selfie && !showVariantPicker ? (
           <div className="space-y-3">
-            <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card">
-              <img src={resultImage || selfie} alt="Tu modelo" className="w-full h-full object-cover" />
+            <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card bg-muted">
+              <img src={resultImage || selfie} alt="Tu modelo" className="w-full h-full object-contain" />
               {resultImage && (
                 <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-body font-medium px-2 py-1 rounded-full">
                   ✨ Resultado IA
@@ -1150,7 +1150,7 @@ export default function Tryon() {
               <div className="flex gap-3">
                 {selfie && (
                   <div className="w-1/3 shrink-0 rounded-lg overflow-hidden bg-secondary">
-                    <img src={selfie} alt="Tu modelo" className="w-full h-full object-cover aspect-[3/4]" />
+                    <img src={selfie} alt="Tu modelo" className="w-full h-full object-contain aspect-[3/4] bg-muted" />
                   </div>
                 )}
                 <div className={`grid gap-2 flex-1 ${selectedItems.length > 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
