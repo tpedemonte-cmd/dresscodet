@@ -651,6 +651,25 @@ export default function Tryon() {
                   ✨ Resultado IA
                 </div>
               )}
+              {!isPremium && activeModelId && !quotaLoading && quota.avatarCredits === 0 && (
+                <button
+                  onClick={() => navigatePremium('/premium#avatares-extra')}
+                  aria-label="Comprar avatares extra para modificar tu modelo"
+                  className="absolute top-2 right-2 h-9 w-9 rounded-full bg-black/60 text-white backdrop-blur-sm flex items-center justify-center hover:bg-black/75 transition-colors"
+                >
+                  <Sparkles className="h-4 w-4" />
+                </button>
+              )}
+              {!isPremium && activeModelId && canDeleteModel && (
+                <button
+                  onClick={() => deleteModelMutation.mutate(activeModelId)}
+                  disabled={deleteModelMutation.isPending}
+                  aria-label="Eliminar modelo actual"
+                  className="absolute top-2 right-2 h-9 w-9 rounded-full bg-black/60 text-white backdrop-blur-sm flex items-center justify-center hover:bg-destructive transition-colors disabled:opacity-60"
+                >
+                  {deleteModelMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                </button>
+              )}
             </div>
 
             <div className="flex flex-col gap-2 max-w-sm mx-auto">
@@ -665,21 +684,6 @@ export default function Tryon() {
                   <><Save className="h-4 w-4 mr-2" /> {!isPremium ? 'Guardar modelo' : resultImage ? 'Guardar modelo con esta ropa' : 'Guardar este modelo'}</>
                 )}
               </Button>}
-              {!isPremium && activeModelId && !quotaLoading && quota.avatarCredits === 0 && (
-                <Button
-                  variant="secondary"
-                  className="h-auto min-h-10 whitespace-normal py-2"
-                  onClick={() => navigatePremium('/premium#avatares-extra')}
-                >
-                  <Sparkles className="h-4 w-4 mr-2 shrink-0" />
-                  Modificar avatar · Comprar avatares extra
-                </Button>
-              )}
-              {!isPremium && activeModelId && canDeleteModel && (
-                <Button variant="ghost" size="sm" className="self-center h-8 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive" disabled={deleteModelMutation.isPending} onClick={() => deleteModelMutation.mutate(activeModelId)}>
-                  <Trash2 className="h-3 w-3 mr-1.5" /> Modificar/eliminar modelo actual
-                </Button>
-              )}
               {isPremium && variants.length > 0 && (
                 <Button
                   variant="secondary"
