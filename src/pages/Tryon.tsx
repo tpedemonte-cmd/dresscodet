@@ -121,8 +121,13 @@ export default function Tryon() {
   const [activeModelId, setActiveModelId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<any[]>([]);
   const [resultImage, setResultImage] = useState<string | null>(null);
-  const rawModelImage = resultImage || selfie;
-  const { url: modelImage } = useTrimmedImage(rawModelImage);
+  const [resultItems, setResultItems] = useState<any[]>([]);
+  const { url: modelImage } = useTrimmedImage(selfie);
+  const { url: resultImageTrimmed } = useTrimmedImage(resultImage);
+  // El outfit generado se ve en el marco hasta que empezás a elegir otras prendas
+  const showResultInFrame = !!resultImage && selectedItems.length === 0;
+  const frameImage = showResultInFrame ? resultImageTrimmed || resultImage : modelImage || selfie;
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savingModel, setSavingModel] = useState(false);
@@ -507,7 +512,6 @@ export default function Tryon() {
   });
 
   const toggleItem = (item: any) => {
-    setResultImage(null);
     setSelectedItems(prev => {
       const exists = prev.find(i => i.id === item.id);
       if (exists) return prev.filter(i => i.id !== item.id);
@@ -517,8 +521,8 @@ export default function Tryon() {
 
   const removeItem = (id: string) => {
     setSelectedItems(prev => prev.filter(i => i.id !== id));
-    setResultImage(null);
   };
+
 
   const handleTryon = async () => {
     if (!selfie || selectedItems.length === 0) {
@@ -546,8 +550,11 @@ export default function Tryon() {
 
       if (data?.image) {
         setResultImage(data.image);
-        toast.success('¡Mirá cómo te queda el outfit!');
+        setResultItems(selectedItems);
+        setSelectedItems([]);
+        toast.success('¡Mirá cómo te queda el outfit! Ya podés elegir otras prendas para el siguiente');
         refreshQuota();
+
       } else {
         throw new Error('No se pudo generar la imagen');
       }
