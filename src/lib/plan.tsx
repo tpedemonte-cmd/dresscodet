@@ -17,7 +17,7 @@ export const FREE_HISTORY_LIMIT = 5;
 
 /** Límites de uso de IA por plan (deben coincidir con supabase/functions/_shared/quotas.ts) */
 export const LIMITS = {
-  free: { avatarFreeTotal: 1, savedModels: 1, tryonsPerMonth: 3 },
+  free: { avatarFreeTotal: 1, savedModels: 1, tryonsPerMonth: 2 },
   premium: { avatarsPerMonth: 10, avatarsPerDay: 3, savedModels: 3, tryonsPerMonth: 15 },
 } as const;
 
