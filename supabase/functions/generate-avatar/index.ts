@@ -1,19 +1,26 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { aiGenerateImage } from "../_shared/ai.ts";
-import { checkQuota, recordUsage } from "../_shared/quotas.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { adminClient, userClient, checkQuota, recordUsage } from "../_shared/quotas.ts";
+import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let lockUserId: string | null = null;
+  const lockToken = crypto.randomUUID();
   try {
+    const { data: authData } = await userClient(req.headers.get('Authorization') ?? '').auth.getUser();
+    if (!authData.user) {
+      return new Response(JSON.stringify({ error: 'Iniciá sesión para usar esta función.' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    const { data: acquired, error: lockError } = await adminClient().rpc('acquire_avatar_generation_lock', { p_user_id: authData.user.id, p_token: lockToken });
+    if (lockError) throw lockError;
+    if (!acquired) {
+      return new Response(JSON.stringify({ error: 'Ya hay un modelo generándose. Esperá a que termine.' }), { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    lockUserId = authData.user.id;
     const {
       height, weight, age, gender,
       hairColor, hairStyle, skinTone, bodyType,
@@ -117,5 +124,10 @@ The person should:
       JSON.stringify({ error: message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+  } finally {
+    if (lockUserId) {
+      const { error } = await adminClient().rpc('release_avatar_generation_lock', { p_user_id: lockUserId, p_token: lockToken });
+      if (error) console.error('Avatar lock release failed');
+    }
   }
 });

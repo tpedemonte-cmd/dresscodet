@@ -2,6 +2,7 @@ import { createContext, useContext, ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { freeAvatarAllowance } from '../../supabase/functions/_shared/avatarRules';
 
 export type PlanTier = 'free' | 'premium';
 
@@ -164,7 +165,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
           LIMITS.premium.avatarsPerDay - base.avatarsToday,
         ),
       )
-    : Math.max(0, LIMITS.free.avatarFreeTotal - base.avatarsTotal) + base.avatarCredits;
+    : freeAvatarAllowance(base.avatarsTotal, base.avatarCredits, base.savedModels);
 
   const tryonsLeft = Math.max(
     0,

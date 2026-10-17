@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan, LIMITS } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
+import { canDeleteAvatar } from '../../supabase/functions/_shared/avatarRules';
 
 import { PremiumBadge } from '@/components/PremiumGate';
 import {
@@ -104,7 +105,7 @@ const MEASUREMENTS = [
 
 export default function Tryon() {
   const { user } = useAuth();
-  const { isPremium, quota, refreshQuota } = usePlan();
+  const { isPremium, quota, quotaLoading, loading: planLoading, refreshQuota } = usePlan();
   const navigatePremium = useNavigate();
   const queryClient = useQueryClient();
   const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
@@ -176,7 +177,7 @@ export default function Tryon() {
     enabled: !!user,
   });
 
-  const { data: savedModels = [] } = useQuery({
+  const { data: savedModels = [], isLoading: modelsLoading } = useQuery({
     queryKey: ['user_models', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -188,6 +189,17 @@ export default function Tryon() {
     },
     enabled: !!user,
   });
+
+  const canDeleteModel = !planLoading && !quotaLoading && canDeleteAvatar(isPremium, quota.avatarCredits);
+
+  useEffect(() => {
+    if (isPremium || selfie || modelsLoading) return;
+    const model = savedModels.find((m) => m.is_active) ?? savedModels[0];
+    if (!model) return;
+    setSelfie(model.image_url);
+    setActiveModelId(model.id);
+    setAvatarData((d) => ({ ...d, height: String(model.height), weight: String(model.weight), age: String(model.age), gender: model.gender }));
+  }, [isPremium, selfie, modelsLoading, savedModels]);
 
   // Subtipos disponibles según la categoría elegida (o todos los presentes en el placard)
   const subOptions = useMemo(() => {
@@ -246,6 +258,11 @@ export default function Tryon() {
   };
 
   const handleGenerateAvatar = async () => {
+    if (generatingAvatar || quotaLoading || modelsLoading || planLoading) return;
+    if (!isPremium && (savedModels.length > 0 || selfie)) {
+      toast.error('Guardá tu modelo o eliminá el actual con un avatar extra antes de generar otro.');
+      return;
+    }
     const { gender } = avatarData;
     if (!gender) {
       toast.error('Seleccioná un género para continuar');
@@ -352,7 +369,7 @@ export default function Tryon() {
   const saveModelMutation = useMutation({
     mutationFn: async () => {
       // Guardamos la imagen que se está viendo: si hay resultado de IA (con la ropa puesta), esa
-      const source = resultImage || selfie;
+      const source = isPremium ? resultImage || selfie : selfie;
       if (!source || !user) throw new Error('No hay modelo para guardar');
       if (savedModels.length >= quota.savedModelsLimit) {
         throw new Error(
@@ -452,19 +469,25 @@ export default function Tryon() {
 
   const deleteModelMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('user_models').delete().eq('id', id);
+      if (!canDeleteModel) throw new Error('Necesitás un avatar extra disponible para eliminar este modelo.');
+      const { data, error } = await supabase.from('user_models').delete().eq('id', id).select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error('No se pudo eliminar el modelo.');
     },
     onSuccess: (_, id) => {
       if (activeModelId === id) {
         setSelfie(null);
         setActiveModelId(null);
+        setResultImage(null);
+        setVariants([]);
+        setShowVariantPicker(false);
       }
+      queryClient.setQueryData(['user_models', user?.id], (models: typeof savedModels | undefined) => models?.filter((model) => model.id !== id));
       queryClient.invalidateQueries({ queryKey: ['user_models'] });
       refreshQuota();
       toast.success('Modelo eliminado');
     },
-    onError: () => toast.error('Error al eliminar el modelo'),
+    onError: (error: Error) => toast.error(error.message),
   });
 
   const toggleItem = (item: any) => {
@@ -565,6 +588,7 @@ export default function Tryon() {
 
 
   const reset = () => {
+    if (!isPremium && selfie) return;
     setSelfie(null);
     setActiveModelId(null);
     setSelectedItems([]);
@@ -623,7 +647,7 @@ export default function Tryon() {
             </div>
 
             <div className="flex flex-col gap-2 max-w-sm mx-auto">
-              <Button
+              {(isPremium || !activeModelId) && <Button
                 variant="outline"
                 disabled={savingModel}
                 onClick={() => saveModelMutation.mutate()}
@@ -631,10 +655,15 @@ export default function Tryon() {
                 {savingModel ? (
                   <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando modelo...</>
                 ) : (
-                  <><Save className="h-4 w-4 mr-2" /> {resultImage ? 'Guardar modelo con esta ropa' : 'Guardar este modelo'}</>
+                  <><Save className="h-4 w-4 mr-2" /> {!isPremium ? 'Guardar modelo' : resultImage ? 'Guardar modelo con esta ropa' : 'Guardar este modelo'}</>
                 )}
-              </Button>
-              {variants.length > 0 && (
+              </Button>}
+              {!isPremium && activeModelId && canDeleteModel && (
+                <Button variant="outline" disabled={deleteModelMutation.isPending} onClick={() => deleteModelMutation.mutate(activeModelId)}>
+                  <Trash2 className="h-4 w-4 mr-2" /> Eliminar modelo actual
+                </Button>
+              )}
+              {isPremium && variants.length > 0 && (
                 <Button
                   variant="secondary"
                   onClick={() => setShowVariantPicker(true)}
@@ -642,12 +671,12 @@ export default function Tryon() {
                   <RotateCcw className="h-4 w-4 mr-2" /> Cambiar modelo
                 </Button>
               )}
-              <Button
+              {isPremium && <Button
                 variant="ghost"
                 onClick={reset}
               >
                 Volver a los datos
-              </Button>
+              </Button>}
             </div>
 
           </div>
@@ -872,7 +901,7 @@ export default function Tryon() {
                 variant="warm"
                 size="sm"
                 className="w-full"
-                disabled={generatingAvatar || quota.avatarsLeft <= 0}
+                disabled={generatingAvatar || quotaLoading || modelsLoading || planLoading || quota.avatarsLeft <= 0 || (!isPremium && savedModels.length > 0)}
                 onClick={handleGenerateAvatar}
               >
                 {generatingAvatar ? (
@@ -906,7 +935,11 @@ export default function Tryon() {
                           <Check className="h-2.5 w-2.5" />
                         </div>
                       )}
-                      <button
+                      {canDeleteModel && <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Eliminar modelo guardado"
+                        disabled={deleteModelMutation.isPending}
                         onClick={(e) => {
                           e.stopPropagation();
                           deleteModelMutation.mutate(model.id);
@@ -914,7 +947,7 @@ export default function Tryon() {
                         className="absolute bottom-1 right-1 bg-background/80 backdrop-blur-sm rounded-full p-1"
                       >
                         <Trash2 className="h-3 w-3 text-destructive" />
-                      </button>
+                      </Button>}
                     </div>
                   ))}
                 </div>
