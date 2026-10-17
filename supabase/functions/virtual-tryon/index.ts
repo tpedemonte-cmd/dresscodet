@@ -75,27 +75,17 @@ serve(async (req) => {
       .map((item, i) => `${i + 1}. ${item.name} (${item.category})`)
       .join("\n");
 
-    const prompt = clothingImages.length === 1
-      ? `You are a virtual fashion try-on assistant. Take the person in the first image and realistically dress them in the clothing item shown in the second image (${clothingImages[0].name}, category: ${clothingImages[0].category}).
+    const prompt = `Virtual try-on. IMAGE 1 is the TARGET PERSON (the user's model). The remaining ${clothingImages.length} image(s) are GARMENT REFERENCES ONLY.
 
-Rules:
-- Keep the person's face, body shape, skin tone, and pose exactly as they are
-- Replace or overlay the relevant clothing area with the garment from the second image
-- Make it look natural and realistic, matching lighting and perspective
-- Keep the background from the first image
-- Output a full-body or upper-body photo of the person wearing the item`
-      : `You are a virtual fashion try-on assistant. Take the person in the first image and realistically dress them in ALL the clothing items shown in the following images to create a complete outfit.
-
-Items to apply:
+Garments to put on the target person:
 ${itemsList}
 
-Rules:
-- Keep the person's face, body shape, skin tone, and pose exactly as they are
-- Apply EACH clothing item to the correct body area based on its category
-- Layer items naturally (e.g., jacket over shirt)
-- Make it look natural and realistic, matching lighting and perspective
-- Keep the background from the first image
-- Output a full-body or upper-body photo of the person wearing the complete outfit`;
+STRICT RULES:
+- The output MUST show the exact same person from IMAGE 1: same face, hair, gender, age, body shape, skin tone, height proportions and pose.
+- Keep the exact background, lighting and camera framing of IMAGE 1 (full body, head to feet visible).
+- Garment reference photos may contain other people, mannequins or backgrounds: IGNORE them completely. Copy ONLY the garment (color, fabric, cut, details) and never copy any person or scene from them.
+- Apply each garment to the correct body area by its category, replacing what the target person wears there; layer naturally (e.g. jacket over shirt).
+- Photorealistic result. Output a single image.`;
 
     const result = await aiGenerateImage(prompt, [
       userPhotoBase64,
