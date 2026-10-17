@@ -179,11 +179,14 @@ export async function trimImage(src: string): Promise<string> {
     // Intersección del encuadre con la imagen
     const ix0 = Math.max(0, sx), iy0 = Math.max(0, sy);
     const ix1 = Math.min(w, sx + targetW), iy1 = Math.min(h, sy + targetH);
-    octx.drawImage(
-      img,
-      ix0, iy0, ix1 - ix0, iy1 - iy0,
-      (ix0 - sx) * scale, (iy0 - sy) * scale, (ix1 - ix0) * scale, (iy1 - iy0) * scale,
-    );
+    const dx = (ix0 - sx) * scale, dy = (iy0 - sy) * scale;
+    const dw = (ix1 - ix0) * scale, dh = (iy1 - iy0) * scale;
+    // Extender el fondo estirando los bordes de la foto (pared arriba, piso abajo) para que no se note
+    if (dy > 0) octx.drawImage(img, ix0, iy0, ix1 - ix0, 1, dx, 0, dw, dy + 1);
+    if (dy + dh < outH) octx.drawImage(img, ix0, iy1 - 1, ix1 - ix0, 1, dx, dy + dh - 1, dw, outH - dy - dh + 1);
+    if (dx > 0) octx.drawImage(img, ix0, iy0, 1, iy1 - iy0, 0, dy, dx + 1, dh);
+    if (dx + dw < outW) octx.drawImage(img, ix1 - 1, iy0, 1, iy1 - iy0, dx + dw - 1, dy, outW - dx - dw + 1, dh);
+    octx.drawImage(img, ix0, iy0, ix1 - ix0, iy1 - iy0, dx, dy, dw, dh);
     const result = out.toDataURL('image/jpeg', 0.92);
 
     if (imgCache.size > 30) imgCache = new Map();
