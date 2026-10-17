@@ -1,7 +1,35 @@
+import { useEffect, useState } from 'react';
+
 // Recorta el fondo vacío alrededor del modelo para que la imagen llene el marco
 // sin cortar el cuerpo. Devuelve la imagen original si no puede recortar con confianza.
 
 let imgCache = new Map<string, string>();
+
+export function useTrimmedImage(src: string | null): { url: string | null; trimming: boolean } {
+  const [url, setUrl] = useState<string | null>(src);
+  const [trimming, setTrimming] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    if (!src) {
+      setUrl(null);
+      setTrimming(false);
+      return;
+    }
+    setUrl(src);
+    setTrimming(true);
+    trimImage(src).then((t) => {
+      if (alive) {
+        setUrl(t);
+        setTrimming(false);
+      }
+    });
+    return () => {
+      alive = false;
+    };
+  }, [src]);
+  return { url, trimming };
+}
+
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {

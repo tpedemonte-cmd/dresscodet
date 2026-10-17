@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan, LIMITS } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
+import { trimImage, useTrimmedImage } from '@/lib/trimImage';
 import { canDeleteAvatar, needsLastAvatarConfirmation } from '../../supabase/functions/_shared/avatarRules';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
@@ -120,6 +121,8 @@ export default function Tryon() {
   const [activeModelId, setActiveModelId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<any[]>([]);
   const [resultImage, setResultImage] = useState<string | null>(null);
+  const rawModelImage = resultImage || selfie;
+  const { url: modelImage } = useTrimmedImage(rawModelImage);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savingModel, setSavingModel] = useState(false);
@@ -375,9 +378,15 @@ export default function Tryon() {
 
   const saveModelMutation = useMutation({
     mutationFn: async () => {
-      // Guardamos la imagen que se está viendo: si hay resultado de IA (con la ropa puesta), esa
-      const source = isPremium ? resultImage || selfie : selfie;
-      if (!source || !user) throw new Error('No hay modelo para guardar');
+      const rawSource = isPremium ? resultImage || selfie : selfie;
+      if (!rawSource || !user) throw new Error('No hay modelo para guardar');
+      // Guardamos la imagen recortada (sin fondo vacío) para que siempre llene el marco
+      let source = rawSource;
+      try {
+        source = await trimImage(rawSource);
+      } catch {
+        source = rawSource;
+      }
       if (savedModels.length >= quota.savedModelsLimit) {
         throw new Error(
           isPremium
@@ -645,7 +654,7 @@ export default function Tryon() {
         {selfie && !showVariantPicker ? (
           <div className="space-y-3">
             <div className="relative w-full max-w-sm mx-auto rounded-xl overflow-hidden shadow-card bg-muted">
-              <img src={resultImage || selfie} alt="Tu modelo" className="w-full h-auto block" />
+              <img src={modelImage || rawModelImage || ''} alt="Tu modelo" className={`w-full h-auto block ${modelImage && modelImage !== rawModelImage ? 'opacity-100' : 'opacity-90'} transition-opacity`} />
               {resultImage && (
                 <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-body font-medium px-2 py-1 rounded-full">
                   ✨ Resultado IA
@@ -1154,7 +1163,7 @@ export default function Tryon() {
               <div className="flex gap-3">
                 {selfie && (
                   <div className="w-1/3 shrink-0 rounded-lg overflow-hidden bg-secondary">
-                    <img src={selfie} alt="Tu modelo" className="w-full h-full object-contain aspect-[3/4] bg-muted" />
+                    <img src={modelImage || rawModelImage || selfie} alt="Tu modelo" className="w-full h-full object-contain aspect-[3/4] bg-muted" />
                   </div>
                 )}
                 <div className={`grid gap-2 flex-1 ${selectedItems.length > 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
