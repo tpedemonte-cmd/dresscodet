@@ -662,7 +662,7 @@ export default function Tryon() {
                 <Button
                   variant="secondary"
                   className="h-auto min-h-10 whitespace-normal py-2"
-                  onClick={() => navigate('/premium#avatares-extra')}
+                  onClick={() => navigatePremium('/premium#avatares-extra')}
                 >
                   <Sparkles className="h-4 w-4 mr-2 shrink-0" />
                   Modificar avatar · Comprar avatares extra
