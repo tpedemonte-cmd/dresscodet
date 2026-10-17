@@ -89,7 +89,8 @@ export async function trimImage(src: string): Promise<string> {
     const edge = Math.max(4, Math.round(w * 0.02));
     const threshold = 38;
     const minRun = Math.max(3, Math.round(w * 0.004));
-    let minX = w, minY = h, maxX = -1, maxY = -1;
+    const mask = new Uint8Array(w * h);
+    const colCnt = new Uint32Array(w);
     for (let y = 0; y < h; y++) {
       let lr = 0, lg = 0, lb = 0, rr = 0, rg = 0, rb = 0;
       for (let x = 0; x < edge; x++) {
@@ -99,26 +100,44 @@ export async function trimImage(src: string): Promise<string> {
         rr += pixels[j]; rg += pixels[j + 1]; rb += pixels[j + 2];
       }
       lr /= edge; lg /= edge; lb /= edge; rr /= edge; rg /= edge; rb /= edge;
-      let rowMin = -1, rowMax = -1, count = 0;
+      let count = 0;
       for (let x = edge; x < w - edge; x++) {
         const t = x / (w - 1);
         const br = lr + (rr - lr) * t, bgc = lg + (rg - lg) * t, bb = lb + (rb - lb) * t;
         const i = (y * w + x) * 4;
         const dr = pixels[i] - br, dg = pixels[i + 1] - bgc, db = pixels[i + 2] - bb;
         if (dr * dr + dg * dg + db * db > threshold * threshold) {
+          mask[y * w + x] = 1;
           count++;
-          if (rowMin < 0) rowMin = x;
-          rowMax = x;
         }
       }
-      if (count >= minRun && count < (w - edge * 2) * 0.6) {
-        if (rowMin < minX) minX = rowMin;
-        if (rowMax > maxX) maxX = rowMax;
+      // Filas donde "todo" cambia son cambios de fondo, no la persona
+      if (count >= (w - edge * 2) * 0.6) {
+        for (let x = 0; x < w; x++) mask[y * w + x] = 0;
+      } else {
+        for (let x = edge; x < w - edge; x++) colCnt[x] += mask[y * w + x];
+      }
+    }
+    // Columnas de la persona: con suficientes píxeles distintos al fondo (descarta ruido y esquinas)
+    const colMin = Math.max(4, Math.round(h * 0.06));
+    let minX = w, maxX = -1;
+    for (let x = 0; x < w; x++) {
+      if (colCnt[x] >= colMin) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+      }
+    }
+    if (maxX < 0) return src;
+    let minY = h, maxY = -1;
+    for (let y = 0; y < h; y++) {
+      let c = 0;
+      for (let x = minX; x <= maxX; x++) c += mask[y * w + x];
+      if (c >= minRun) {
         if (y < minY) minY = y;
         if (y > maxY) maxY = y;
       }
     }
-    if (maxX < 0) return src;
+    if (maxY < 0) return src;
 
     const bboxW = maxX - minX + 1;
     const bboxH = maxY - minY + 1;
