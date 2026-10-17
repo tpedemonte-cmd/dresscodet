@@ -1199,6 +1199,18 @@ export default function Tryon() {
               <p className="text-[11px] font-body text-muted-foreground">¿Te convence la combinación? Recién ahí generala con IA.</p>
             </div>
           )}
+          {!quotaLoading && (
+            <div className="flex items-center justify-center gap-1.5" aria-label="Pruebas de outfit disponibles">
+              <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[11px] font-body text-muted-foreground">
+                Outfits generables:{' '}
+                <span className={`font-semibold ${quota.tryonsLeft > 0 ? 'text-foreground' : 'text-destructive'}`}>
+                  {quota.tryonsLeft}
+                </span>
+                {` de ${isPremium ? LIMITS.premium.tryonsPerMonth : LIMITS.free.tryonsPerMonth} este mes`}
+              </span>
+            </div>
+          )}
           <Button variant="warm" className="w-full" disabled={!selfie || selectedItems.length === 0 || loading} onClick={handleTryon}>
             {loading ? (
               <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando outfit virtual...</>
