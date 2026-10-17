@@ -653,8 +653,8 @@ export default function Tryon() {
 
         {selfie && !showVariantPicker ? (
           <div className="space-y-3">
-            <div className="relative w-full max-w-sm mx-auto rounded-xl overflow-hidden shadow-card bg-muted">
-              <img src={modelImage || rawModelImage || ''} alt="Tu modelo" className={`w-full h-auto block ${modelImage && modelImage !== rawModelImage ? 'opacity-100' : 'opacity-90'} transition-opacity`} />
+            <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card bg-muted">
+              <img src={modelImage || rawModelImage || ''} alt="Tu modelo" className={`w-full h-full object-cover object-center block ${modelImage && modelImage !== rawModelImage ? 'opacity-100' : 'opacity-90'} transition-opacity`} />
               {resultImage && (
                 <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-body font-medium px-2 py-1 rounded-full">
                   ✨ Resultado IA
