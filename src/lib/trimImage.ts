@@ -84,42 +84,33 @@ export async function trimImage(src: string): Promise<string> {
       return src; // canvas contaminado: sin CORS no se puede medir
     }
 
-    // Detección por fila: el fondo de cada fila se estima con sus bordes izquierdo y derecho
-    // (así funciona con paredes degradadas y piso de otro color).
+    // Detección por bordes: el fondo de estudio es liso (aunque tenga degradé), la persona tiene contornos.
     const edge = Math.max(4, Math.round(w * 0.02));
-    const threshold = 38;
-    const minRun = Math.max(3, Math.round(w * 0.004));
+    const minRun = 3;
+    const luma = new Float32Array(w * h);
+    for (let p = 0; p < w * h; p++) {
+      luma[p] = pixels[p * 4] * 0.299 + pixels[p * 4 + 1] * 0.587 + pixels[p * 4 + 2] * 0.114;
+    }
     const mask = new Uint8Array(w * h);
     const colCnt = new Uint32Array(w);
-    for (let y = 0; y < h; y++) {
-      let lr = 0, lg = 0, lb = 0, rr = 0, rg = 0, rb = 0;
-      for (let x = 0; x < edge; x++) {
-        const i = (y * w + x) * 4;
-        lr += pixels[i]; lg += pixels[i + 1]; lb += pixels[i + 2];
-        const j = (y * w + (w - 1 - x)) * 4;
-        rr += pixels[j]; rg += pixels[j + 1]; rb += pixels[j + 2];
-      }
-      lr /= edge; lg /= edge; lb /= edge; rr /= edge; rg /= edge; rb /= edge;
+    for (let y = 0; y < h - 2; y++) {
       let count = 0;
       for (let x = edge; x < w - edge; x++) {
-        const t = x / (w - 1);
-        const br = lr + (rr - lr) * t, bgc = lg + (rg - lg) * t, bb = lb + (rb - lb) * t;
-        const i = (y * w + x) * 4;
-        const dr = pixels[i] - br, dg = pixels[i + 1] - bgc, db = pixels[i + 2] - bb;
-        if (dr * dr + dg * dg + db * db > threshold * threshold) {
-          mask[y * w + x] = 1;
+        const p = y * w + x;
+        const g = Math.abs(luma[p] - luma[p + 2]) + Math.abs(luma[p] - luma[p + 2 * w]);
+        if (g > 18) {
+          mask[p] = 1;
           count++;
         }
       }
-      // Filas donde "todo" cambia son cambios de fondo, no la persona
-      if (count >= (w - edge * 2) * 0.6) {
+      // Filas con bordes en casi todo el ancho son la línea del piso, no la persona
+      if (count >= (w - edge * 2) * 0.4) {
         for (let x = 0; x < w; x++) mask[y * w + x] = 0;
       } else {
         for (let x = edge; x < w - edge; x++) colCnt[x] += mask[y * w + x];
       }
     }
-    // Columnas de la persona: con suficientes píxeles distintos al fondo (descarta ruido y esquinas)
-    const colMin = Math.max(4, Math.round(h * 0.06));
+    const colMin = Math.max(4, Math.round(h * 0.03));
     let minX = w, maxX = -1;
     for (let x = 0; x < w; x++) {
       if (colCnt[x] >= colMin) {

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock } from 'lucide-react';
+import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan, LIMITS } from '@/lib/plan';
@@ -666,7 +666,7 @@ export default function Tryon() {
                   aria-label="Comprar avatares extra para modificar tu modelo"
                   className="absolute top-2 right-2 h-9 w-9 rounded-full bg-black/60 text-white backdrop-blur-sm flex items-center justify-center hover:bg-black/75 transition-colors"
                 >
-                  <Sparkles className="h-4 w-4" />
+                  <Plus className="h-5 w-5" />
                 </button>
               )}
               {!isPremium && activeModelId && canDeleteModel && (
