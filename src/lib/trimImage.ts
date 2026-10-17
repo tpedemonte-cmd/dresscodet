@@ -84,64 +84,110 @@ export async function trimImage(src: string): Promise<string> {
       return src; // canvas contaminado: sin CORS no se puede medir
     }
 
-    // Color de fondo: promedio de parches en las 4 esquinas
-    const cornerAvg = (x0: number, y0: number) => {
-      let r = 0, g = 0, b = 0, n = 0;
-      const size = Math.max(4, Math.round(Math.min(w, h) * 0.03));
-      for (let y = y0; y < Math.min(y0 + size, h); y++) {
-        for (let x = x0; x < Math.min(x0 + size, w); x++) {
-          const i = (y * w + x) * 4;
-          r += pixels[i]; g += pixels[i + 1]; b += pixels[i + 2]; n++;
+    // Detección por fila: el fondo de cada fila se estima con sus bordes izquierdo y derecho
+    // (así funciona con paredes degradadas y piso de otro color).
+    const edge = Math.max(4, Math.round(w * 0.02));
+    const threshold = 38;
+    const minRun = Math.max(3, Math.round(w * 0.004));
+    const mask = new Uint8Array(w * h);
+    const colCnt = new Uint32Array(w);
+    for (let y = 0; y < h; y++) {
+      let lr = 0, lg = 0, lb = 0, rr = 0, rg = 0, rb = 0;
+      for (let x = 0; x < edge; x++) {
+        const i = (y * w + x) * 4;
+        lr += pixels[i]; lg += pixels[i + 1]; lb += pixels[i + 2];
+        const j = (y * w + (w - 1 - x)) * 4;
+        rr += pixels[j]; rg += pixels[j + 1]; rb += pixels[j + 2];
+      }
+      lr /= edge; lg /= edge; lb /= edge; rr /= edge; rg /= edge; rb /= edge;
+      let count = 0;
+      for (let x = edge; x < w - edge; x++) {
+        const t = x / (w - 1);
+        const br = lr + (rr - lr) * t, bgc = lg + (rg - lg) * t, bb = lb + (rb - lb) * t;
+        const i = (y * w + x) * 4;
+        const dr = pixels[i] - br, dg = pixels[i + 1] - bgc, db = pixels[i + 2] - bb;
+        if (dr * dr + dg * dg + db * db > threshold * threshold) {
+          mask[y * w + x] = 1;
+          count++;
         }
       }
-      return [r / n, g / n, b / n] as const;
-    };
-    const corners = [
-      cornerAvg(0, 0), cornerAvg(w - 8, 0),
-      cornerAvg(0, h - 8), cornerAvg(w - 8, h - 8),
-    ];
-    const bg = corners.reduce<[number, number, number]>(
-      (acc, c) => [acc[0] + c[0] / 4, acc[1] + c[1] / 4, acc[2] + c[2] / 4],
-      [0, 0, 0],
-    );
-
-    // Bounding box de píxeles que se diferencian del fondo
-    const threshold = 40;
-    let minX = w, minY = h, maxX = -1, maxY = -1;
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const i = (y * w + x) * 4;
-        const dr = pixels[i] - bg[0];
-        const dg = pixels[i + 1] - bg[1];
-        const db = pixels[i + 2] - bg[2];
-        if (Math.sqrt(dr * dr + dg * dg + db * db) > threshold) {
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          if (y > maxY) maxY = y;
-        }
+      // Filas donde "todo" cambia son cambios de fondo, no la persona
+      if (count >= (w - edge * 2) * 0.6) {
+        for (let x = 0; x < w; x++) mask[y * w + x] = 0;
+      } else {
+        for (let x = edge; x < w - edge; x++) colCnt[x] += mask[y * w + x];
+      }
+    }
+    // Columnas de la persona: con suficientes píxeles distintos al fondo (descarta ruido y esquinas)
+    const colMin = Math.max(4, Math.round(h * 0.06));
+    let minX = w, maxX = -1;
+    for (let x = 0; x < w; x++) {
+      if (colCnt[x] >= colMin) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
       }
     }
     if (maxX < 0) return src;
+    let minY = h, maxY = -1;
+    for (let y = 0; y < h; y++) {
+      let c = 0;
+      for (let x = minX; x <= maxX; x++) c += mask[y * w + x];
+      if (c >= minRun) {
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+    if (maxY < 0) return src;
 
     const bboxW = maxX - minX + 1;
     const bboxH = maxY - minY + 1;
-    // Si el sujeto ya ocupa casi todo, no hay nada que recortar
-    if (bboxW > w * 0.97 && bboxH > h * 0.97) return src;
+    if (bboxW < 16 || bboxH < 32) return src;
 
-    // Respiración: 2,5% del lado más grande
-    const pad = Math.round(Math.max(bboxW, bboxH) * 0.025);
-    const cx0 = Math.max(0, minX - pad);
-    const cy0 = Math.max(0, minY - pad);
-    const cw = Math.min(w - cx0, bboxW + pad * 2);
-    const ch = Math.min(h - cy0, bboxH + pad * 2);
-    if (cw < 32 || ch < 32) return src;
+    // Encuadre retrato 3:4 centrado en la persona, con la cabeza y los pies completos
+    let targetH = bboxH * 1.08;
+    let targetW = targetH * 0.75;
+    if (targetW < bboxW * 1.06) {
+      targetW = bboxW * 1.06;
+      targetH = targetW / 0.75;
+    }
+    // Si el encuadre no entra en la foto, achicarlo (sin cortar a la persona) para no rellenar
+    const fit = Math.min(1, h / targetH, w / targetW);
+    const minFit = Math.max(bboxH / targetH, bboxW / targetW);
+    if (fit < 1) {
+      const f = Math.max(fit, minFit);
+      targetH *= f;
+      targetW *= f;
+    }
+    const cx = minX + bboxW / 2;
+    const cy = minY + bboxH / 2;
+    const clampPos = (start: number, size: number, total: number) =>
+      size <= total ? Math.min(Math.max(0, start), total - size) : (total - size) / 2;
+    const sx = clampPos(cx - targetW / 2, targetW, w);
+    const sy = clampPos(cy - targetH / 2, targetH, h);
 
+    const scale = Math.min(1, 900 / targetW);
+    const outW = Math.round(targetW * scale);
+    const outH = Math.round(targetH * scale);
     const out = document.createElement('canvas');
-    out.width = cw;
-    out.height = ch;
-    out.getContext('2d')!.drawImage(img, cx0, cy0, cw, ch, 0, 0, cw, ch);
-    const result = out.toDataURL('image/png');
+    out.width = outW;
+    out.height = outH;
+    const octx = out.getContext('2d')!;
+    // Relleno con el color del fondo por si el encuadre sale de la foto
+    const p0 = (Math.min(h - 1, Math.max(0, Math.round(cy))) * w) * 4;
+    octx.fillStyle = `rgb(${pixels[p0]},${pixels[p0 + 1]},${pixels[p0 + 2]})`;
+    octx.fillRect(0, 0, outW, outH);
+    // Intersección del encuadre con la imagen
+    const ix0 = Math.max(0, sx), iy0 = Math.max(0, sy);
+    const ix1 = Math.min(w, sx + targetW), iy1 = Math.min(h, sy + targetH);
+    const dx = (ix0 - sx) * scale, dy = (iy0 - sy) * scale;
+    const dw = (ix1 - ix0) * scale, dh = (iy1 - iy0) * scale;
+    // Extender el fondo estirando los bordes de la foto (pared arriba, piso abajo) para que no se note
+    if (dy > 0) octx.drawImage(img, ix0, iy0, ix1 - ix0, 1, dx, 0, dw, dy + 1);
+    if (dy + dh < outH) octx.drawImage(img, ix0, iy1 - 1, ix1 - ix0, 1, dx, dy + dh - 1, dw, outH - dy - dh + 1);
+    if (dx > 0) octx.drawImage(img, ix0, iy0, 1, iy1 - iy0, 0, dy, dx + 1, dh);
+    if (dx + dw < outW) octx.drawImage(img, ix1 - 1, iy0, 1, iy1 - iy0, dx + dw - 1, dy, outW - dx - dw + 1, dh);
+    octx.drawImage(img, ix0, iy0, ix1 - ix0, iy1 - iy0, dx, dy, dw, dh);
+    const result = out.toDataURL('image/jpeg', 0.92);
 
     if (imgCache.size > 30) imgCache = new Map();
     imgCache.set(src, result);
