@@ -1,7 +1,8 @@
 import { usePlan, PREMIUM_PRICE, formatPrice, LIMITS, AVATAR_PACKS, AvatarPackKey } from '@/lib/plan';
 import { Button } from '@/components/ui/button';
 import { Crown, Check, Loader2, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 const BENEFITS = [
@@ -29,6 +30,13 @@ export default function Premium() {
     quota,
   } = usePlan();
   const navigate = useNavigate();
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    if (hash === '#avatares-extra' && !isPremium) {
+      document.getElementById('avatares-extra')?.scrollIntoView({ block: 'start' });
+    }
+  }, [hash, isPremium]);
 
   const goCheckout = async () => {
     try {
@@ -114,7 +122,7 @@ export default function Premium() {
         </p>
       </div>
 
-      {!isPremium && <div className="rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
+      {!isPremium && <div id="avatares-extra" className="scroll-mt-24 rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
         <div className="flex items-center gap-2">
           <div className="rounded-xl bg-primary/10 p-2">
             <Sparkles className="h-5 w-5 text-primary" />

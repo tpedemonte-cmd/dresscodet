@@ -658,6 +658,16 @@ export default function Tryon() {
                   <><Save className="h-4 w-4 mr-2" /> {!isPremium ? 'Guardar modelo' : resultImage ? 'Guardar modelo con esta ropa' : 'Guardar este modelo'}</>
                 )}
               </Button>}
+              {!isPremium && activeModelId && (
+                <Button
+                  variant="secondary"
+                  className="h-auto min-h-10 whitespace-normal py-2"
+                  onClick={() => navigatePremium('/premium#avatares-extra')}
+                >
+                  <Sparkles className="h-4 w-4 mr-2 shrink-0" />
+                  Modificar avatar · Comprar avatares extra
+                </Button>
+              )}
               {!isPremium && activeModelId && canDeleteModel && (
                 <Button variant="outline" disabled={deleteModelMutation.isPending} onClick={() => deleteModelMutation.mutate(activeModelId)}>
                   <Trash2 className="h-4 w-4 mr-2" /> Eliminar modelo actual
