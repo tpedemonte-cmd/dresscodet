@@ -111,7 +111,7 @@ export async function trimImage(src: string): Promise<string> {
           rowMax = x;
         }
       }
-      if (count >= minRun) {
+      if (count >= minRun && count < (w - edge * 2) * 0.6) {
         if (rowMin < minX) minX = rowMin;
         if (rowMax > maxX) maxX = rowMax;
         if (y < minY) minY = y;
