@@ -8,7 +8,8 @@ import { toast } from 'sonner';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan, LIMITS } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
-import { canDeleteAvatar } from '../../supabase/functions/_shared/avatarRules';
+import { canDeleteAvatar, needsLastAvatarConfirmation } from '../../supabase/functions/_shared/avatarRules';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 import { PremiumBadge } from '@/components/PremiumGate';
 import {
@@ -109,6 +110,7 @@ export default function Tryon() {
   const navigatePremium = useNavigate();
   const queryClient = useQueryClient();
   const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
+  const [confirmLastAvatar, setConfirmLastAvatar] = useState(false);
 
   
   const [variants, setVariants] = useState<(Look & { image: string })[]>([]);
@@ -257,7 +259,7 @@ export default function Tryon() {
     };
   };
 
-  const handleGenerateAvatar = async () => {
+  const handleGenerateAvatar = async (lastAvatarConfirmed = false) => {
     if (generatingAvatar || quotaLoading || modelsLoading || planLoading) return;
     if (!isPremium && (savedModels.length > 0 || selfie)) {
       toast.error('Guardá tu modelo o eliminá el actual con un avatar extra antes de generar otro.');
@@ -279,6 +281,11 @@ export default function Tryon() {
       }
       return;
     }
+    if (!lastAvatarConfirmed && needsLastAvatarConfirmation(quota.avatarsLeft)) {
+      setConfirmLastAvatar(true);
+      return;
+    }
+    setConfirmLastAvatar(false);
     setGeneratingAvatar(true);
     setVariants([]);
 
@@ -658,7 +665,7 @@ export default function Tryon() {
                   <><Save className="h-4 w-4 mr-2" /> {!isPremium ? 'Guardar modelo' : resultImage ? 'Guardar modelo con esta ropa' : 'Guardar este modelo'}</>
                 )}
               </Button>}
-              {!isPremium && activeModelId && (
+              {!isPremium && activeModelId && !quotaLoading && quota.avatarCredits === 0 && (
                 <Button
                   variant="secondary"
                   className="h-auto min-h-10 whitespace-normal py-2"
@@ -669,8 +676,8 @@ export default function Tryon() {
                 </Button>
               )}
               {!isPremium && activeModelId && canDeleteModel && (
-                <Button variant="outline" disabled={deleteModelMutation.isPending} onClick={() => deleteModelMutation.mutate(activeModelId)}>
-                  <Trash2 className="h-4 w-4 mr-2" /> Eliminar modelo actual
+                <Button variant="ghost" size="sm" className="self-center h-8 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive" disabled={deleteModelMutation.isPending} onClick={() => deleteModelMutation.mutate(activeModelId)}>
+                  <Trash2 className="h-3 w-3 mr-1.5" /> Modificar/eliminar modelo actual
                 </Button>
               )}
               {isPremium && variants.length > 0 && (
@@ -720,7 +727,7 @@ export default function Tryon() {
                   <Button variant="outline" size="sm" onClick={reset}>
                     Volver a los datos
                   </Button>
-                  <Button variant="warm" size="sm" disabled={generatingAvatar} onClick={handleGenerateAvatar}>
+                  <Button variant="warm" size="sm" disabled={generatingAvatar} onClick={() => void handleGenerateAvatar()}>
                     {generatingAvatar ? (
                       <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
                     ) : (
@@ -912,7 +919,7 @@ export default function Tryon() {
                 size="sm"
                 className="w-full"
                 disabled={generatingAvatar || quotaLoading || modelsLoading || planLoading || quota.avatarsLeft <= 0 || (!isPremium && savedModels.length > 0)}
-                onClick={handleGenerateAvatar}
+                onClick={() => void handleGenerateAvatar()}
               >
                 {generatingAvatar ? (
                   <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando modelo...</>
@@ -966,6 +973,23 @@ export default function Tryon() {
           </div>
         )}
       </div>
+
+      <p className="text-center text-sm font-body text-muted-foreground" aria-live="polite">
+        Avatares disponibles: <span className="font-semibold text-foreground">{quotaLoading ? '…' : isPremium ? quota.avatarsLeft : quota.avatarCredits + (!selfie && quota.avatarsTotal === 0 ? 1 : 0)}</span>
+      </p>
+
+      <Dialog open={confirmLastAvatar} onOpenChange={setConfirmLastAvatar}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>¿Estás usando tu último avatar, querés continuar?</DialogTitle>
+            <DialogDescription>Si se genera correctamente, se descontará un avatar y conservarás ese último modelo.</DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" onClick={() => setConfirmLastAvatar(false)}>Cancelar</Button>
+            <Button className="flex-1" disabled={generatingAvatar || quotaLoading} onClick={() => void handleGenerateAvatar(true)}>Continuar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Step 2: Select items */}
       <div className="space-y-2">

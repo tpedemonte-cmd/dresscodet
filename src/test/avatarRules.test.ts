@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { canDeleteAvatar, freeAvatarAllowance } from '../../supabase/functions/_shared/avatarRules';
+import { canDeleteAvatar, freeAvatarAllowance, needsLastAvatarConfirmation } from '../../supabase/functions/_shared/avatarRules';
 
 describe('free avatar replacement rules', () => {
+  it('requires confirmation only for the last available avatar', () => {
+    expect(needsLastAvatarConfirmation(1)).toBe(true);
+    expect(needsLastAvatarConfirmation(2)).toBe(false);
+    expect(needsLastAvatarConfirmation(0)).toBe(false);
+  });
   it('allows exactly one initial free generation', () => {
     expect(freeAvatarAllowance(0, 0, 0)).toBe(1);
     expect(freeAvatarAllowance(1, 0, 0)).toBe(0);
