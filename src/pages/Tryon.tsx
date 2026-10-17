@@ -589,12 +589,15 @@ export default function Tryon() {
 
       const { data: urlData } = supabase.storage.from('look-images').getPublicUrl(fileName);
 
-      const itemNames = selectedItems.map(i => `${CATEGORIES[i.category] || '📦'} ${i.name}`).join(', ');
+      const lookSource = resultItems.length ? resultItems : selectedItems;
+      const itemNames = lookSource.map(i => `${CATEGORIES[i.category] || '📦'} ${i.name}`).join(', ');
+
 
       const { error: insertError } = await supabase.from('saved_looks').insert({
         user_id: user.id,
         image_url: urlData.publicUrl,
-        item_ids: selectedItems.map(i => i.id),
+        item_ids: lookSource.map(i => i.id),
+
         note: itemNames,
       });
       if (insertError) throw insertError;
@@ -615,9 +618,11 @@ export default function Tryon() {
     setSelfie(null);
     setActiveModelId(null);
     setSelectedItems([]);
+    setResultItems([]);
     setResultImage(null);
     setVariants([]);
     setShowVariantPicker(false);
+
   };
 
   return (
@@ -661,8 +666,9 @@ export default function Tryon() {
         {selfie && !showVariantPicker ? (
           <div className="space-y-3">
             <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card bg-muted">
-              <img src={modelImage || rawModelImage || ''} alt="Tu modelo" className={`w-full h-full object-cover object-center block ${modelImage && modelImage !== rawModelImage ? 'opacity-100' : 'opacity-90'} transition-opacity`} />
-              {resultImage && (
+              <img src={frameImage || selfie || ''} alt="Tu modelo" className="w-full h-full object-cover object-center block" />
+              {showResultInFrame && (
+
                 <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-body font-medium px-2 py-1 rounded-full">
                   ✨ Resultado IA
                 </div>
@@ -1170,7 +1176,8 @@ export default function Tryon() {
               <div className="flex gap-3">
                 {selfie && (
                   <div className="w-1/3 shrink-0 rounded-lg overflow-hidden bg-secondary">
-                    <img src={modelImage || rawModelImage || selfie} alt="Tu modelo" className="w-full h-full object-contain aspect-[3/4] bg-muted" />
+                    <img src={modelImage || selfie || ''} alt="Tu modelo" className="w-full h-full object-contain aspect-[3/4] bg-muted" />
+
                   </div>
                 )}
                 <div className={`grid gap-2 flex-1 ${selectedItems.length > 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
