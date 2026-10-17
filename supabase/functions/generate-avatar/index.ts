@@ -2,6 +2,19 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { aiGenerateImage } from "../_shared/ai.ts";
 import { adminClient, userClient, checkQuota, recordUsage } from "../_shared/quotas.ts";
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { z } from 'npm:zod@3';
+
+const AvatarBody = z.object({
+  height: z.coerce.number().finite().positive().max(300),
+  weight: z.coerce.number().finite().positive().max(600),
+  age: z.coerce.number().int().min(1).max(120),
+  gender: z.enum(['masculino', 'femenino', 'otro']),
+  hairColor: z.string().max(80).optional(),
+  hairStyle: z.string().max(80).optional(),
+  skinTone: z.string().max(80).optional(),
+  bodyType: z.string().max(80).optional(),
+  measurements: z.record(z.union([z.string().max(20), z.number().finite().nonnegative().max(500)])).optional(),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -21,11 +34,15 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Ya hay un modelo generándose. Esperá a que termine.' }), { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
     lockUserId = authData.user.id;
+    const parsed = AvatarBody.safeParse(await req.json().catch(() => null));
+    if (!parsed.success) {
+      return new Response(JSON.stringify({ error: 'Revisá los datos del modelo.', details: parsed.error.flatten().fieldErrors }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
     const {
       height, weight, age, gender,
       hairColor, hairStyle, skinTone, bodyType,
       measurements,
-    } = await req.json();
+    } = parsed.data;
 
     const quota = await checkQuota(req, "avatar");
     if (!quota.ok) {
