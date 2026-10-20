@@ -2,7 +2,8 @@
 
 ## Migración a infraestructura propia
 - [x] Guardar de forma segura el acceso al proyecto propio y verificar servicios de cuentas y tablas existentes, sin cambiar la conexión activa.
-- [ ] Migrar cuentas, prendas, imágenes de avatares y cupos; conectar APK y Vercel al destino. Bloqueado: falta la exportación completa del origen con cuentas y la descarga separada de imágenes; el destino no contiene ai_usage_events ni avatar_credits. El acceso recibido permite las API de datos y cuentas, pero no constituye acceso para aplicar cambios estructurales externos. Mantener funciones de IA en Lovable Cloud con facturación de Lovable, validando sesiones del destino. No modificar ni eliminar el origen mientras el destino no esté verificado.
+- [x] Migrar cuentas, prendas, historial, planes, looks, wishlist y fotos al proyecto propio: datos remapeados a las cuentas del destino, URLs de imágenes reescritas al almacenamiento propio y tablas ai_usage_events, avatar_credits y avatar_generation_locks creadas con RLS y permisos.
+- [ ] Conectar APK y Vercel al proyecto propio (variables VITE_SUPABASE_* del destino + redeploy/rebuild) y adaptar las funciones de IA para validar sesiones del destino manteniendo el cobro de IA en Lovable. No modificar ni eliminar el origen hasta verificar todo.
 
 ## Prueba visual
 - [x] Usar medias negras en la representación de la categoría para mejorar su visibilidad (verificado en Agregar)
