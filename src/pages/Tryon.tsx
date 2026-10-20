@@ -485,7 +485,18 @@ export default function Tryon() {
       toast.error('Elegí al menos una prenda para probarte');
       return;
     }
-
+    if (quotaLoading || planLoading) {
+      toast.error('Esperá a que se actualicen tus cupos.');
+      return;
+    }
+    if (quota.tryonsLeft === 0) {
+      toast.error('Llegaste al límite de outfits de este mes.');
+      return;
+    }
+    if (isPremium && quota.tryonsDailyLeft === 0) {
+      toast.error('Llegaste a los 5 outfits de hoy. Volvé mañana.');
+      return;
+    }
 
     setLoading(true);
     setResultImage(null);
@@ -1208,7 +1219,7 @@ export default function Tryon() {
             </div>
           )}
           {!quotaLoading && (
-            <div className="flex items-center justify-center gap-1.5" aria-label="Pruebas de outfit disponibles">
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5" aria-label="Pruebas de outfit disponibles">
               <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
               <span className="text-[11px] font-body text-muted-foreground">
                 Outfits generables:{' '}
@@ -1217,6 +1228,15 @@ export default function Tryon() {
                 </span>
                 {` de ${isPremium ? LIMITS.premium.tryonsPerMonth : LIMITS.free.tryonsPerMonth} este mes`}
               </span>
+              {isPremium && (
+                <span className="text-[11px] font-body text-muted-foreground" aria-label="Outfits disponibles hoy">
+                  Outfits generables hoy:{' '}
+                  <span className={`font-semibold ${quota.tryonsDailyLeft && quota.tryonsLeft > 0 ? 'text-foreground' : 'text-destructive'}`}>
+                    {Math.min(quota.tryonsDailyLeft ?? 0, quota.tryonsLeft)}
+                  </span>
+                  {` de ${LIMITS.premium.tryonsPerDay}`}
+                </span>
+              )}
             </div>
           )}
           {selectedItems.length > 0 && !usingSavedAvatar && (

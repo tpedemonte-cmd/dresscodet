@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { freeAvatarAllowance } from '../../supabase/functions/_shared/avatarRules';
+import { calculateTryonQuota, TRYON_LIMITS, tryonMonthStart } from '../../supabase/functions/_shared/tryonQuota';
 
 export type PlanTier = 'free' | 'premium';
 
@@ -17,8 +18,8 @@ export const FREE_HISTORY_LIMIT = 5;
 
 /** Límites de uso de IA por plan (deben coincidir con supabase/functions/_shared/quotas.ts) */
 export const LIMITS = {
-  free: { avatarFreeTotal: 1, savedModels: 1, tryonsPerMonth: 2 },
-  premium: { avatarFreeTotal: 1, savedModels: 1, tryonsPerMonth: 15 },
+  free: { avatarFreeTotal: 1, savedModels: 1, ...TRYON_LIMITS.free },
+  premium: { avatarFreeTotal: 1, savedModels: 1, ...TRYON_LIMITS.premium },
 } as const;
 
 export type AvatarPackKey = 'avatar_1' | 'avatar_3';
@@ -42,6 +43,8 @@ export interface Quota {
   avatarsThisMonth: number;
   avatarsToday: number;
   tryonsThisMonth: number;
+  tryonsToday: number;
+  tryonsDailyLeft: number | null;
   savedModels: number;
   /** Cuántos modelos podés generar ahora mismo (0 = hay que comprar o esperar) */
   avatarsLeft: number;
@@ -91,10 +94,11 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     queryKey: ['subscription', user?.id],
     enabled: !!user,
     queryFn: async (): Promise<Subscription | null> => {
+      if (!user) return null;
       const { data, error } = await supabase
         .from('subscriptions')
         .select('plan, status, current_period_end, price_amount, currency')
-        .eq('user_id', user!.id)
+        .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
@@ -112,39 +116,49 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   const isPremium = !!data && data.plan === 'premium' && data.status === 'active' && !expired;
 
   const { data: usage, isLoading: usageLoading } = useQuery({
-    queryKey: ['ai_quota', user?.id],
-    enabled: !!user,
+    queryKey: ['ai_quota', user?.id, isPremium, tryonMonthStart(), startOfDayISO()],
+    enabled: !!user && !isLoading,
+    refetchInterval: 60_000,
     queryFn: async () => {
+      if (!user) throw new Error('Iniciá sesión para ver tus cupos.');
       const monthStart = startOfMonthISO();
       const dayStart = startOfDayISO();
 
       const [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models] = await Promise.all([
-        supabase.from('avatar_credits').select('balance').eq('user_id', user!.id).maybeSingle(),
-        supabase.from('ai_usage_events').select('id', { count: 'exact', head: true }).eq('kind', 'avatar'),
+        supabase.from('avatar_credits').select('balance').eq('user_id', user.id).maybeSingle(),
+        supabase.from('ai_usage_events').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('kind', 'avatar'),
         supabase
           .from('ai_usage_events')
           .select('id', { count: 'exact', head: true })
           .eq('kind', 'avatar')
+          .eq('user_id', user.id)
           .gte('created_at', monthStart),
         supabase
           .from('ai_usage_events')
           .select('id', { count: 'exact', head: true })
           .eq('kind', 'avatar')
+          .eq('user_id', user.id)
           .gte('created_at', dayStart),
         supabase
           .from('ai_usage_events')
-          .select('id', { count: 'exact', head: true })
+          .select('plan_tier, created_at')
           .eq('kind', 'tryon')
+          .eq('user_id', user.id)
+          .eq('plan_tier', isPremium ? 'premium' : 'free')
           .gte('created_at', monthStart),
-        supabase.from('user_models').select('id', { count: 'exact', head: true }),
+        supabase.from('user_models').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
       ]);
+
+      for (const result of [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models]) {
+        if (result.error) throw result.error;
+      }
 
       return {
         avatarCredits: credits.data?.balance ?? 0,
         avatarsTotal: avatarsTotal.count ?? 0,
         avatarsThisMonth: avatarsMonth.count ?? 0,
         avatarsToday: avatarsDay.count ?? 0,
-        tryonsThisMonth: tryonsMonth.count ?? 0,
+        ...calculateTryonQuota(tryonsMonth.data ?? [], isPremium ? 'premium' : 'free'),
         savedModels: models.count ?? 0,
       };
     },
@@ -156,6 +170,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     avatarsThisMonth: 0,
     avatarsToday: 0,
     tryonsThisMonth: 0,
+    tryonsToday: 0,
     savedModels: 0,
   };
 
@@ -172,6 +187,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     ...base,
     avatarsLeft,
     tryonsLeft,
+    tryonsDailyLeft: isPremium ? Math.max(0, LIMITS.premium.tryonsPerDay - base.tryonsToday) : null,
     savedModelsLimit,
     canSaveModel: base.savedModels < savedModelsLimit,
   };
@@ -217,7 +233,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         loading: isLoading,
         subscription: data ?? null,
         quota,
-        quotaLoading: usageLoading,
+        quotaLoading: isLoading || usageLoading || !usage,
         refreshQuota: () => queryClient.invalidateQueries({ queryKey: ['ai_quota'] }),
         startCheckout: () => checkout.mutateAsync('premium'),
         startingCheckout: checkout.isPending,

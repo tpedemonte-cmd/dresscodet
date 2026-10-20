@@ -1,18 +1,19 @@
 // Cuotas de uso de IA por plan (avatares y pruebas de outfit).
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { freeAvatarAllowance } from './avatarRules.ts';
+import { calculateTryonQuota, TRYON_LIMITS, tryonMonthStart } from './tryonQuota.ts';
 
 export const LIMITS = {
   free: {
     avatarFreeTotal: 1, // un solo avatar gratis en toda la cuenta
     savedModels: 1,
-    tryonsPerMonth: 2,
+    ...TRYON_LIMITS.free,
     outfitsPerDay: 2,
   },
   premium: {
     avatarFreeTotal: 1,
     savedModels: 1,
-    tryonsPerMonth: 15,
+    ...TRYON_LIMITS.premium,
   },
 } as const;
 
@@ -81,11 +82,12 @@ export async function checkQuota(req: Request, kind: UsageKind): Promise<QuotaDe
     return { ok: false, status: 401, error: 'Iniciá sesión para usar esta función.', useCredit: false, userId: '' };
   }
 
-  const { data: sub } = await sb
+  const { data: sub, error: subError } = await sb
     .from('subscriptions')
     .select('plan, status, current_period_end')
     .eq('user_id', user.id)
     .maybeSingle();
+  if (subError) throw subError;
 
   const expired = !!sub?.current_period_end && new Date(sub.current_period_end) < new Date();
   const isPremium = sub?.plan === 'premium' && sub?.status === 'active' && !expired;
@@ -107,8 +109,12 @@ export async function checkQuota(req: Request, kind: UsageKind): Promise<QuotaDe
 
   if (kind === 'tryon') {
     const limit = isPremium ? LIMITS.premium.tryonsPerMonth : LIMITS.free.tryonsPerMonth;
-    const used = await countUsage(sb, user.id, 'tryon', startOfMonth());
-    if (used >= limit) {
+    const { data: events, error } = await sb.from('ai_usage_events')
+      .select('plan_tier, created_at').eq('user_id', user.id).eq('kind', 'tryon')
+      .eq('plan_tier', isPremium ? 'premium' : 'free').gte('created_at', tryonMonthStart());
+    if (error) throw error;
+    const remaining = calculateTryonQuota(events ?? [], isPremium ? 'premium' : 'free');
+    if (remaining.tryonsLeft === 0) {
       return {
         ok: false,
         status: 403,
@@ -119,7 +125,10 @@ export async function checkQuota(req: Request, kind: UsageKind): Promise<QuotaDe
         userId: user.id,
       };
     }
-    return { ok: true, useCredit: false, userId: user.id };
+    if (remaining.tryonsDailyLeft === 0) {
+      return { ok: false, status: 403, error: 'Llegaste a los 5 outfits de hoy. Volvé mañana; tu cupo mensual restante se conserva.', useCredit: false, userId: user.id, isPremium };
+    }
+    return { ok: true, useCredit: false, userId: user.id, isPremium };
   }
 
   const { count: savedModels, error: modelsError } = await sb.from('user_models')
@@ -159,6 +168,14 @@ export async function recordUsage(decision: QuotaDecision, kind: UsageKind) {
     const { error } = await admin.rpc('record_avatar_generation', {
       p_user_id: decision.userId,
       p_use_credit: decision.useCredit,
+    });
+    if (error) throw error;
+    return;
+  }
+  if (kind === 'tryon') {
+    const { error } = await admin.rpc('record_tryon_generation', {
+      p_user_id: decision.userId,
+      p_plan_tier: decision.isPremium ? 'premium' : 'free',
     });
     if (error) throw error;
     return;
