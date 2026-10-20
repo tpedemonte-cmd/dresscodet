@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -69,6 +69,8 @@ export default function Tryon() {
 
   const [selfie, setSelfie] = useState<string | null>(null);
   const [activeModelId, setActiveModelId] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [avatarBeforePhoto, setAvatarBeforePhoto] = useState<{ image: string; id: string | null } | null>(null);
   const [selectedItems, setSelectedItems] = useState<any[]>([]);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [resultItems, setResultItems] = useState<any[]>([]);
@@ -186,8 +188,11 @@ export default function Tryon() {
   const handleSelfieUpload = (file: File) => {
     const reader = new FileReader();
     reader.onload = () => {
+      if (selfie && !avatarBeforePhoto) setAvatarBeforePhoto({ image: selfie, id: activeModelId });
       setSelfie(reader.result as string);
       setActiveModelId(null);
+      setModelMode('selfie');
+      setShowVariantPicker(false);
       setResultImage(null);
       toast.success('¡Foto lista! Elegí prendas para probártelas.');
     };
@@ -593,7 +598,7 @@ export default function Tryon() {
             </div>
 
             <div className="flex flex-col gap-2 max-w-sm mx-auto">
-              {!activeModelId && <Button
+              {!activeModelId && savedModels.length === 0 && <Button
                 variant="outline"
                 disabled={savingModel}
                 onClick={() => saveModelMutation.mutate()}
@@ -604,13 +609,44 @@ export default function Tryon() {
                   <><Save className="h-4 w-4 mr-2" /> Guardar modelo</>
                 )}
               </Button>}
-              {isPremium && !activeModelId && variants.length > 0 && (
+              {isPremium && !activeModelId && !avatarBeforePhoto && variants.length > 0 && (
                 <Button
                   variant="secondary"
                   onClick={() => setShowVariantPicker(true)}
                 >
                   <RotateCcw className="h-4 w-4 mr-2" /> Cambiar modelo
                 </Button>
+              )}
+              {isPremium && (
+                <>
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    aria-label="Sacar o subir una foto para el probador"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleSelfieUpload(file);
+                      e.target.value = '';
+                    }}
+                  />
+                  <Button variant="outline" disabled={loading || generatingAvatar} onClick={() => photoInputRef.current?.click()}>
+                    <Camera className="h-4 w-4 mr-2" /> O sacarte una foto
+                  </Button>
+                  {avatarBeforePhoto && (
+                    <Button variant="secondary" disabled={loading} onClick={() => {
+                      setSelfie(avatarBeforePhoto.image);
+                      setActiveModelId(avatarBeforePhoto.id);
+                      setAvatarBeforePhoto(null);
+                      setModelMode('ia');
+                      setResultImage(null);
+                    }}>
+                      <RotateCcw className="h-4 w-4 mr-2" /> Volver a mi avatar
+                    </Button>
+                  )}
+                </>
               )}
 
             </div>
