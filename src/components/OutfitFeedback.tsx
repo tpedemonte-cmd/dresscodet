@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
 import {
   FEEDBACK_LEARNING_MESSAGE,
+  feedbackOutfitKey,
   isLearningPromptTap,
   registerFeedbackTap,
 } from '@/lib/feedbackPrompt';
@@ -63,8 +64,12 @@ export default function OutfitFeedback({ table, recordId, initialFeedback = null
       setFeedback(prev);
       setFavorite(prevFav);
     } else if (next) {
-      const taps = registerFeedbackTap(user?.id);
-      toast.success(isLearningPromptTap(taps) ? FEEDBACK_LEARNING_MESSAGE : '¡Gracias por tu feedback!');
+      const { count, isNewOutfit } = registerFeedbackTap(user?.id, feedbackOutfitKey(table, recordId));
+      toast.success(
+        isNewOutfit && isLearningPromptTap(count)
+          ? FEEDBACK_LEARNING_MESSAGE
+          : '¡Gracias por tu feedback!',
+      );
       if (!allows && prevFav) toast.info('Se quitó de favoritos');
     }
   };
