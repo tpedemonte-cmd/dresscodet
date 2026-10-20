@@ -3,6 +3,7 @@
 ## Hecho
 - [x] Probador: altura, peso y edad arrancan vacíos con placeholder gris claro y usan defaults (170, 65, 28) al generar
 - [x] Probador: género arranca en opción "Seleccioná uno" y luego permite masculino/femenino
+- [x] Probador Premium: "O sacarte una foto" arriba del avatar y en color naranja del tema
 
 ## Planes y avatares
 - [x] Premium: permitir eliminar sin créditos y confirmar antes de borrar el último avatar; mantener regeneración con packs

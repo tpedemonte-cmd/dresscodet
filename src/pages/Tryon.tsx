@@ -580,6 +580,45 @@ export default function Tryon() {
 
         {selfie && !showVariantPicker ? (
           <div className="space-y-3">
+            {isPremium && (
+              <div className="max-w-sm mx-auto flex gap-2">
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  aria-label="Sacar o subir una foto para el probador"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleSelfieUpload(file);
+                    e.target.value = '';
+                  }}
+                />
+                <Button
+                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                  disabled={loading || generatingAvatar}
+                  onClick={() => photoInputRef.current?.click()}
+                >
+                  <Camera className="h-4 w-4 mr-2" /> O sacarte una foto
+                </Button>
+                {avatarBeforePhoto && (
+                  <Button
+                    variant="secondary"
+                    disabled={loading}
+                    onClick={() => {
+                      setSelfie(avatarBeforePhoto.image);
+                      setActiveModelId(avatarBeforePhoto.id);
+                      setAvatarBeforePhoto(null);
+                      setModelMode('ia');
+                      setResultImage(null);
+                    }}
+                  >
+                    <RotateCcw className="h-4 w-4 mr-2" /> Volver a mi avatar
+                  </Button>
+                )}
+              </div>
+            )}
             <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card bg-muted">
               <img src={frameImage || selfie || ''} alt="Tu modelo" className="w-full h-full object-cover object-center block" />
               {showResultInFrame && (
@@ -628,37 +667,6 @@ export default function Tryon() {
                 >
                   <RotateCcw className="h-4 w-4 mr-2" /> Cambiar modelo
                 </Button>
-              )}
-              {isPremium && (
-                <>
-                  <input
-                    ref={photoInputRef}
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    aria-label="Sacar o subir una foto para el probador"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleSelfieUpload(file);
-                      e.target.value = '';
-                    }}
-                  />
-                  <Button variant="outline" disabled={loading || generatingAvatar} onClick={() => photoInputRef.current?.click()}>
-                    <Camera className="h-4 w-4 mr-2" /> O sacarte una foto
-                  </Button>
-                  {avatarBeforePhoto && (
-                    <Button variant="secondary" disabled={loading} onClick={() => {
-                      setSelfie(avatarBeforePhoto.image);
-                      setActiveModelId(avatarBeforePhoto.id);
-                      setAvatarBeforePhoto(null);
-                      setModelMode('ia');
-                      setResultImage(null);
-                    }}>
-                      <RotateCcw className="h-4 w-4 mr-2" /> Volver a mi avatar
-                    </Button>
-                  )}
-                </>
               )}
 
             </div>
