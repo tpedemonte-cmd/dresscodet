@@ -1,3 +1,4 @@
+import ExplanationToggle from '@/components/ExplanationToggle';
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -295,7 +296,7 @@ export default function Travel() {
                 {result.from_wardrobe.map((w, i) => (
                   <div key={i} className="p-3 rounded-lg bg-secondary/30 border border-border">
                     <p className="text-sm font-body font-medium text-foreground">{w.item}</p>
-                    <p className="text-xs font-body text-muted-foreground">{w.reason}</p>
+                    <ExplanationToggle label="Por qué"><p className="text-xs font-body text-muted-foreground">{w.reason}</p></ExplanationToggle>
                   </div>
                 ))}
               </div>
@@ -319,7 +320,7 @@ export default function Travel() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="space-y-0.5 flex-1">
                         <p className="text-sm font-body font-medium text-foreground">{b.item}</p>
-                        <p className="text-xs font-body text-muted-foreground">{b.reason}</p>
+                        <ExplanationToggle label="Por qué"><p className="text-xs font-body text-muted-foreground">{b.reason}</p></ExplanationToggle>
                       </div>
                       <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0 group-hover:text-primary transition-colors pt-0.5">
                         Comprar <ExternalLink className="h-3 w-3" />

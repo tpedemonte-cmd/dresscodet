@@ -1,3 +1,4 @@
+import ExplanationToggle from '@/components/ExplanationToggle';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -312,9 +313,9 @@ export default function History() {
 
                 {isExpanded && (
                   <div className="px-4 pb-4 space-y-3 animate-in fade-in slide-in-from-top-2">
-                    <div className="font-body text-foreground whitespace-pre-line leading-relaxed text-sm">
+                    <ExplanationToggle><div className="font-body text-foreground whitespace-pre-line leading-relaxed text-sm">
                       {entry.recommendation}
-                    </div>
+                    </div></ExplanationToggle>
                     {entryItems.length > 0 && (
                       <div className="pt-2 border-t border-border">
                         <p className="text-xs font-body font-medium text-muted-foreground mb-2">Prendas:</p>

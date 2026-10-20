@@ -1,3 +1,4 @@
+import ExplanationToggle from '@/components/ExplanationToggle';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Sparkles, ExternalLink, Loader2, ShoppingBag } from 'lucide-react';
@@ -99,7 +100,7 @@ export default function StyleRecommendationsWidget() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-0.5 flex-1">
                     <p className="text-sm font-body font-medium text-foreground">{rec.item}</p>
-                    <p className="text-xs text-muted-foreground font-body">{rec.reason}</p>
+                    <ExplanationToggle label="Por qué"><p className="text-xs text-muted-foreground font-body">{rec.reason}</p></ExplanationToggle>
                   </div>
                   <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0 group-hover:text-primary transition-colors pt-0.5">
                     Buscar <ExternalLink className="h-3 w-3" />

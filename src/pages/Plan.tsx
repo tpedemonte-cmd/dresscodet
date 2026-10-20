@@ -1,3 +1,4 @@
+import ExplanationToggle from '@/components/ExplanationToggle';
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -525,7 +526,7 @@ export default function Plan() {
                       </div>
 
                       {p.recommendation && (
-                        <p className="text-sm font-body whitespace-pre-wrap text-foreground/90">{p.recommendation}</p>
+                        <ExplanationToggle><p className="text-sm font-body whitespace-pre-wrap text-foreground/90">{p.recommendation}</p></ExplanationToggle>
                       )}
 
                       {usedItems.length > 0 && (

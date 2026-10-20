@@ -1,3 +1,4 @@
+import ExplanationToggle from '@/components/ExplanationToggle';
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -510,9 +511,11 @@ export default function Recommend() {
             <Sparkles className="h-5 w-5 text-primary" />
             Tu outfit recomendado
           </h3>
-          <div className="font-body text-foreground whitespace-pre-line leading-relaxed">
-            {recommendation}
-          </div>
+          <ExplanationToggle>
+            <div className="font-body text-foreground whitespace-pre-line leading-relaxed">
+              {recommendation}
+            </div>
+          </ExplanationToggle>
           {recommendedItems.length > 0 && (
             <div className="pt-3 border-t border-border">
               <p className="text-sm font-body font-medium text-muted-foreground mb-2">Prendas del outfit:</p>
@@ -547,7 +550,7 @@ export default function Recommend() {
           )}
           {reasons.length > 0 && (
             <div className="pt-3 border-t border-border">
-              <p className="text-sm font-body font-medium text-muted-foreground mb-2">💡 Por qué elegí este outfit:</p>
+              <ExplanationToggle label="💡 Por qué elegí este outfit">
               <ul className="space-y-1.5">
                 {reasons.map((r, i) => (
                   <li key={i} className="flex gap-2 text-sm font-body text-foreground">
@@ -556,6 +559,7 @@ export default function Recommend() {
                   </li>
                 ))}
               </ul>
+              </ExplanationToggle>
             </div>
           )}
           {recommendationId && (

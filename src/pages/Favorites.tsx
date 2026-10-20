@@ -1,3 +1,4 @@
+import ExplanationToggle from '@/components/ExplanationToggle';
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -197,7 +198,7 @@ export default function Favorites() {
                 </div>
 
                 {f.recommendation && (
-                  <p className="text-sm font-body whitespace-pre-wrap text-foreground/90 line-clamp-6">{f.recommendation}</p>
+                  <ExplanationToggle><p className="text-sm font-body whitespace-pre-wrap text-foreground/90">{f.recommendation}</p></ExplanationToggle>
                 )}
 
                 {usedItems.length > 0 && (
