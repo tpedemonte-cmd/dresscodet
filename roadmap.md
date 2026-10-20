@@ -1,7 +1,8 @@
 # DressCode roadmap
 
 ## Migración a infraestructura propia
-- [ ] Migrar cuentas, prendas, imágenes de avatares y cupos; conectar APK y Vercel al destino. Bloqueado: falta identificar y conectar la base propia; solo están disponibles las credenciales de Lovable Cloud. Mantener la IA facturada a Lovable según el pedido previo y confirmar esta excepción antes del cambio definitivo. No modificar ni eliminar el origen mientras el destino no esté verificado.
+- [x] Guardar de forma segura el acceso al proyecto propio y verificar servicios de cuentas y tablas existentes, sin cambiar la conexión activa.
+- [ ] Migrar cuentas, prendas, imágenes de avatares y cupos; conectar APK y Vercel al destino. Bloqueado: falta la exportación completa del origen con cuentas y la descarga separada de imágenes; el destino no contiene ai_usage_events ni avatar_credits. El acceso recibido permite las API de datos y cuentas, pero no constituye acceso para aplicar cambios estructurales externos. Mantener funciones de IA en Lovable Cloud con facturación de Lovable, validando sesiones del destino. No modificar ni eliminar el origen mientras el destino no esté verificado.
 
 ## Prueba visual
 - [x] Usar medias negras en la representación de la categoría para mejorar su visibilidad (verificado en Agregar)
