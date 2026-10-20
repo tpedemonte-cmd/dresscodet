@@ -4,6 +4,7 @@ import OccasionLabel, { OCCASIONS as EVENTS } from '@/components/OccasionLabel';
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { cloudFunctions } from '@/lib/cloudFunctions';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -171,7 +172,7 @@ export default function Recommend() {
 
   const getSearchUrl = async (query: string): Promise<string> => {
     try {
-      const { data, error } = await supabase.functions.invoke('search-marketplace', {
+      const { data, error } = await cloudFunctions.invoke('search-marketplace', {
         body: { query },
       });
       if (error) throw error;
@@ -265,7 +266,7 @@ export default function Recommend() {
         .map(h => `- ${h.event} (${h.temperature}°C, ${h.weather}): ${namesOf(h.recommended_item_ids) || 'sin prendas'}${h.feedback === 'disliked' ? ' [NO LE GUSTÓ]' : ' [NO LO USARÍA]'}`)
         .join('\n');
 
-      const { data, error } = await supabase.functions.invoke('recommend-outfit', {
+      const { data, error } = await cloudFunctions.invoke('recommend-outfit', {
         body: { wardrobe: wardrobeSummary, wishlist: wishlistSummary, event, formality, temperature: temperature[0], weather: weatherForAI, season, windKmh, rainProbability: rainProb, isNight: weather === 'despejado-noche', likedOutfits: positive, dislikedOutfits: negative },
       });
 

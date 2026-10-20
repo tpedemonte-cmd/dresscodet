@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { cloudFunctions } from '@/lib/cloudFunctions';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,7 +47,7 @@ export default function AddItem() {
   const detectClothing = async (base64: string) => {
     setDetecting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('detect-clothing', {
+      const { data, error } = await cloudFunctions.invoke('detect-clothing', {
         body: { imageBase64: base64 },
       });
       if (error) throw error;

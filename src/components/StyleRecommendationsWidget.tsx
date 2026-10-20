@@ -2,6 +2,7 @@ import IconText from '@/components/IconText';
 import ExplanationToggle from '@/components/ExplanationToggle';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { cloudFunctions } from '@/lib/cloudFunctions';
 import { Sparkles, ExternalLink, Loader2, ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,7 @@ export default function StyleRecommendationsWidget() {
     setLoading(true);
     setStyleResult(null);
     try {
-      const { data, error } = await supabase.functions.invoke('style-recommendations');
+      const { data, error } = await cloudFunctions.invoke('style-recommendations');
       if (error) throw error;
       if (data.error) throw new Error(data.error);
       setStyleResult(data);

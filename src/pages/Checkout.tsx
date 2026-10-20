@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { cloudFunctions } from '@/lib/cloudFunctions';
 import { usePlan } from '@/lib/plan';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +33,7 @@ export default function Checkout() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data, error } = await supabase.functions.invoke('mock-payments', {
+      const { data, error } = await cloudFunctions.invoke('mock-payments', {
         body: { action: 'get_session', session_id: sessionId },
       });
       if (!active) return;
@@ -60,7 +61,7 @@ export default function Checkout() {
   const pay = async () => {
     setPaying(true);
     try {
-      const { data, error } = await supabase.functions.invoke('mock-payments', {
+      const { data, error } = await cloudFunctions.invoke('mock-payments', {
         body: { action: 'confirm_payment', session_id: sessionId },
       });
       if (error) throw error;

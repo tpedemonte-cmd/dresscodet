@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { cloudFunctions } from '@/lib/cloudFunctions';
 import { toast } from 'sonner';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { getSubcategories } from '@/lib/subcategories';
@@ -36,7 +37,7 @@ export default function ClassifySubcategoriesButton({ items }: { items: Item[] }
       const item = pending[idx];
       try {
         const base64 = await urlToBase64(item.image_url);
-        const { data, error } = await supabase.functions.invoke('detect-clothing', {
+        const { data, error } = await cloudFunctions.invoke('detect-clothing', {
           body: { imageBase64: base64 },
         });
         if (error) throw error;

@@ -1,8 +1,8 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { authenticatedClient, adminClient } from '../_shared/backend.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-data-backend, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 const CURRENCY = 'USD';
@@ -20,31 +20,15 @@ function json(body: unknown, status = 200) {
   });
 }
 
-function adminClient() {
-  return createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY')!,
-  );
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const authHeader = req.headers.get('Authorization') ?? '';
-    if (!authHeader) return json({ error: 'No autorizado' }, 401);
-
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } },
-    );
-
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    const user = userData?.user;
-    if (userError || !user) return json({ error: 'No autorizado' }, 401);
+    const authenticated = await authenticatedClient(req);
+    if (!authenticated) return json({ error: 'No autorizado' }, 401);
+    const { client: supabase, user, backend } = authenticated;
 
     const body = await req.json().catch(() => ({}));
     const action = body?.action as string;
@@ -117,7 +101,7 @@ Deno.serve(async (req) => {
       }
 
       if (product.credits > 0) {
-        const admin = adminClient();
+        const admin = adminClient(backend);
         const { data: current } = await admin
           .from('avatar_credits')
           .select('balance')

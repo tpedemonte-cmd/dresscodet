@@ -1,6 +1,7 @@
 import { createContext, useContext, ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { cloudFunctions } from '@/lib/cloudFunctions';
 import { useAuth } from '@/lib/auth';
 import { freeAvatarAllowance } from '../../supabase/functions/_shared/avatarRules';
 import { calculateTryonQuota, TRYON_LIMITS, tryonMonthStart } from '../../supabase/functions/_shared/tryonQuota';
@@ -197,7 +198,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
   const checkout = useMutation({
     mutationFn: async (product: 'premium' | AvatarPackKey): Promise<string> => {
-      const { data, error } = await supabase.functions.invoke('mock-payments', {
+      const { data, error } = await cloudFunctions.invoke('mock-payments', {
         body: { action: 'create_session', product },
       });
       if (error) throw error;
@@ -208,7 +209,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
   const avatarCheckout = useMutation({
     mutationFn: async (product: AvatarPackKey): Promise<string> => {
-      const { data, error } = await supabase.functions.invoke('mock-payments', {
+      const { data, error } = await cloudFunctions.invoke('mock-payments', {
         body: { action: 'create_session', product },
       });
       if (error) throw error;
@@ -219,7 +220,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
   const cancel = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('mock-payments', {
+      const { data, error } = await cloudFunctions.invoke('mock-payments', {
         body: { action: 'cancel_subscription' },
       });
       if (error) throw error;

@@ -2,6 +2,7 @@ import IconText from '@/components/IconText';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { cloudFunctions } from '@/lib/cloudFunctions';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock, Plus, Images } from 'lucide-react';
@@ -277,7 +278,7 @@ export default function Tryon() {
     setVariants([]);
 
     try {
-      const { data, error } = await supabase.functions.invoke('generate-avatar', {
+      const { data, error } = await cloudFunctions.invoke('generate-avatar', {
         body: buildAvatarBody(),
       });
       if (error || data?.error) throw new Error(data?.error || 'No se pudo generar el modelo');
@@ -503,7 +504,7 @@ export default function Tryon() {
     setResultImage(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('virtual-tryon', {
+      const { data, error } = await cloudFunctions.invoke('virtual-tryon', {
         body: {
           userPhotoBase64: selfie,
           clothingItems: selectedItems.map(item => ({
