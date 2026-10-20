@@ -168,7 +168,7 @@ export default function Plan() {
           isNight: forecast.weather === 'despejado-noche',
         },
       });
-      if (error) throw error;
+      if (error) { toast.error('La IA no está disponible en este momento. Probá de nuevo más tarde.'); return; }
 
       const fullText: string = data.recommendation || '';
       const itemsMatch = fullText.match(/ITEMS_USADOS:\s*(.+)/i);
