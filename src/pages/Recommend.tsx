@@ -1,4 +1,5 @@
 import ExplanationToggle from '@/components/ExplanationToggle';
+import OccasionLabel, { OCCASIONS as EVENTS } from '@/components/OccasionLabel';
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,17 +16,6 @@ import { fetchCurrentWeather, fetchWeatherFromCoords } from '@/lib/weather';
 import { getDeviceCoords } from '@/lib/geolocation';
 import OutfitFeedback from '@/components/OutfitFeedback';
 import { isAvailable } from '@/lib/availability';
-
-const EVENTS = [
-  { value: 'trabajo', label: '💼 Trabajo' },
-  { value: 'cita', label: '❤️ Cita' },
-  { value: 'amigos', label: '🍻 Juntada con amigos' },
-  { value: 'familia', label: '👨‍👩‍👧 Familia' },
-  { value: 'fiesta', label: '🎉 Fiesta' },
-  { value: 'gym', label: '🏋️ Gym / Deporte' },
-  
-  { value: 'universidad', label: '📚 Universidad' },
-];
 
 const WEATHER = [
   { value: 'soleado', label: '☀️ Soleado' },
@@ -459,7 +449,7 @@ export default function Recommend() {
           <Select value={event} onValueChange={setEvent}>
             <SelectTrigger className="h-12 text-base"><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
             <SelectContent>
-              {EVENTS.map((e) => <SelectItem key={e.value} value={e.value} className="text-base py-3">{e.label}</SelectItem>)}
+              {EVENTS.map((e) => <SelectItem key={e.value} value={e.value} className="text-base py-3"><OccasionLabel value={e.value} /></SelectItem>)}
             </SelectContent>
           </Select>
         </div>
