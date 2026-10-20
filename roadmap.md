@@ -1,6 +1,7 @@
 # DressCode roadmap
 
 ## Hecho
+- [x] Probador: conservar el avatar sin guardar y el estado al cambiar de solapa, sin consumir otra generación
 - [x] Probador: altura, peso y edad arrancan vacíos con placeholder gris claro y usan defaults (170, 65, 28) al generar
 - [x] Probador: género arranca en opción "Seleccioná uno" y luego permite masculino/femenino
 - [x] Probador Premium: "O sacarte una foto" arriba del avatar y en color naranja del tema

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock, Plus, Images } from 'lucide-react';
 import { toast } from 'sonner';
 import { hasCategoryConflict, toggleOutfitItem } from '@/lib/tryonSelection';
+import { useTryonDraftState } from '@/lib/tryonDraft';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan, LIMITS } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
@@ -67,35 +68,36 @@ export default function Tryon() {
   const { isPremium, quota, quotaLoading, loading: planLoading, refreshQuota } = usePlan();
   const navigatePremium = useNavigate();
   const queryClient = useQueryClient();
-  const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
+  const useDraftState = <T,>(field: string, initial: T) => useTryonDraftState(user?.id ?? '', field, initial);
+  const [modelMode, setModelMode] = useDraftState<'ia' | 'selfie'>('modelMode', 'ia');
   const [confirmLastAvatar, setConfirmLastAvatar] = useState(false);
   const [avatarToDelete, setAvatarToDelete] = useState<string | null>(null);
 
   
-  const [variants, setVariants] = useState<(Look & { image: string })[]>([]);
+  const [variants, setVariants] = useDraftState<(Look & { image: string })[]>('variants', []);
 
 
-  const [selfie, setSelfie] = useState<string | null>(null);
-  const [activeModelId, setActiveModelId] = useState<string | null>(null);
+  const [selfie, setSelfie] = useDraftState<string | null>('selfie', null);
+  const [activeModelId, setActiveModelId] = useDraftState<string | null>('activeModelId', null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [photoSourceOpen, setPhotoSourceOpen] = useState(false);
-  const [avatarBeforePhoto, setAvatarBeforePhoto] = useState<{ image: string; id: string | null } | null>(null);
-  const [selectedItems, setSelectedItems] = useState<any[]>([]);
-  const [resultImage, setResultImage] = useState<string | null>(null);
-  const [resultItems, setResultItems] = useState<any[]>([]);
+  const [avatarBeforePhoto, setAvatarBeforePhoto] = useDraftState<{ image: string; id: string | null } | null>('avatarBeforePhoto', null);
+  const [selectedItems, setSelectedItems] = useDraftState<any[]>('selectedItems', []);
+  const [resultImage, setResultImage] = useDraftState<string | null>('resultImage', null);
+  const [resultItems, setResultItems] = useDraftState<any[]>('resultItems', []);
   const { url: modelImage } = useTrimmedImage(selfie);
   const { url: resultImageTrimmed } = useTrimmedImage(resultImage);
   // El outfit generado se ve en el marco hasta que empezás a elegir otras prendas
   const showResultInFrame = !!resultImage && selectedItems.length === 0;
   const frameImage = showResultInFrame ? resultImageTrimmed || resultImage : modelImage || selfie;
 
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [savingModel, setSavingModel] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [subFilter, setSubFilter] = useState<string | null>(null);
-  const [avatarData, setAvatarData] = useState({
+  const [loading, setLoading] = useDraftState('loading', false);
+  const [saving, setSaving] = useDraftState('saving', false);
+  const [savingModel, setSavingModel] = useDraftState('savingModel', false);
+  const [categoryFilter, setCategoryFilter] = useDraftState<string | null>('categoryFilter', null);
+  const [subFilter, setSubFilter] = useDraftState<string | null>('subFilter', null);
+  const [avatarData, setAvatarData] = useDraftState('avatarData', {
     height: '',
     weight: '',
     age: '',
@@ -132,9 +134,9 @@ export default function Tryon() {
     }
   };
 
-  const [generatingAvatar, setGeneratingAvatar] = useState(false);
+  const [generatingAvatar, setGeneratingAvatar] = useDraftState('generatingAvatar', false);
 
-  const [showVariantPicker, setShowVariantPicker] = useState(false);
+  const [showVariantPicker, setShowVariantPicker] = useDraftState('showVariantPicker', false);
 
   const { data: items = [] } = useQuery({
     queryKey: ['clothing_items', user?.id],
