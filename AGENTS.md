@@ -6,3 +6,4 @@
 - Preserve the Plan context identity through Vite hot updates because its module exports both a provider and consumer hooks used by existing mounted routes.
 - Keep Try-on session drafts in an account-scoped external store so route changes and off-screen generation completion preserve avatars and selections without new AI requests.
 - Charge try-on events to their generation-time plan; shared pure quota helpers drive client/server UTC counters and a service-role-only transactional recorder enforces monthly/daily caps without deleting usage on upgrades.
+- Apply confirmed try-on usage to the account/plan query cache immediately after success, cancel stale reads and reconcile in the background so counters never wait for polling.
