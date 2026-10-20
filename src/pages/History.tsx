@@ -130,7 +130,7 @@ export default function History() {
 
       
 
-      {history.length > 0 && (() => {
+      {isPremium && history.length > 0 && (() => {
         const availableEvents = Array.from(new Set(history.map((h: any) => h.event)));
         return (
           <div className="space-y-3">
