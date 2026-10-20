@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock, Plus } from 'lucide-react';
+import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock, Plus, Images } from 'lucide-react';
 import { toast } from 'sonner';
 import { hasCategoryConflict, toggleOutfitItem } from '@/lib/tryonSelection';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
@@ -12,6 +12,13 @@ import { useNavigate } from 'react-router-dom';
 import { trimImage, useTrimmedImage } from '@/lib/trimImage';
 import { canDeleteAvatar, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation } from '../../supabase/functions/_shared/avatarRules';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 
 import { PremiumBadge } from '@/components/PremiumGate';
 import {
@@ -70,7 +77,9 @@ export default function Tryon() {
 
   const [selfie, setSelfie] = useState<string | null>(null);
   const [activeModelId, setActiveModelId] = useState<string | null>(null);
-  const photoInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [photoSourceOpen, setPhotoSourceOpen] = useState(false);
   const [avatarBeforePhoto, setAvatarBeforePhoto] = useState<{ image: string; id: string | null } | null>(null);
   const [selectedItems, setSelectedItems] = useState<any[]>([]);
   const [resultImage, setResultImage] = useState<string | null>(null);
@@ -542,6 +551,62 @@ export default function Tryon() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      {isPremium && (
+        <>
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            aria-label="Sacarte una foto con la cámara"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleSelfieUpload(file);
+              e.target.value = '';
+            }}
+          />
+          <input
+            ref={galleryInputRef}
+            type="file"
+            accept="image/*"
+            aria-label="Elegir una foto de tu galería"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleSelfieUpload(file);
+              e.target.value = '';
+            }}
+          />
+          <Drawer open={photoSourceOpen} onOpenChange={setPhotoSourceOpen}>
+            <DrawerContent className="max-w-sm mx-auto">
+              <DrawerHeader className="text-center">
+                <DrawerTitle>¿Cómo querés subir tu foto?</DrawerTitle>
+                <DrawerDescription>Elegí si te sacás una foto ahora o usás una de tu galería.</DrawerDescription>
+              </DrawerHeader>
+              <div className="px-4 pb-28 flex flex-col gap-2">
+                <Button
+                  onClick={() => {
+                    setPhotoSourceOpen(false);
+                    requestAnimationFrame(() => cameraInputRef.current?.click());
+                  }}
+                >
+                  <Camera className="h-4 w-4 mr-2" /> Abrir la cámara
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setPhotoSourceOpen(false);
+                    requestAnimationFrame(() => galleryInputRef.current?.click());
+                  }}
+                >
+                  <Images className="h-4 w-4 mr-2" /> Elegir de la galería
+                </Button>
+              </div>
+            </DrawerContent>
+          </Drawer>
+        </>
+      )}
       <div>
         <h2 className="text-2xl font-display font-bold text-foreground flex items-center gap-2">
           <Sparkles className="h-6 w-6 text-primary" />
@@ -582,23 +647,10 @@ export default function Tryon() {
           <div className="space-y-3">
             {isPremium && (
               <div className="max-w-sm mx-auto flex gap-2">
-                <input
-                  ref={photoInputRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  aria-label="Sacar o subir una foto para el probador"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleSelfieUpload(file);
-                    e.target.value = '';
-                  }}
-                />
                 <Button
                   className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                   disabled={loading || generatingAvatar}
-                  onClick={() => photoInputRef.current?.click()}
+                  onClick={() => setPhotoSourceOpen(true)}
                 >
                   <Camera className="h-4 w-4 mr-2" /> O sacarte una foto
                 </Button>
@@ -707,21 +759,9 @@ export default function Tryon() {
                   <p className="text-muted-foreground font-body text-xs">
                     Sacate una foto de cuerpo completo y probate la ropa sobre tu propia imagen
                   </p>
-                  <label className="block">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleSelfieUpload(file);
-                      }}
-                    />
-                    <span className="inline-flex items-center justify-center gap-2 w-full cursor-pointer rounded-md bg-primary text-primary-foreground px-3 py-2 text-sm font-body font-medium">
-                      <Camera className="h-4 w-4" /> Sacar o subir mi foto
-                    </span>
-                  </label>
+                  <Button className="w-full" disabled={loading || generatingAvatar} onClick={() => setPhotoSourceOpen(true)}>
+                    <Camera className="h-4 w-4 mr-2" /> Sacar o subir mi foto
+                  </Button>
                 </div>
               ) : (
                 <div className="max-w-sm mx-auto bg-card rounded-xl p-4 shadow-card space-y-2 text-center">
