@@ -4,6 +4,7 @@ import OccasionLabel, { OCCASIONS as EVENTS } from '@/components/OccasionLabel';
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { cloudFunctions } from '@/lib/cloudFunctions';
 import { useAuth } from '@/lib/auth';
 import { usePlan } from '@/lib/plan';
 import { Button } from '@/components/ui/button';
@@ -147,7 +148,7 @@ export default function Plan() {
         : '';
 
       const weatherForAI = forecast.weather === 'despejado-noche' ? 'soleado' : forecast.weather;
-      const { data, error } = await supabase.functions.invoke('recommend-outfit', {
+      const { data, error } = await cloudFunctions.invoke('recommend-outfit', {
         body: {
           wardrobe: wardrobeSummary,
           wishlist: wishlistSummary,
@@ -189,7 +190,7 @@ export default function Plan() {
         const queries = buyMatch[1].split('|').map(q => q.trim()).filter(Boolean);
         const results = await Promise.all(queries.map(async (q) => {
           try {
-            const { data: sd } = await supabase.functions.invoke('search-marketplace', { body: { query: q } });
+            const { data: sd } = await cloudFunctions.invoke('search-marketplace', { body: { query: q } });
             return { query: q, searchUrl: sd?.searchUrl || `https://listado.mercadolibre.com.ar/${encodeURIComponent(q.replace(/ /g, '-'))}` };
           } catch {
             return { query: q, searchUrl: `https://listado.mercadolibre.com.ar/${encodeURIComponent(q.replace(/ /g, '-'))}` };

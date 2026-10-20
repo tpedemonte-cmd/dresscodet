@@ -3,8 +3,9 @@
 ## Migración a infraestructura propia
 - [x] Guardar de forma segura el acceso al proyecto propio y verificar servicios de cuentas y tablas existentes, sin cambiar la conexión activa.
 - [x] Migrar cuentas, prendas, historial, planes, looks, wishlist y fotos al proyecto propio: datos remapeados a las cuentas del destino, URLs de imágenes reescritas al almacenamiento propio y tablas ai_usage_events, avatar_credits y avatar_generation_locks creadas con RLS y permisos.
-- [ ] Conectar APK y Vercel al proyecto propio (variables VITE_SUPABASE_* del destino + redeploy/rebuild) y adaptar las funciones de IA para validar sesiones del destino manteniendo el cobro de IA en Lovable. No modificar ni eliminar el origen hasta verificar todo.
-- [ ] Verificar con el usuario que la clave pública copiada sea la correcta: se detectó un cero por la letra O en LM04HQ/LMO4HQ (la variante con cero devuelve 401) y que el primer par sin prefijo VITE_ quede apuntando al origen, ya que lo usan las funciones de IA y no la app.
+- [ ] Actualizar Vercel y APK con el código nuevo y las variables VITE_SUPABASE_* del destino. Bloqueador: el usuario debe hacer Redeploy en Vercel y reconstruir/instalar el APK en su computadora; no hay acceso a esos entornos. Confirmar que corrigió la letra O de la clave pública. No modificar ni eliminar el origen.
+- [x] Adaptar las llamadas a Cloud con sesiones propias y cupos externos; desplegar funciones y operaciones transaccionales de cupos en destino. Verificado con la cuenta del solicitante: recomendación IA exitosa, probador generado desde la pantalla, contador mensual 14→13 y diario 4→3, consumo leído en la base propia. Avatar: verificados autenticación, lock y validación; no generado ni reemplazado el avatar existente.
+- [x] Diagnosticar error del APK: carácter Ñ en AÑO; indicados pasos para copiar el proyecto completo a C:\Proyectos\dresscodet fuera de OneDrive y abrir su carpeta android. Resolución local pendiente del usuario.
 
 ## Prueba visual
 - [x] Usar medias negras en la representación de la categoría para mejorar su visibilidad (verificado en Agregar)

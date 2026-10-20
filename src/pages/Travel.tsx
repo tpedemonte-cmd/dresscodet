@@ -2,6 +2,7 @@ import IconText from '@/components/IconText';
 import ExplanationToggle from '@/components/ExplanationToggle';
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { cloudFunctions } from '@/lib/cloudFunctions';
 import { Button } from '@/components/ui/button';
 import { Plane, Sparkles, Loader2, ExternalLink, Shirt, Ban, Globe2, ShoppingBag, Lock } from 'lucide-react';
 import { toast } from 'sonner';
@@ -96,7 +97,7 @@ export default function Travel() {
     setResult(null);
     setResultDestination(destination.trim());
     try {
-      const { data, error } = await supabase.functions.invoke('travel-wardrobe', {
+      const { data, error } = await cloudFunctions.invoke('travel-wardrobe', {
         body: {
           destination: destination.trim(),
           origin,

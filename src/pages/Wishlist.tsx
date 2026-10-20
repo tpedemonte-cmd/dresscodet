@@ -1,6 +1,7 @@
 import IconText from '@/components/IconText';
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { cloudFunctions } from '@/lib/cloudFunctions';
 import { useAuth } from '@/lib/auth';
 import { Heart, Trash2, ExternalLink, Truck, Plus, Link, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -103,7 +104,7 @@ export default function Wishlist() {
 
     setAdding(true);
     try {
-      const { data, error } = await supabase.functions.invoke('extract-ml-product', {
+      const { data, error } = await cloudFunctions.invoke('extract-ml-product', {
         body: { url: mlUrl.trim() },
       });
 
