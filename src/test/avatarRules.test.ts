@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canDeleteAvatar, freeAvatarAllowance, isSavedAvatarSelected, isAvatarHeightValid, isAvatarWeightValid, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation, avatarOptionCount, generateAvatarOptions } from '../../supabase/functions/_shared/avatarRules';
+import { canDeleteAvatar, canUseOwnPhoto, freeAvatarAllowance, isSavedAvatarSelected, isAvatarHeightValid, isAvatarWeightValid, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation, avatarOptionCount, generateAvatarOptions } from '../../supabase/functions/_shared/avatarRules';
 
 describe('try-on outfit requires a saved avatar', () => {
   it('blocks outfit generation while the avatar is unsaved', () => {
@@ -15,6 +15,17 @@ describe('try-on outfit requires a saved avatar', () => {
   it('blocks when there is no model at all', () => {
     expect(isSavedAvatarSelected(null, [], false)).toBe(false);
     expect(isSavedAvatarSelected(null, [], true)).toBe(false);
+  });
+});
+
+describe('own photo try-on is a premium benefit', () => {
+  it('lets a paid account try clothes on its own photo', () => {
+    expect(canUseOwnPhoto(true, 'selfie')).toBe(true);
+  });
+  it('keeps the free account on the saved-avatar rule', () => {
+    expect(canUseOwnPhoto(false, 'selfie')).toBe(false);
+    expect(canUseOwnPhoto(false, 'ia')).toBe(false);
+    expect(canUseOwnPhoto(true, 'ia')).toBe(false);
   });
 });
 

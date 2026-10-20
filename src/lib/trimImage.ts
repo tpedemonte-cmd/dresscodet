@@ -30,6 +30,25 @@ export function useTrimmedImage(src: string | null): { url: string | null; trimm
   return { url, trimming };
 }
 
+/** true cuando la imagen es más ancha que alta: el marco vertical no debe recortarla. */
+export function useIsLandscape(src: string | null): boolean {
+  const [landscape, setLandscape] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    setLandscape(false);
+    if (!src) return;
+    loadImage(src)
+      .then((img) => {
+        if (alive) setLandscape(img.naturalWidth > img.naturalHeight);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [src]);
+  return landscape;
+}
+
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -69,6 +88,8 @@ export async function trimImage(src: string): Promise<string> {
     const w = img.naturalWidth;
     const h = img.naturalHeight;
     if (!w || !h) return src;
+    // Imagen horizontal: un encuadre vertical le cortaría la cabeza; se muestra completa.
+    if (w > h) return src;
 
     const canvas = document.createElement('canvas');
     canvas.width = w;

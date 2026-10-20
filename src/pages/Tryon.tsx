@@ -10,7 +10,7 @@ import { useTryonDraftState } from '@/lib/tryonDraft';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan, LIMITS } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
-import { trimImage, useTrimmedImage } from '@/lib/trimImage';
+import { trimImage, useTrimmedImage, useIsLandscape } from '@/lib/trimImage';
 import { AVATAR_MIN_HEIGHT_CM, AVATAR_MIN_WEIGHT_KG, canDeleteAvatar, canUseOwnPhoto, isAvatarHeightValid, isAvatarWeightValid, isSavedAvatarSelected, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation } from '../../supabase/functions/_shared/avatarRules';
 import { fileToUprightPhoto } from '@/lib/uprightPhoto';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -92,6 +92,7 @@ export default function Tryon() {
   // El outfit generado se ve en el marco hasta que empezás a elegir otras prendas
   const showResultInFrame = !!resultImage && selectedItems.length === 0;
   const frameImage = showResultInFrame ? resultImageTrimmed || resultImage : modelImage || selfie;
+  const frameIsWide = useIsLandscape(showResultInFrame ? frameImage : null);
 
   const [loading, setLoading] = useDraftState('loading', false);
   const [saving, setSaving] = useDraftState('saving', false);
