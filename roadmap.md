@@ -22,7 +22,7 @@
 - [x] Feedback: cada 5 outfits distintos opinados aparece "¡Gracias! Tu opinión ayuda a la IA a aprender tus gustos."; repetir opinión en el mismo outfit no suma
 
 ## Planes y avatares
-- [ ] Generar avatares descalzos y reemplazar la ropa existente por cada prenda seleccionada; verificar reglas y desplegar.
+- [x] Avatares nuevos descalzos y reemplazo de ropa existente por categoría: reglas incorporadas en ambas funciones y desplegadas; 52 pruebas pasando. No se generaron imágenes nuevas ni se modificaron avatares guardados para evitar consumir cupos; resultado visual de IA pendiente de la próxima generación.
 - [x] Premium: separar usos gratis y pagos; iniciar con 15/mes y 5/día, conservar modelo y créditos y mostrar ambos contadores
 - [x] Premium: permitir eliminar sin créditos y confirmar antes de borrar el último avatar; mantener regeneración con packs
 - [x] Bloquear modelo gratis guardado, habilitar borrado solo con créditos y consumir uno por reemplazo exitoso
