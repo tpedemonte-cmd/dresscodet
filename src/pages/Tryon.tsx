@@ -7,7 +7,7 @@ import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Came
 import { toast } from 'sonner';
 import { hasCategoryConflict, toggleOutfitItem } from '@/lib/tryonSelection';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
-import { usePlan } from '@/lib/plan';
+import { usePlan, LIMITS } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
 import { trimImage, useTrimmedImage } from '@/lib/trimImage';
 import { canDeleteAvatar, needsLastAvatarConfirmation } from '../../supabase/functions/_shared/avatarRules';
