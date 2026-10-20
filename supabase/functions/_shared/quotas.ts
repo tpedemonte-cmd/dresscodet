@@ -1,5 +1,7 @@
 // Cuotas de uso de IA por plan (avatares y pruebas de outfit).
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { adminClient, authenticatedClient } from './backend.ts';
+import type { DataBackend } from './backendSelection.ts';
+export { adminClient, userClient } from './backend.ts';
 import { freeAvatarAllowance } from './avatarRules.ts';
 import { calculateTryonQuota, TRYON_LIMITS, tryonMonthStart } from './tryonQuota.ts';
 
@@ -18,21 +20,6 @@ export const LIMITS = {
 } as const;
 
 export type UsageKind = 'avatar' | 'tryon' | 'outfit';
-
-export function userClient(authHeader: string) {
-  return createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_ANON_KEY')!,
-    { global: { headers: { Authorization: authHeader } } },
-  );
-}
-
-export function adminClient() {
-  return createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY')!,
-  );
-}
 
 function startOfMonth() {
   const d = new Date();
@@ -57,6 +44,7 @@ async function countUsage(sb: any, userId: string, kind: UsageKind, since?: stri
 }
 
 export interface QuotaDecision {
+  backend?: DataBackend;
   ok: boolean;
   status?: number;
   error?: string;
@@ -70,17 +58,16 @@ export interface QuotaDecision {
  * Devuelve useCredit=true cuando hay que descontar un crédito comprado.
  */
 export async function checkQuota(req: Request, kind: UsageKind): Promise<QuotaDecision> {
-  const authHeader = req.headers.get('Authorization') ?? '';
-  if (!authHeader) {
+  const authenticated = await authenticatedClient(req);
+  if (!authenticated) {
     return { ok: false, status: 401, error: 'Iniciá sesión para usar esta función.', useCredit: false, userId: '' };
   }
+  const decision = await checkUserQuota(authenticated.client, authenticated.user.id, kind);
+  return { ...decision, backend: authenticated.backend };
+}
 
-  const sb = userClient(authHeader);
-  const { data: userData } = await sb.auth.getUser();
-  const user = userData?.user;
-  if (!user) {
-    return { ok: false, status: 401, error: 'Iniciá sesión para usar esta función.', useCredit: false, userId: '' };
-  }
+async function checkUserQuota(sb: any, userId: string, kind: UsageKind): Promise<QuotaDecision> {
+  const user = { id: userId };
 
   const { data: sub, error: subError } = await sb
     .from('subscriptions')
@@ -163,7 +150,7 @@ export async function checkQuota(req: Request, kind: UsageKind): Promise<QuotaDe
 
 /** Registra el consumo y descuenta el crédito comprado si corresponde. */
 export async function recordUsage(decision: QuotaDecision, kind: UsageKind) {
-  const admin = adminClient();
+  const admin = adminClient(decision.backend);
   if (kind === 'avatar') {
     const { error } = await admin.rpc('record_avatar_generation', {
       p_user_id: decision.userId,

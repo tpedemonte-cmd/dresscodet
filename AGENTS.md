@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Route client function calls through the fixed Cloud endpoint with the configured data project's session; validate that session against the selected allowlisted backend and keep quota writes and locks request-scoped to it, so external data never mixes with Cloud identities while AI billing stays in Cloud.
+
 - Keep occasion presentation shared and render emoji-bearing interface labels and stored/AI text through the shared IconText presenter; gate the visual trial with one presentation flag so prior appearance can be restored without modifying searches, prompts or saved data.
 
 - Avatar eligibility helpers live under the Edge Functions shared directory and are imported by the client and tests to keep free-model replacement rules aligned.

@@ -1,7 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { aiGenerateImage } from "../_shared/ai.ts";
-import { adminClient, userClient, checkQuota, recordUsage } from "../_shared/quotas.ts";
-import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { adminClient, checkQuota, recordUsage } from "../_shared/quotas.ts";
+import { authenticatedClient } from '../_shared/backend.ts';
+import type { DataBackend } from '../_shared/backendSelection.ts';
+import { corsHeaders as sdkCorsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+const corsHeaders = { ...sdkCorsHeaders, 'Access-Control-Allow-Headers': `${sdkCorsHeaders['Access-Control-Allow-Headers']}, x-data-backend` };
 import { z } from 'npm:zod@3';
 import { generateAvatarOptions, AVATAR_MIN_HEIGHT_CM, AVATAR_MIN_WEIGHT_KG } from '../_shared/avatarRules.ts';
 
@@ -23,18 +26,20 @@ serve(async (req) => {
   }
 
   let lockUserId: string | null = null;
+  let lockBackend: DataBackend = 'cloud';
   const lockToken = crypto.randomUUID();
   try {
-    const { data: authData } = await userClient(req.headers.get('Authorization') ?? '').auth.getUser();
-    if (!authData.user) {
+    const authenticated = await authenticatedClient(req);
+    if (!authenticated) {
       return new Response(JSON.stringify({ error: 'Iniciá sesión para usar esta función.' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
-    const { data: acquired, error: lockError } = await adminClient().rpc('acquire_avatar_generation_lock', { p_user_id: authData.user.id, p_token: lockToken });
+    lockBackend = authenticated.backend;
+    const { data: acquired, error: lockError } = await adminClient(lockBackend).rpc('acquire_avatar_generation_lock', { p_user_id: authenticated.user.id, p_token: lockToken });
     if (lockError) throw lockError;
     if (!acquired) {
       return new Response(JSON.stringify({ error: 'Ya hay un modelo generándose. Esperá a que termine.' }), { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
-    lockUserId = authData.user.id;
+    lockUserId = authenticated.user.id;
     const parsed = AvatarBody.safeParse(await req.json().catch(() => null));
     if (!parsed.success) {
       return new Response(JSON.stringify({ error: 'Revisá los datos del modelo.', details: parsed.error.flatten().fieldErrors }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -135,7 +140,7 @@ The person should:
     );
   } finally {
     if (lockUserId) {
-      const { error } = await adminClient().rpc('release_avatar_generation_lock', { p_user_id: lockUserId, p_token: lockToken });
+      const { error } = await adminClient(lockBackend).rpc('release_avatar_generation_lock', { p_user_id: lockUserId, p_token: lockToken });
       if (error) console.error('Avatar lock release failed');
     }
   }
