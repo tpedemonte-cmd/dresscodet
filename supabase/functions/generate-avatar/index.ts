@@ -3,6 +3,7 @@ import { aiGenerateImage } from "../_shared/ai.ts";
 import { adminClient, userClient, checkQuota, recordUsage } from "../_shared/quotas.ts";
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { z } from 'npm:zod@3';
+import { generateAvatarOptions } from '../_shared/avatarRules.ts';
 
 const AvatarBody = z.object({
   height: z.coerce.number().finite().positive().max(300),
@@ -107,31 +108,21 @@ The person should:
 - Be shown from head to toe, fully visible, centered in the frame
 - Photorealistic quality, like a fashion catalog base model`;
 
-    const result = await aiGenerateImage(prompt);
-
-    if (!result.ok) {
-      if (result.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Se agotó la cuota de generación de imágenes por ahora. Si usás la clave gratuita de Google AI Studio, esperá unos minutos (o hasta mañana) y volvé a intentar." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+    const images = await generateAvatarOptions(!!quota.isPremium, async (index) => {
+      const result = await aiGenerateImage(`${prompt}\nCandidate ${index + 1}: create a distinct person matching all specified traits. Produce exactly one full-body person, never a collage.`);
+      if (!result.ok) {
+        const message = result.status === 429
+          ? 'La IA está recibiendo demasiados pedidos. Esperá unos segundos y volvé a intentar.'
+          : result.status === 402 || result.status === 403
+            ? 'La IA no está disponible en este momento. Probá de nuevo más tarde.'
+            : 'No se pudo generar el avatar';
+        throw new Error(message);
       }
-      if (result.status === 402 || result.status === 403) {
-        return new Response(
-          JSON.stringify({ error: "Se agotaron los créditos de IA de este entorno. Recargá el límite del workspace (o usá tu propia clave de Gemini) y volvé a intentar." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      return new Response(
-        JSON.stringify({ error: "No se pudo generar el avatar" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    await recordUsage(quota, "avatar");
+      return result.dataUrl;
+    }, () => recordUsage(quota, 'avatar'));
 
     return new Response(
-      JSON.stringify({ image: result.dataUrl, used_credit: quota.useCredit }),
+      JSON.stringify({ image: images[0], images, used_credit: quota.useCredit }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

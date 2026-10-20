@@ -42,57 +42,6 @@ type Look = {
   bodyType: string;
 };
 
-const HAIR_EMOJI: Record<string, string> = {
-  rubio: '👱',
-  castaño: '🙂',
-  negro: '🧑',
-  pelirrojo: '🧑‍🦰',
-  canoso: '🧓',
-};
-
-const shuffle = <T,>(arr: T[]) => [...arr].sort(() => Math.random() - 0.5);
-
-// Arma 4 versiones: respeta lo que el usuario aclaró y varía al azar lo que dejó vacío
-const buildVariantLooks = (data: {
-  hairColor: string;
-  hairStyle: string;
-  skinTone: string;
-  bodyType: string;
-}): Look[] => {
-  const pick = (fixed: string, pool: string[], i: number) => {
-    if (fixed) return fixed;
-    return shuffle(pool)[i % pool.length];
-  };
-  const hairPool = shuffle(HAIR_COLORS);
-  const stylePool = shuffle(HAIR_STYLES);
-  const skinPool = shuffle(SKIN_TONES);
-  const bodyPool = shuffle(BODY_TYPES);
-
-  return Array.from({ length: 4 }, (_, i) => {
-    const hairColor = data.hairColor || hairPool[i % hairPool.length];
-    const hairStyle = data.hairStyle || stylePool[i % stylePool.length];
-    const skinTone = data.skinTone || skinPool[i % skinPool.length];
-    const bodyType = data.bodyType || bodyPool[i % bodyPool.length];
-    const labelParts = [
-      !data.hairColor ? `Pelo ${hairColor}` : null,
-      !data.hairStyle ? hairStyle : null,
-      !data.skinTone ? `piel ${skinTone}` : null,
-      !data.bodyType ? bodyType : null,
-    ].filter(Boolean) as string[];
-    const label = labelParts.length > 0 ? labelParts.join(' · ') : `Opción ${i + 1}`;
-    return {
-      id: `v${i}`,
-      label: label.charAt(0).toUpperCase() + label.slice(1),
-      emoji: HAIR_EMOJI[hairColor] || '🙂',
-      hairColor,
-      hairStyle,
-      skinTone,
-      bodyType,
-    };
-  });
-};
-
-
 // Medidas corporales usadas en la industria para el calce (Premium)
 const MEASUREMENTS = [
   { key: 'chest', label: 'Pecho / busto (cm)', placeholder: '92' },
@@ -204,13 +153,13 @@ export default function Tryon() {
   const canDeleteModel = !planLoading && !quotaLoading && canDeleteAvatar(isPremium, quota.avatarCredits);
 
   useEffect(() => {
-    if (isPremium || selfie || modelsLoading) return;
+    if (selfie || variants.length > 0 || modelsLoading) return;
     const model = savedModels.find((m) => m.is_active) ?? savedModels[0];
     if (!model) return;
     setSelfie(model.image_url);
     setActiveModelId(model.id);
     setAvatarData((d) => ({ ...d, height: String(model.height), weight: String(model.weight), age: String(model.age), gender: model.gender }));
-  }, [isPremium, selfie, modelsLoading, savedModels]);
+  }, [selfie, variants.length, modelsLoading, savedModels]);
 
   // Subtipos disponibles según la categoría elegida (o todos los presentes en el placard)
   const subOptions = useMemo(() => {
@@ -270,7 +219,7 @@ export default function Tryon() {
 
   const handleGenerateAvatar = async (lastAvatarConfirmed = false) => {
     if (generatingAvatar || quotaLoading || modelsLoading || planLoading) return;
-    if (!isPremium && (savedModels.length > 0 || selfie)) {
+    if (savedModels.length > 0 || selfie || variants.length > 0) {
       toast.error('Guardá tu modelo o eliminá el actual con un avatar extra antes de generar otro.');
       return;
     }
@@ -280,14 +229,8 @@ export default function Tryon() {
       return;
     }
     if (quota.avatarsLeft <= 0) {
-      if (isPremium) {
-        toast.error(
-          `Llegaste al límite de modelos (${LIMITS.premium.avatarsPerDay} por día, ${LIMITS.premium.avatarsPerMonth} por mes). Probá más tarde.`,
-        );
-      } else {
-        toast.error('Ya usaste tu modelo gratis. Sumá avatares para armar otro.');
-        navigatePremium('/premium');
-      }
+      toast.error('Ya usaste tu generación inicial. Comprá un pack para armar otro avatar.');
+      navigatePremium('/premium#avatares-extra');
       return;
     }
     if (!lastAvatarConfirmed && needsLastAvatarConfirmation(quota.avatarsLeft)) {
@@ -298,65 +241,25 @@ export default function Tryon() {
     setGeneratingAvatar(true);
     setVariants([]);
 
-    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-    const generateOne = async (overrides: Partial<typeof avatarData> = {}) => {
-      // La IA de imágenes tiene límite de pedidos por minuto: reintentamos con espera
-      let lastError: any = null;
-      for (let attempt = 0; attempt < 4; attempt++) {
-        const { data, error } = await supabase.functions.invoke('generate-avatar', {
-          body: buildAvatarBody(overrides),
-        });
-        if (!error && !data?.error && data?.image) return data.image as string;
-        lastError = error || new Error(data?.error || 'No se pudo generar el modelo');
-        const msg = String(lastError?.message || '');
-        const rateLimited = /429|non-2xx|rate|límite|limite/i.test(msg);
-        if (!rateLimited || attempt === 3) break;
-        await sleep(4000 * (attempt + 1));
-      }
-      throw new Error(
-        /429|non-2xx/i.test(String(lastError?.message || ''))
-          ? 'La IA está recibiendo demasiados pedidos. Esperá unos segundos y volvé a intentar.'
-          : lastError?.message || 'No se pudo generar el modelo'
-      );
-    };
-
     try {
+      const { data, error } = await supabase.functions.invoke('generate-avatar', {
+        body: buildAvatarBody(),
+      });
+      if (error || data?.error) throw new Error(data?.error || 'No se pudo generar el modelo');
+      const images: string[] = data?.images ?? (data?.image ? [data.image] : []);
+      if (!images.length) throw new Error('No se pudo generar el modelo');
+      setActiveModelId(null);
+      setResultImage(null);
       if (isPremium) {
-        // Respetamos lo que el usuario aclaró y variamos al azar lo que dejó vacío
-        const looks = buildVariantLooks(avatarData).slice(0, Math.max(1, quota.avatarsLeft));
-        // De a uno y con pausa, para no pasarnos del límite de pedidos por minuto
-        const ok: (Look & { image: string })[] = [];
-        let firstError: any = null;
-        for (let i = 0; i < looks.length; i++) {
-          const look = looks[i];
-          try {
-            const image = await generateOne({
-              hairColor: look.hairColor,
-              hairStyle: look.hairStyle,
-              skinTone: look.skinTone,
-              bodyType: look.bodyType,
-            });
-            ok.push({ ...look, image });
-            setVariants([...ok]);
-          } catch (e: any) {
-            if (!firstError) firstError = e;
-          }
-          if (i < looks.length - 1) await sleep(2500);
-        }
-        if (ok.length === 0) {
-          throw new Error(firstError?.message || 'No se pudieron generar los modelos');
-        }
-        setVariants(ok);
-        setActiveModelId(null);
-        setResultImage(null);
-        toast.success(`Se generaron ${ok.length} modelos. Elegí con cuál te identificás.`);
-
+        setVariants(images.map((image, i) => ({
+          id: `v${i}`, label: `Opción ${i + 1}`, emoji: '🙂', image,
+          hairColor: avatarData.hairColor, hairStyle: avatarData.hairStyle,
+          skinTone: avatarData.skinTone, bodyType: avatarData.bodyType,
+        })));
+        setShowVariantPicker(true);
+        toast.success('Elegí uno de los tres modelos para guardar.');
       } else {
-        const image = await generateOne();
-        setSelfie(image);
-        setActiveModelId(null);
-        setResultImage(null);
+        setSelfie(images[0]);
         toast.success('¡Modelo generado! Ahora podés guardarlo.');
       }
     } catch (err: any) {
@@ -384,7 +287,7 @@ export default function Tryon() {
 
   const saveModelMutation = useMutation({
     mutationFn: async () => {
-      const rawSource = isPremium ? resultImage || selfie : selfie;
+      const rawSource = selfie;
       if (!rawSource || !user) throw new Error('No hay modelo para guardar');
       // Guardamos la imagen recortada (sin fondo vacío) para que siempre llene el marco
       let source = rawSource;
@@ -394,11 +297,7 @@ export default function Tryon() {
         source = rawSource;
       }
       if (savedModels.length >= quota.savedModelsLimit) {
-        throw new Error(
-          isPremium
-            ? `Podés guardar hasta ${quota.savedModelsLimit} modelos. Borrá uno para guardar este.`
-            : 'El plan gratis guarda 1 modelo. Borrá el que tenés o sumá avatares desde Premium.',
-        );
+        throw new Error('Solo podés guardar un modelo. Comprá un pack para reemplazarlo.');
       }
       setSavingModel(true);
 
@@ -448,6 +347,9 @@ export default function Tryon() {
     },
     onSuccess: (data) => {
       setActiveModelId(data.id);
+      setSelfie(data.image_url);
+      setVariants([]);
+      setShowVariantPicker(false);
       queryClient.invalidateQueries({ queryKey: ['user_models'] });
       refreshQuota();
       toast.success('¡Modelo guardado!');
@@ -621,18 +523,6 @@ export default function Tryon() {
   };
 
 
-  const reset = () => {
-    if (!isPremium && selfie) return;
-    setSelfie(null);
-    setActiveModelId(null);
-    setSelectedItems([]);
-    setResultItems([]);
-    setResultImage(null);
-    setVariants([]);
-    setShowVariantPicker(false);
-
-  };
-
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
@@ -681,29 +571,29 @@ export default function Tryon() {
                   ✨ Resultado IA
                 </div>
               )}
-              {!isPremium && activeModelId && !quotaLoading && quota.avatarCredits === 0 && (
-                <button
+              {activeModelId && !quotaLoading && quota.avatarCredits === 0 && (
+                <Button variant="outline" size="icon"
                   onClick={() => navigatePremium('/premium#avatares-extra')}
                   aria-label="Comprar avatares extra para modificar tu modelo"
-                  className="absolute top-2 right-2 h-9 w-9 rounded-full bg-black/60 text-white backdrop-blur-sm flex items-center justify-center hover:bg-black/75 transition-colors"
+                  className="absolute top-2 right-2 h-9 w-9 rounded-full bg-background/80 text-foreground backdrop-blur-sm flex items-center justify-center hover:bg-secondary transition-colors"
                 >
                   <Plus className="h-5 w-5" />
-                </button>
+                </Button>
               )}
-              {!isPremium && activeModelId && canDeleteModel && (
-                <button
+              {activeModelId && canDeleteModel && (
+                <Button variant="destructive" size="icon"
                   onClick={() => deleteModelMutation.mutate(activeModelId)}
                   disabled={deleteModelMutation.isPending}
                   aria-label="Eliminar modelo actual"
-                  className="absolute top-2 right-2 h-9 w-9 rounded-full bg-black/60 text-white backdrop-blur-sm flex items-center justify-center hover:bg-destructive transition-colors disabled:opacity-60"
+                  className="absolute top-2 right-2 h-9 w-9 rounded-full bg-destructive text-destructive-foreground backdrop-blur-sm flex items-center justify-center transition-colors disabled:opacity-60"
                 >
                   {deleteModelMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                </button>
+                </Button>
               )}
             </div>
 
             <div className="flex flex-col gap-2 max-w-sm mx-auto">
-              {(isPremium || !activeModelId) && <Button
+              {!activeModelId && <Button
                 variant="outline"
                 disabled={savingModel}
                 onClick={() => saveModelMutation.mutate()}
@@ -711,10 +601,10 @@ export default function Tryon() {
                 {savingModel ? (
                   <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando modelo...</>
                 ) : (
-                  <><Save className="h-4 w-4 mr-2" /> {!isPremium ? 'Guardar modelo' : resultImage ? 'Guardar modelo con esta ropa' : 'Guardar este modelo'}</>
+                  <><Save className="h-4 w-4 mr-2" /> Guardar modelo</>
                 )}
               </Button>}
-              {isPremium && variants.length > 0 && (
+              {isPremium && !activeModelId && variants.length > 0 && (
                 <Button
                   variant="secondary"
                   onClick={() => setShowVariantPicker(true)}
@@ -722,12 +612,7 @@ export default function Tryon() {
                   <RotateCcw className="h-4 w-4 mr-2" /> Cambiar modelo
                 </Button>
               )}
-              {isPremium && <Button
-                variant="ghost"
-                onClick={reset}
-              >
-                Volver a los datos
-              </Button>}
+
             </div>
 
           </div>
@@ -758,16 +643,6 @@ export default function Tryon() {
                       Volver al modelo actual
                     </Button>
                   )}
-                  <Button variant="outline" size="sm" onClick={reset}>
-                    Volver a los datos
-                  </Button>
-                  <Button variant="warm" size="sm" disabled={generatingAvatar} onClick={() => void handleGenerateAvatar()}>
-                    {generatingAvatar ? (
-                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
-                    ) : (
-                      <><RotateCcw className="h-4 w-4 mr-2" /> Generar otras opciones</>
-                    )}
-                  </Button>
                 </div>
               </div>
             ) : modelMode === 'selfie' ? (
@@ -886,12 +761,12 @@ export default function Tryon() {
                   ))}
                 </div>
               ) : (
-                <button
+                <Button variant="outline"
                   onClick={() => navigatePremium('/premium')}
                   className="w-full rounded-lg bg-background/70 border border-dashed border-border px-3 py-2 text-[11px] font-body text-muted-foreground hover:text-foreground"
                 >
                   <Lock className="h-3.5 w-3.5 inline mr-1" /> Pelo, piel, contextura y tus medidas — Premium
-                </button>
+                </Button>
               )}
 
               {/* Medidas corporales (Premium) */}
@@ -923,36 +798,21 @@ export default function Tryon() {
               )}
 
               <div className="rounded-xl bg-secondary p-3 space-y-2">
-                {isPremium ? (
-                  <p className="text-[11px] font-body text-muted-foreground">
-                    Te quedan {quota.avatarsLeft} modelos para hoy · {Math.max(0, LIMITS.premium.avatarsPerMonth - quota.avatarsThisMonth)} este mes ·
-                    {' '}{quota.savedModels}/{quota.savedModelsLimit} modelos guardados
-                  </p>
-                ) : (
-                  <>
-                    <p className="text-[11px] font-body text-muted-foreground">
-                      {quota.avatarsLeft > 0
-                        ? `Podés armar ${quota.avatarsLeft} modelo${quota.avatarsLeft === 1 ? '' : 's'}${quota.avatarCredits > 0 ? ` (incluye ${quota.avatarCredits} comprado${quota.avatarCredits === 1 ? '' : 's'})` : ' gratis'}.`
-                        : 'Ya usaste tu modelo gratis. Sumá avatares para armar otro.'}
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full h-auto py-2 flex-col gap-0 leading-snug"
-                      onClick={() => navigatePremium('/premium')}
-                    >
-                      <span className="block">Avatar extra 0,99 USD</span>
-                      <span className="block">Pack de 3 avatares 1,99 USD</span>
-                    </Button>
-                  </>
-                )}
+                <p className="text-[11px] font-body text-muted-foreground">
+                  {quota.avatarsTotal === 0
+                    ? isPremium ? 'Una generación inicial con 3 opciones. Elegí un solo modelo.' : 'Un modelo inicial gratis.'
+                    : 'Para volver a generar, necesitás un avatar extra comprado.'}
+                </p>
+                <Button variant="outline" size="sm" className="w-full" onClick={() => navigatePremium('/premium#avatares-extra')}>
+                  <Plus className="h-4 w-4 mr-2" /> Comprar avatares extra
+                </Button>
               </div>
 
               <Button
                 variant="warm"
                 size="sm"
                 className="w-full"
-                disabled={generatingAvatar || quotaLoading || modelsLoading || planLoading || quota.avatarsLeft <= 0 || (!isPremium && savedModels.length > 0)}
+                disabled={generatingAvatar || quotaLoading || modelsLoading || planLoading || quota.avatarsLeft <= 0 || (savedModels.length > 0 || variants.length > 0)}
                 onClick={() => void handleGenerateAvatar()}
               >
                 {generatingAvatar ? (
@@ -1009,7 +869,7 @@ export default function Tryon() {
       </div>
 
       <p className="text-center text-sm font-body text-muted-foreground" aria-live="polite">
-        Avatares disponibles: <span className="font-semibold text-foreground">{quotaLoading ? '…' : isPremium ? quota.avatarsLeft : quota.avatarCredits + (!selfie && quota.avatarsTotal === 0 ? 1 : 0)}</span>
+        Avatares disponibles: <span className="font-semibold text-foreground">{quotaLoading ? '…' : quota.avatarCredits + (!selfie && variants.length === 0 && quota.avatarsTotal === 0 ? 1 : 0)}</span>
       </p>
 
       <Dialog open={confirmLastAvatar} onOpenChange={setConfirmLastAvatar}>

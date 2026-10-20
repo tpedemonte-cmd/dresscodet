@@ -10,9 +10,8 @@ export const LIMITS = {
     outfitsPerDay: 2,
   },
   premium: {
-    avatarsPerMonth: 10,
-    avatarsPerDay: 3,
-    savedModels: 3,
+    avatarFreeTotal: 1,
+    savedModels: 1,
     tryonsPerMonth: 15,
   },
 } as const;
@@ -62,6 +61,7 @@ export interface QuotaDecision {
   error?: string;
   useCredit: boolean;
   userId: string;
+  isPremium?: boolean;
 }
 
 /**
@@ -122,30 +122,6 @@ export async function checkQuota(req: Request, kind: UsageKind): Promise<QuotaDe
     return { ok: true, useCredit: false, userId: user.id };
   }
 
-  if (isPremium) {
-    const month = await countUsage(sb, user.id, 'avatar', startOfMonth());
-    if (month >= LIMITS.premium.avatarsPerMonth) {
-      return {
-        ok: false,
-        status: 403,
-        error: `Premium incluye ${LIMITS.premium.avatarsPerMonth} modelos por mes. Volvé el mes que viene o comprá un pack de avatares.`,
-        useCredit: false,
-        userId: user.id,
-      };
-    }
-    const day = await countUsage(sb, user.id, 'avatar', startOfDay());
-    if (day >= LIMITS.premium.avatarsPerDay) {
-      return {
-        ok: false,
-        status: 403,
-        error: `Con Premium podés armar hasta ${LIMITS.premium.avatarsPerDay} modelos por día. Probá de nuevo mañana.`,
-        useCredit: false,
-        userId: user.id,
-      };
-    }
-    return { ok: true, useCredit: false, userId: user.id };
-  }
-
   const { count: savedModels, error: modelsError } = await sb.from('user_models')
     .select('id', { count: 'exact', head: true }).eq('user_id', user.id);
   if (modelsError) throw modelsError;
@@ -154,7 +130,7 @@ export async function checkQuota(req: Request, kind: UsageKind): Promise<QuotaDe
   }
   const total = await countUsage(sb, user.id, 'avatar');
   if (total < LIMITS.free.avatarFreeTotal) {
-    return { ok: true, useCredit: false, userId: user.id };
+    return { ok: true, useCredit: false, userId: user.id, isPremium };
   }
 
   const { data: credits } = await sb
@@ -164,7 +140,7 @@ export async function checkQuota(req: Request, kind: UsageKind): Promise<QuotaDe
     .maybeSingle();
 
   if ((credits?.balance ?? 0) > 0) {
-    return { ok: true, useCredit: true, userId: user.id };
+    return { ok: true, useCredit: true, userId: user.id, isPremium };
   }
 
   return {

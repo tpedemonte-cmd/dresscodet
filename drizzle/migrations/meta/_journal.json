@@ -71,6 +71,13 @@
       "when": 1792217641905,
       "tag": "0009_protect_free_avatar_replacements",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792463950304,
+      "tag": "0010_avatar_lifetime_allowance_all_plans",
+      "breakpoints": true
     }
   ]
 }

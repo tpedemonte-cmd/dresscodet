@@ -7,5 +7,5 @@
 ## Planes y avatares
 - [x] Bloquear modelo gratis guardado, habilitar borrado solo con créditos y consumir uno por reemplazo exitoso
 - [x] Plan gratis: 1 modelo generado + 1 modelo guardado; 3 pruebas de outfit por mes
-- [x] Premium: 10 modelos por mes (3 por día), 3 modelos guardados, 15 pruebas por mes
+- [x] Premium: una generación inicial con 3 opciones, un único modelo guardado; reemplazos solo con packs
 - [x] Compra de avatares extra: 1 x USD 0,99 y pack de 3 x USD 1,99 (pago simulado)
