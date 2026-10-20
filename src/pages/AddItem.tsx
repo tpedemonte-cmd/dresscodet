@@ -1,3 +1,4 @@
+import IconText from '@/components/IconText';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -182,7 +183,7 @@ export default function AddItem() {
             <SelectContent>
               {CATEGORIES.map((c) => (
                 <SelectItem key={c.value} value={c.value}>
-                  {c.label}
+                  <IconText text={c.label} />
                 </SelectItem>
               ))}
             </SelectContent>

@@ -1,6 +1,8 @@
 # DressCode roadmap
 
 ## Prueba visual
+- [x] Usar medias negras en la representación de la categoría para mejorar su visibilidad (verificado en Agregar)
+- [x] Extender imágenes e íconos a todos los emojis visibles, incluidos textos de Looks guardados, Armario, formularios, clima e historial (12 pantallas verificadas sin emojis visibles)
 - [x] Tienda: probar imágenes realistas en las categorías; Outfit y Plan semanal: íconos simples para ocasiones, con opción de restaurar el aspecto anterior (imágenes y selección verificadas)
 
 ## Hecho

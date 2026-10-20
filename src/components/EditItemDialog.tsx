@@ -1,3 +1,4 @@
+import IconText from '@/components/IconText';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,7 +71,7 @@ export default function EditItemDialog({ item, open, onOpenChange }: EditItemDia
             </SelectTrigger>
             <SelectContent>
               {CATEGORIES.map((c) => (
-                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                <SelectItem key={c.value} value={c.value}><IconText text={c.label} /></SelectItem>
               ))}
             </SelectContent>
           </Select>

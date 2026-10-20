@@ -1,6 +1,6 @@
 # Architecture rules
 
-- Keep occasion presentation shared between Outfit and weekly planning, and gate the visual icon trial with one presentation flag so the prior emoji appearance can be restored without changing category searches or saved data.
+- Keep occasion presentation shared and render emoji-bearing interface labels and stored/AI text through the shared IconText presenter; gate the visual trial with one presentation flag so prior appearance can be restored without modifying searches, prompts or saved data.
 
 - Avatar eligibility helpers live under the Edge Functions shared directory and are imported by the client and tests to keep free-model replacement rules aligned.
 - Try-on category selection uses a pure client helper shared with unit tests so duplicate-category rules stay consistent.

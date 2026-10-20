@@ -1,3 +1,4 @@
+import IconText from '@/components/IconText';
 import ExplanationToggle from '@/components/ExplanationToggle';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,9 +71,7 @@ export default function StyleRecommendationsWidget() {
       </div>
 
       {!styleResult && !loading && (
-        <p className="text-sm text-muted-foreground font-body">
-          Analizamos tus looks, outfits y prendas favoritas para recomendarte qué te falta y dónde comprarlo 🛍️
-        </p>
+        <p className="text-sm text-muted-foreground font-body"><IconText text={"Analizamos tus looks, outfits y prendas favoritas para recomendarte qué te falta y dónde comprarlo 🛍️"} /></p>
       )}
 
       {styleResult && (
@@ -83,7 +82,7 @@ export default function StyleRecommendationsWidget() {
                 <Sparkles className="h-3 w-3" /> Tu onda
               </p>
               <p className="text-sm font-body text-foreground leading-relaxed">
-                {styleResult.style_profile}
+                <IconText text={styleResult.style_profile} />
               </p>
             </div>
           )}
@@ -99,8 +98,8 @@ export default function StyleRecommendationsWidget() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-0.5 flex-1">
-                    <p className="text-sm font-body font-medium text-foreground">{rec.item}</p>
-                    <ExplanationToggle label="Por qué"><p className="text-xs text-muted-foreground font-body">{rec.reason}</p></ExplanationToggle>
+                    <p className="text-sm font-body font-medium text-foreground"><IconText text={rec.item} /></p>
+                    <ExplanationToggle label="Por qué"><p className="text-xs text-muted-foreground font-body"><IconText text={rec.reason} /></p></ExplanationToggle>
                   </div>
                   <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0 group-hover:text-primary transition-colors pt-0.5">
                     Buscar <ExternalLink className="h-3 w-3" />

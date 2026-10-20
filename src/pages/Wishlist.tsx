@@ -1,3 +1,4 @@
+import IconText from '@/components/IconText';
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -31,6 +32,7 @@ export default function Wishlist() {
   const { user } = useAuth();
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [mlUrl, setMlUrl] = useState('');
   const [manualTitle, setManualTitle] = useState('');
@@ -275,7 +277,7 @@ export default function Wishlist() {
 
       {items.length === 0 ? (
         <div className="text-center py-16 space-y-2">
-          <p className="text-4xl">💫</p>
+          <p className="text-4xl"><IconText text={"💫"} /></p>
           <p className="text-muted-foreground font-body">Tu wishlist está vacía.</p>
           <p className="text-sm text-muted-foreground font-body">Tocá "Agregar" y pegá un link de Mercado Libre.</p>
         </div>
@@ -289,16 +291,14 @@ export default function Wishlist() {
                 rel="noopener noreferrer"
                 className="shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-secondary flex items-center justify-center"
               >
-                <img
+                {failedImages.has(item.id) ? <span className="text-3xl"><IconText text="🛍️" /></span> : <img
                   src={item.image || item.thumbnail}
                   alt={item.title}
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    const img = e.target as HTMLImageElement;
-                    img.style.display = 'none';
-                    img.parentElement!.innerHTML = '<span class="text-3xl">🛍️</span>';
+                    setFailedImages((previous) => new Set([...previous, item.id]));
                   }}
-                />
+                />}
               </a>
               <div className="flex-1 min-w-0 flex flex-col justify-between">
                 <div>
@@ -308,7 +308,7 @@ export default function Wishlist() {
                     rel="noopener noreferrer"
                     className="text-sm font-body font-medium text-foreground line-clamp-2 hover:underline leading-tight"
                   >
-                    {item.title}
+                    <IconText text={item.title} />
                   </a>
                   {item.price > 0 && (
                     <p className="text-base font-display font-bold text-foreground mt-1">

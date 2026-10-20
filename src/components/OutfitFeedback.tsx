@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import IconText from '@/components/IconText';
 import { ThumbsUp, ThumbsDown, Check, X, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -83,7 +84,7 @@ export default function OutfitFeedback({ table, recordId, initialFeedback = null
     setFavorite(next);
     const ok = await update({ is_favorite: next });
     if (!ok) setFavorite(!next);
-    else toast.success(next ? 'Guardado en favoritos ⭐' : 'Quitado de favoritos');
+    else toast.success(<IconText text={next ? 'Guardado en favoritos ⭐' : 'Quitado de favoritos'} />);
   };
 
 

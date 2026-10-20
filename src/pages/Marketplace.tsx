@@ -1,3 +1,4 @@
+import IconText from '@/components/IconText';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -196,7 +197,7 @@ export default function Marketplace() {
                       <img src={item.image || item.thumbnail} alt={item.title} className="w-16 h-16 rounded-lg object-contain bg-secondary" />
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-body text-foreground line-clamp-2">{item.title}</p>
+                      <p className="text-sm font-body text-foreground line-clamp-2"><IconText text={item.title} /></p>
                       {item.price > 0 && <p className="text-sm font-display font-bold text-foreground">{formatPrice(item.price, item.currency)}</p>}
                     </div>
                     <div className="flex gap-1">
@@ -311,9 +312,7 @@ export default function Marketplace() {
           </div>
 
           <div className="bg-card rounded-xl p-4 shadow-card text-center space-y-2">
-            <p className="text-sm text-muted-foreground font-body">
-              Los productos se abren en Mercado Libre donde podés comprar con total seguridad 🔒
-            </p>
+            <p className="text-sm text-muted-foreground font-body"><IconText text={"Los productos se abren en Mercado Libre donde podés comprar con total seguridad 🔒"} /></p>
           </div>
         </>
       )}

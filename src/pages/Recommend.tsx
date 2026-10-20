@@ -1,3 +1,4 @@
+import IconText from '@/components/IconText';
 import ExplanationToggle from '@/components/ExplanationToggle';
 import OccasionLabel, { OCCASIONS as EVENTS } from '@/components/OccasionLabel';
 import { useState, useEffect } from 'react';
@@ -402,7 +403,7 @@ export default function Recommend() {
               </div>
               <div className="flex flex-col min-w-0 gap-1">
                 <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
-                  <span>🌡️</span> Temperatura
+                  <span><IconText text={"🌡️"} /></span> Temperatura
                 </span>
                 <span className="text-base font-body font-semibold text-foreground">
                   {temperature[0]} grados
@@ -410,16 +411,16 @@ export default function Recommend() {
               </div>
               <div className="flex flex-col min-w-0 gap-1">
                 <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
-                  <span>{(weatherLabel || '').match(/^\p{Extended_Pictographic}/u)?.[0] || '🌤️'}</span> Clima
+                  <span><IconText text={(weatherLabel || '').match(/^\p{Extended_Pictographic}/u)?.[0] || '🌤️'} /></span> Clima
                 </span>
                 <span className="text-base font-body font-semibold text-foreground break-words">
-                  {(weatherLabel || weather).replace(/^\p{Extended_Pictographic}\s*/u, '')}
+                  <IconText text={(weatherLabel || weather).replace(/^\p{Extended_Pictographic}\s*/u, '')} />
                 </span>
               </div>
               {windKmh !== null && (
                 <div className="flex flex-col min-w-0 gap-1">
                   <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
-                    <span>💨</span> Viento
+                    <span><IconText text={"💨"} /></span> Viento
                   </span>
                   <span className="text-base font-body font-semibold text-foreground">
                     {windKmh} km/h
@@ -429,7 +430,7 @@ export default function Recommend() {
               {rainProb !== null && (
                 <div className="flex flex-col min-w-0 gap-1 col-span-2 sm:col-span-1">
                   <span className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
-                    <span>🌧️</span> Lluvia
+                    <span><IconText text={"🌧️"} /></span> Lluvia
                   </span>
                   <span className="text-base font-body font-semibold text-foreground">
                     {rainProb}% de probabilidad
@@ -473,7 +474,7 @@ export default function Recommend() {
                       : 'bg-secondary/50 text-foreground border-border hover:bg-secondary'
                   }`}
                 >
-                  {opt.label}
+                  <IconText text={opt.label} />
                 </button>
               ))}
             </div>
@@ -503,7 +504,7 @@ export default function Recommend() {
           </h3>
           <ExplanationToggle>
             <div className="font-body text-foreground whitespace-pre-line leading-relaxed">
-              {recommendation}
+              <IconText text={recommendation} />
             </div>
           </ExplanationToggle>
           {recommendedItems.length > 0 && (
@@ -513,7 +514,7 @@ export default function Recommend() {
                 {recommendedItems.map((item) => (
                   <div key={item.id} className="rounded-lg overflow-hidden bg-secondary">
                     <img src={item.image_url} alt={item.name} className="w-full aspect-square object-cover" />
-                    <p className="text-xs font-body text-center py-1 text-foreground truncate px-1">{item.name}</p>
+                    <p className="text-xs font-body text-center py-1 text-foreground truncate px-1"><IconText text={item.name} /></p>
                   </div>
                 ))}
               </div>
@@ -521,7 +522,7 @@ export default function Recommend() {
           )}
           {recommendedWishlistItems.length > 0 && (
             <div className="pt-3 border-t border-border">
-              <p className="text-sm font-body font-medium text-muted-foreground mb-2">🛒 De tu wishlist (todavía no lo tenés):</p>
+              <p className="text-sm font-body font-medium text-muted-foreground mb-2"><IconText text={"🛒 De tu wishlist (todavía no lo tenés):"} /></p>
               <div className="grid grid-cols-3 gap-2">
                 {recommendedWishlistItems.map((item: any) => (
                   <a
@@ -532,7 +533,7 @@ export default function Recommend() {
                     className="rounded-lg overflow-hidden bg-secondary/50 border border-dashed border-primary/30 hover:border-primary transition-colors group"
                   >
                     <img src={item.image || item.thumbnail} alt={item.title} className="w-full aspect-square object-contain group-hover:scale-105 transition-transform" />
-                    <p className="text-xs font-body text-center py-1 text-foreground truncate px-1">{item.title}</p>
+                    <p className="text-xs font-body text-center py-1 text-foreground truncate px-1"><IconText text={item.title} /></p>
                   </a>
                 ))}
               </div>
@@ -545,7 +546,7 @@ export default function Recommend() {
                 {reasons.map((r, i) => (
                   <li key={i} className="flex gap-2 text-sm font-body text-foreground">
                     <span className="text-primary">•</span>
-                    <span>{r}</span>
+                    <span><IconText text={r} /></span>
                   </li>
                 ))}
               </ul>
@@ -580,8 +581,7 @@ export default function Recommend() {
                   rel="noopener noreferrer"
                   className="flex items-center justify-between gap-2 p-3 rounded-lg bg-secondary hover:bg-accent transition-colors group"
                 >
-                  <span className="text-sm font-body font-medium text-foreground capitalize">
-                    🔍 {suggestion.query}
+                  <span className="text-sm font-body font-medium text-foreground capitalize"><IconText text={"🔍"} />{suggestion.query}
                   </span>
                   <span className="text-xs text-muted-foreground flex items-center gap-1 group-hover:text-foreground transition-colors">
                     Ver en ML <ExternalLink className="h-3 w-3" />
@@ -645,13 +645,13 @@ export default function Recommend() {
                       {new Date(match.created_at).toLocaleDateString('es-AR')}
                     </span>
                   </div>
-                  <p className="text-sm font-body text-foreground line-clamp-3">{match.recommendation}</p>
+                  <p className="text-sm font-body text-foreground line-clamp-3"><IconText text={match.recommendation} /></p>
                   {matchItems.length > 0 && (
                     <div className="flex gap-2 overflow-x-auto pb-1">
                       {matchItems.map((item) => (
                         <div key={item.id} className="shrink-0 w-14 rounded-md overflow-hidden bg-secondary">
                           <img src={item.image_url} alt={item.name} className="w-full aspect-square object-cover" />
-                          <p className="text-[10px] font-body text-center truncate px-0.5">{item.name}</p>
+                          <p className="text-[10px] font-body text-center truncate px-0.5"><IconText text={item.name} /></p>
                         </div>
                       ))}
                     </div>
