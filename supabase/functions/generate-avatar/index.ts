@@ -7,6 +7,7 @@ import { corsHeaders as sdkCorsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 const corsHeaders = { ...sdkCorsHeaders, 'Access-Control-Allow-Headers': `${sdkCorsHeaders['Access-Control-Allow-Headers']}, x-data-backend` };
 import { z } from 'npm:zod@3';
 import { generateAvatarOptions, AVATAR_MIN_HEIGHT_CM, AVATAR_MIN_WEIGHT_KG } from '../_shared/avatarRules.ts';
+import { BASE_AVATAR_FOOTWEAR } from '../_shared/clothingRules.ts';
 
 const AvatarBody = z.object({
   height: z.coerce.number().finite().min(AVATAR_MIN_HEIGHT_CM, `La altura mínima es ${AVATAR_MIN_HEIGHT_CM} cm`).max(300),
@@ -107,6 +108,7 @@ serve(async (req) => {
 The person should:
 - Stand in a neutral relaxed pose, facing the camera, arms slightly away from the body
 - Wear plain neutral underwear (basic gray/white tank top and shorts) so clothing can be virtually tried on later
+- Footwear policy: shoes=${BASE_AVATAR_FOOTWEAR.shoes}, socks=${BASE_AVATAR_FOOTWEAR.socks}. ALWAYS be barefoot, with both bare feet and toes fully visible. Never wear shoes, sneakers, sandals, slippers, socks or stockings.
 - Have a neutral facial expression${traits.length ? "" : " and a generic appearance (no distinctive features)"}
 - Be photographed against a clean light gray seamless studio background
 - Be evenly lit with soft natural lighting

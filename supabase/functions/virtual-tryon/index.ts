@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { aiGenerateImage } from "../_shared/ai.ts";
 import { checkQuota, recordUsage } from "../_shared/quotas.ts";
+import { clothingReplacementPlan } from '../_shared/clothingRules.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -87,6 +88,9 @@ STRICT RULES:
 - Replace the background with a clean, evenly lit, plain light gray seamless studio backdrop. Remove furniture, beds, rugs and any room details from IMAGE 1.
 - Garment reference photos may contain other people, mannequins or backgrounds: IGNORE them completely. Copy ONLY the garment (color, fabric, cut, details) and never copy any person or scene from them.
 - Apply each garment to the correct body area by its category, replacing what the target person wears there; layer naturally (e.g. jacket over shirt).
+- Mandatory replacement plan (each category refers to the selected garment reference, never clothing already worn in IMAGE 1): ${JSON.stringify(clothingReplacementPlan(clothingItems.map(item => item.category)))}.
+- REMOVE the original garment in every selected category BEFORE dressing the person in its replacement. A selected T-shirt replaces the original T-shirt or base tank top; trousers/shorts replace the original bottoms; socks replace original socks; shoes replace original footwear. Apply this replacement to ALL selected categories, including accessories. Never keep two garments of the same category, never overlay a new shirt on the old shirt, and never blend old garment colors, prints or details into the selected garment.
+- Layer ONLY different categories naturally, such as a jacket over the selected shirt. Preserve clothing in unselected categories. Bare feet remain bare unless selected socks or footwear cover them; never invent unselected socks or shoes.
 - Photorealistic result. Output a single image.`;
 
     const result = await aiGenerateImage(prompt, [
