@@ -1,5 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { canDeleteAvatar, freeAvatarAllowance, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation, avatarOptionCount, generateAvatarOptions } from '../../supabase/functions/_shared/avatarRules';
+import { canDeleteAvatar, freeAvatarAllowance, isSavedAvatarSelected, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation, avatarOptionCount, generateAvatarOptions } from '../../supabase/functions/_shared/avatarRules';
+
+describe('try-on outfit requires a saved avatar', () => {
+  it('blocks outfit generation while the avatar is unsaved', () => {
+    expect(isSavedAvatarSelected('data:image/png;base64,abc', [], false)).toBe(false);
+    expect(isSavedAvatarSelected('data:image/png;base64,abc', ['https://cdn/model.png'], false)).toBe(false);
+  });
+  it('allows outfit generation once the avatar is saved', () => {
+    expect(isSavedAvatarSelected('https://cdn/model.png', ['https://cdn/model.png'], false)).toBe(true);
+  });
+  it('always allows the try-on with an own photo', () => {
+    expect(isSavedAvatarSelected('data:image/jpeg;base64,photo', [], true)).toBe(true);
+  });
+  it('blocks when there is no model at all', () => {
+    expect(isSavedAvatarSelected(null, [], false)).toBe(false);
+    expect(isSavedAvatarSelected(null, [], true)).toBe(false);
+  });
+});
+
 
 describe('free avatar replacement rules', () => {
   it('requires confirmation only for the last available avatar', () => {
