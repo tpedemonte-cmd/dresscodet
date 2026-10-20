@@ -1210,13 +1210,19 @@ export default function Tryon() {
               </span>
             </div>
           )}
-          <Button variant="warm" className="w-full" disabled={!selfie || selectedItems.length === 0 || loading} onClick={handleTryon}>
+          {selfie && !usingSavedAvatar && selectedItems.length > 0 && (
+            <p className="text-[11px] font-body text-center text-muted-foreground">
+              Guardá tu avatar antes de generar el outfit
+            </p>
+          )}
+          <Button variant="warm" className="w-full" disabled={!usingSavedAvatar || selectedItems.length === 0 || loading} onClick={handleTryon}>
             {loading ? (
               <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando outfit virtual...</>
             ) : (
               <><Sparkles className="h-4 w-4 mr-2" /> Generar con IA ({selectedItems.length > 1 ? `${selectedItems.length} prendas` : '1 prenda'})</>
             )}
           </Button>
+
 
           {resultImage && (
             <Button variant="outline" className="w-full" disabled={saving} onClick={handleSaveLook}>
