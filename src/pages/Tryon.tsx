@@ -452,7 +452,7 @@ export default function Tryon() {
 
   const requestDeleteModel = (id: string) => {
     if (!canDeleteModel || modelsLoading || deleteModelMutation.isPending) return;
-    if (needsLastAvatarDeletionConfirmation(isPremium, savedModels.length)) {
+    if (needsLastAvatarDeletionConfirmation(isPremium, savedModels.length, quota.avatarCredits)) {
       setAvatarToDelete(id);
       return;
     }

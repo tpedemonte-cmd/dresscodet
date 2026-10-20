@@ -2,8 +2,8 @@ export function canDeleteAvatar(isPremium: boolean, credits: number) {
   return isPremium || credits > 0;
 }
 
-export function needsLastAvatarDeletionConfirmation(isPremium: boolean, savedModels: number) {
-  return isPremium && savedModels === 1;
+export function needsLastAvatarDeletionConfirmation(isPremium: boolean, savedModels: number, credits = 0) {
+  return isPremium && savedModels === 1 && credits <= 0;
 }
 
 export function avatarOptionCount(isPremium: boolean) {

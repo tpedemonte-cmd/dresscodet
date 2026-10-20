@@ -67,6 +67,11 @@ describe('free avatar replacement rules', () => {
     expect(needsLastAvatarDeletionConfirmation(true, 0)).toBe(false);
     expect(needsLastAvatarDeletionConfirmation(false, 1)).toBe(false);
   });
+  it('skips the last-avatar warning while extra avatar credits remain', () => {
+    expect(needsLastAvatarDeletionConfirmation(true, 1, 1)).toBe(false);
+    expect(needsLastAvatarDeletionConfirmation(true, 1, 2)).toBe(false);
+    expect(needsLastAvatarDeletionConfirmation(true, 1, 0)).toBe(true);
+  });
   it('premium has only one lifetime initial generation, not a monthly renewal', () => {
     expect(freeAvatarAllowance(0, 0, 0)).toBe(1);
     expect(freeAvatarAllowance(1, 0, 0)).toBe(0);
