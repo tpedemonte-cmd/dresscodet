@@ -1,6 +1,7 @@
 # DressCode roadmap
 
 ## Prueba visual
+- [ ] Extender imágenes e íconos a todos los emojis visibles, incluidos textos de Looks guardados, Armario, formularios, clima e historial
 - [x] Tienda: probar imágenes realistas en las categorías; Outfit y Plan semanal: íconos simples para ocasiones, con opción de restaurar el aspecto anterior (imágenes y selección verificadas)
 
 ## Hecho
