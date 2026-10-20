@@ -37,6 +37,7 @@ export default function Travel() {
   const [month, setMonth] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TravelResult | null>(null);
+  const [resultDestination, setResultDestination] = useState('');
 
   useEffect(() => {
     if (skipNextSearch.current) {
@@ -92,6 +93,7 @@ export default function Travel() {
     }
     setLoading(true);
     setResult(null);
+    setResultDestination(destination.trim());
     try {
       const { data, error } = await supabase.functions.invoke('travel-wardrobe', {
         body: {
@@ -255,7 +257,7 @@ export default function Travel() {
           {result.destination_summary && (
             <div className="bg-gradient-to-br from-primary/10 to-secondary/40 border border-primary/20 rounded-xl p-4 space-y-1">
               <p className="text-xs font-body font-semibold text-primary uppercase tracking-wide flex items-center gap-1">
-                <Globe2 className="h-3.5 w-3.5" /> {destination}
+                <Globe2 className="h-3.5 w-3.5" /> {resultDestination}
               </p>
               <p className="text-sm font-body text-foreground leading-relaxed">{result.destination_summary}</p>
             </div>
