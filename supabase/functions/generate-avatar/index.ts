@@ -6,8 +6,8 @@ import { z } from 'npm:zod@3';
 import { generateAvatarOptions } from '../_shared/avatarRules.ts';
 
 const AvatarBody = z.object({
-  height: z.coerce.number().finite().positive().max(300),
-  weight: z.coerce.number().finite().positive().max(600),
+  height: z.coerce.number().finite().min(150, 'La altura mínima es 150 cm').max(300),
+  weight: z.coerce.number().finite().min(45, 'El peso mínimo es 45 kg').max(600),
   age: z.coerce.number().int().min(1).max(120),
   gender: z.enum(['masculino', 'femenino', 'otro']),
   hairColor: z.string().max(80).optional(),

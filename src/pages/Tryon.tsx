@@ -248,9 +248,17 @@ export default function Tryon() {
       toast.error('Guardá tu modelo o eliminá el actual con un avatar extra antes de generar otro.');
       return;
     }
-    const { gender } = avatarData;
+    const { gender, height, weight } = avatarData;
     if (!gender) {
       toast.error('Seleccioná un género para continuar');
+      return;
+    }
+    if (height !== '' && Number(height) < 150) {
+      toast.error('La altura mínima es 150 cm');
+      return;
+    }
+    if (weight !== '' && Number(weight) < 45) {
+      toast.error('El peso mínimo es 45 kg');
       return;
     }
     if (quota.avatarsLeft <= 0) {
@@ -808,7 +816,7 @@ export default function Tryon() {
                   <label className="text-xs font-body text-foreground">Altura (cm)</label>
                   <input
                     type="number"
-                    min="0"
+                    min="150"
                     value={avatarData.height}
                     onChange={handleNumberChange('height')}
                     placeholder="170"
@@ -819,7 +827,7 @@ export default function Tryon() {
                   <label className="text-xs font-body text-foreground">Peso (kg)</label>
                   <input
                     type="number"
-                    min="0"
+                    min="45"
                     value={avatarData.weight}
                     onChange={handleNumberChange('weight')}
                     placeholder="65"
