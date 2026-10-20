@@ -10,6 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Search, ExternalLink, Truck, ShoppingBag, Loader2, SlidersHorizontal, Heart, Trash2 } from 'lucide-react';
 import DeleteWishlistConfirmDialog from '@/components/DeleteWishlistConfirmDialog';
 import { toast } from 'sonner';
+import { REALISTIC_ICON_TRIAL } from '@/components/OccasionLabel';
+
+const categoryPhotos = import.meta.glob<string>('../assets/category-photos/*.jpg', { eager: true, import: 'default' });
+const CATEGORY_PHOTO_NAMES = ['remera', 'jean', 'campera', 'zapatillas', 'vestido', 'camisa', 'short', 'buzo', 'cartera', 'reloj', 'cadena', 'anillo', 'pulsera', 'lentes', 'gorra', 'ojotas', 'bufanda', 'billetera', 'mochila', 'guantes', 'aros'];
 
 const PRICE_RANGES = [
   { label: 'Todos los precios', value: 'all' },
@@ -283,15 +287,25 @@ export default function Marketplace() {
           <div>
             <p className="text-sm font-body text-muted-foreground mb-3">Explorá por categoría</p>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-              {CATEGORIES.map((cat) => (
-                <button
+              {CATEGORIES.map((cat, index) => (
+                <Button
                   key={cat.query}
+                  variant="ghost"
                   onClick={() => handleSearch(cat.query)}
-                  className="flex flex-col items-center gap-2 p-4 bg-card rounded-xl shadow-card hover:shadow-elevated hover:-translate-y-0.5 transition-all"
+                  className={`flex h-auto min-w-0 flex-col items-center gap-2 whitespace-normal bg-card shadow-card hover:shadow-elevated hover:-translate-y-0.5 transition-all ${REALISTIC_ICON_TRIAL ? 'rounded-lg p-2 pb-3' : 'rounded-xl p-4'}`}
                 >
-                  <span className="text-3xl">{cat.emoji}</span>
+                  {REALISTIC_ICON_TRIAL ? (
+                    <img
+                      src={categoryPhotos[`../assets/category-photos/${CATEGORY_PHOTO_NAMES[index]}.jpg`]}
+                      alt=""
+                      loading="lazy"
+                      width={384}
+                      height={240}
+                      className="aspect-[8/5] w-full rounded-md object-cover"
+                    />
+                  ) : <span className="text-3xl">{cat.emoji}</span>}
                   <span className="text-xs font-body text-foreground">{cat.label.replace(cat.emoji + ' ', '')}</span>
-                </button>
+                </Button>
               ))}
             </div>
           </div>

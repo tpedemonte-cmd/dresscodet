@@ -1,4 +1,5 @@
 import ExplanationToggle from '@/components/ExplanationToggle';
+import OccasionLabel, { OCCASIONS as EVENTS } from '@/components/OccasionLabel';
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,16 +15,6 @@ import { fetchForecastForDate, searchCity, type GeoResult } from '@/lib/weather'
 import OutfitFeedback from '@/components/OutfitFeedback';
 import { isAvailable } from '@/lib/availability';
 import PremiumGate from '@/components/PremiumGate';
-
-const EVENTS = [
-  { value: 'trabajo', label: '💼 Trabajo' },
-  { value: 'cita', label: '❤️ Cita' },
-  { value: 'amigos', label: '🍻 Juntada con amigos' },
-  { value: 'familia', label: '👨‍👩‍👧 Familia' },
-  { value: 'fiesta', label: '🎉 Fiesta' },
-  { value: 'gym', label: '🏋️ Gym / Deporte' },
-  { value: 'universidad', label: '📚 Universidad' },
-];
 
 const FORMALITY = [
   { value: 'casual', label: '😎 Casual' },
@@ -419,7 +410,7 @@ export default function Plan() {
             <Select value={event} onValueChange={setEvent}>
               <SelectTrigger><SelectValue placeholder="¿A dónde vas?" /></SelectTrigger>
               <SelectContent>
-                {EVENTS.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
+                {EVENTS.map((e) => <SelectItem key={e.value} value={e.value}><OccasionLabel value={e.value} /></SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -507,12 +498,11 @@ export default function Plan() {
                 {dayPlans.map((p) => {
                   const usedItems = (items as any[]).filter(i => (p.recommended_item_ids || []).includes(i.id));
                   const usedWishlist = (wishlistItems as any[]).filter((w: any) => (p.recommended_wishlist_ids || []).includes(w.id));
-                  const eventLabel = EVENTS.find(e => e.value === p.event)?.label || p.event;
                   return (
                     <div key={p.id} className="bg-card p-5 rounded-xl shadow-card space-y-3">
                       <div className="flex items-start justify-between gap-3 flex-wrap">
                         <div className="space-y-1">
-                          <div className="text-base font-body font-semibold">{eventLabel}{p.plan_time && <span className="text-muted-foreground font-normal"> · {p.plan_time}</span>}</div>
+                          <div className="text-base font-body font-semibold"><OccasionLabel value={p.event} />{p.plan_time && <span className="text-muted-foreground font-normal"> · {p.plan_time}</span>}</div>
                           <div className="text-sm text-muted-foreground flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {p.location_name}</div>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)}><Trash2 className="h-4 w-4" /></Button>
