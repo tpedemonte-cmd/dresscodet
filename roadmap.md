@@ -1,7 +1,7 @@
 # DressCode roadmap
 
 ## Prueba visual
-- [ ] Tienda: probar imágenes realistas en las categorías; Outfit y Plan semanal: íconos simples para ocasiones, con opción de restaurar el aspecto anterior
+- [x] Tienda: probar imágenes realistas en las categorías; Outfit y Plan semanal: íconos simples para ocasiones, con opción de restaurar el aspecto anterior (imágenes y selección verificadas)
 
 ## Hecho
 - [x] Probador: actualizar ambos contadores inmediatamente al confirmar un outfit generado, sin esperar la consulta de cupos
