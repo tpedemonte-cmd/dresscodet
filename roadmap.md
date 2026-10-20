@@ -5,6 +5,7 @@
 - [x] Migrar cuentas, prendas, historial, planes, looks, wishlist y fotos al proyecto propio: datos remapeados a las cuentas del destino, URLs de imágenes reescritas al almacenamiento propio y tablas ai_usage_events, avatar_credits y avatar_generation_locks creadas con RLS y permisos.
 - [ ] Conectar APK y Vercel al proyecto propio (variables VITE_SUPABASE_* del destino + redeploy/rebuild) y adaptar las funciones de IA para validar sesiones del destino manteniendo el cobro de IA en Lovable. No modificar ni eliminar el origen hasta verificar todo.
 - [ ] Adaptar y verificar las llamadas de IA: sesiones y cupos propios, procesamiento y facturación en Lovable Cloud.
+- [ ] Diagnosticar el error enviado al generar el APK y dar los pasos para resolverlo.
 - [ ] Verificar con el usuario que la clave pública copiada sea la correcta: se detectó un cero por la letra O en LM04HQ/LMO4HQ (la variante con cero devuelve 401) y que el primer par sin prefijo VITE_ quede apuntando al origen, ya que lo usan las funciones de IA y no la app.
 
 ## Prueba visual
