@@ -10,7 +10,7 @@ import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan, LIMITS } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
 import { trimImage, useTrimmedImage } from '@/lib/trimImage';
-import { canDeleteAvatar, needsLastAvatarConfirmation } from '../../supabase/functions/_shared/avatarRules';
+import { canDeleteAvatar, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation } from '../../supabase/functions/_shared/avatarRules';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 import { PremiumBadge } from '@/components/PremiumGate';
@@ -62,6 +62,7 @@ export default function Tryon() {
   const queryClient = useQueryClient();
   const [modelMode, setModelMode] = useState<'ia' | 'selfie'>('ia');
   const [confirmLastAvatar, setConfirmLastAvatar] = useState(false);
+  const [avatarToDelete, setAvatarToDelete] = useState<string | null>(null);
 
   
   const [variants, setVariants] = useState<(Look & { image: string })[]>([]);
@@ -404,6 +405,8 @@ export default function Tryon() {
       if (!data?.length) throw new Error('No se pudo eliminar el modelo.');
     },
     onSuccess: (_, id) => {
+      setAvatarToDelete(null);
+      if (avatarBeforePhoto?.id === id) setAvatarBeforePhoto(null);
       if (activeModelId === id) {
         setSelfie(null);
         setActiveModelId(null);
@@ -418,6 +421,15 @@ export default function Tryon() {
     },
     onError: (error: Error) => toast.error(error.message),
   });
+
+  const requestDeleteModel = (id: string) => {
+    if (!canDeleteModel || modelsLoading || deleteModelMutation.isPending) return;
+    if (needsLastAvatarDeletionConfirmation(isPremium, savedModels.length)) {
+      setAvatarToDelete(id);
+      return;
+    }
+    deleteModelMutation.mutate(id);
+  };
 
   const toggleItem = (item: any) => {
     if (hasCategoryConflict(selectedItems, item)) {
@@ -576,7 +588,7 @@ export default function Tryon() {
                   ✨ Resultado IA
                 </div>
               )}
-              {activeModelId && !quotaLoading && quota.avatarCredits === 0 && (
+              {activeModelId && !isPremium && !quotaLoading && quota.avatarCredits === 0 && (
                 <Button variant="outline" size="icon"
                   onClick={() => navigatePremium('/premium#avatares-extra')}
                   aria-label="Comprar avatares extra para modificar tu modelo"
@@ -587,7 +599,7 @@ export default function Tryon() {
               )}
               {activeModelId && canDeleteModel && (
                 <Button variant="destructive" size="icon"
-                  onClick={() => deleteModelMutation.mutate(activeModelId)}
+                  onClick={() => requestDeleteModel(activeModelId)}
                   disabled={deleteModelMutation.isPending}
                   aria-label="Eliminar modelo actual"
                   className="absolute top-2 right-2 h-9 w-9 rounded-full bg-destructive text-destructive-foreground backdrop-blur-sm flex items-center justify-center transition-colors disabled:opacity-60"
@@ -889,7 +901,7 @@ export default function Tryon() {
                         disabled={deleteModelMutation.isPending}
                         onClick={(e) => {
                           e.stopPropagation();
-                          deleteModelMutation.mutate(model.id);
+                          requestDeleteModel(model.id);
                         }}
                         className="absolute bottom-1 right-1 bg-background/80 backdrop-blur-sm rounded-full p-1"
                       >
@@ -907,6 +919,25 @@ export default function Tryon() {
       <p className="text-center text-sm font-body text-muted-foreground" aria-live="polite">
         Avatares disponibles: <span className="font-semibold text-foreground">{quotaLoading ? '…' : quota.avatarCredits + (!selfie && variants.length === 0 && quota.avatarsTotal === 0 ? 1 : 0)}</span>
       </p>
+
+      <Dialog open={avatarToDelete !== null} onOpenChange={(open) => {
+        if (!open && !deleteModelMutation.isPending) setAvatarToDelete(null);
+      }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Estás eliminando el último avatar que tenés, ¿estás seguro de que querés continuar?</DialogTitle>
+            <DialogDescription>Te quedarás sin avatar guardado. Para generar otro vas a necesitar un pack de avatares extra; también podés usar tu propia foto.</DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" disabled={deleteModelMutation.isPending} onClick={() => setAvatarToDelete(null)}>Cancelar</Button>
+            <Button variant="destructive" className="flex-1" disabled={deleteModelMutation.isPending || !canDeleteModel} onClick={() => {
+              if (avatarToDelete) deleteModelMutation.mutate(avatarToDelete);
+            }}>
+              {deleteModelMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sí, eliminar'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={confirmLastAvatar} onOpenChange={setConfirmLastAvatar}>
         <DialogContent className="max-w-sm">
