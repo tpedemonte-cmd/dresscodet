@@ -1,5 +1,17 @@
-export function canDeleteAvatar(isPremium: boolean, credits: number) {
-  return isPremium || credits > 0;
+export function canDeleteAvatar(_isPremium: boolean, credits: number) {
+  return credits > 0;
+}
+
+export function avatarOptionCount(isPremium: boolean) {
+  return isPremium ? 3 : 1;
+}
+
+/** One batch of options consumes one generation, only after every option succeeds. */
+export async function generateAvatarOptions<T>(isPremium: boolean, generate: (index: number) => Promise<T>, record: () => Promise<void>) {
+  const options: T[] = [];
+  for (let i = 0; i < avatarOptionCount(isPremium); i++) options.push(await generate(i));
+  await record();
+  return options;
 }
 
 export function needsLastAvatarConfirmation(available: number) {

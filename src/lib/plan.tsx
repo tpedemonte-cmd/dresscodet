@@ -18,7 +18,7 @@ export const FREE_HISTORY_LIMIT = 5;
 /** Límites de uso de IA por plan (deben coincidir con supabase/functions/_shared/quotas.ts) */
 export const LIMITS = {
   free: { avatarFreeTotal: 1, savedModels: 1, tryonsPerMonth: 2 },
-  premium: { avatarsPerMonth: 10, avatarsPerDay: 3, savedModels: 3, tryonsPerMonth: 15 },
+  premium: { avatarFreeTotal: 1, savedModels: 1, tryonsPerMonth: 15 },
 } as const;
 
 export type AvatarPackKey = 'avatar_1' | 'avatar_3';
@@ -161,15 +161,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
   const savedModelsLimit = isPremium ? LIMITS.premium.savedModels : LIMITS.free.savedModels;
 
-  const avatarsLeft = isPremium
-    ? Math.max(
-        0,
-        Math.min(
-          LIMITS.premium.avatarsPerMonth - base.avatarsThisMonth,
-          LIMITS.premium.avatarsPerDay - base.avatarsToday,
-        ),
-      )
-    : freeAvatarAllowance(base.avatarsTotal, base.avatarCredits, base.savedModels);
+  const avatarsLeft = freeAvatarAllowance(base.avatarsTotal, base.avatarCredits, base.savedModels);
 
   const tryonsLeft = Math.max(
     0,

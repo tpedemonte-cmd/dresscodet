@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 const BENEFITS = [
   'Sin anuncios en toda la app',
   '15 outfits generados por mes en el probador, hasta 5 por día',
-  'Tu modelo se arma a partir de 3 opciones para que elijas la que más se te parece',
+  'Una generación inicial con 3 opciones para elegir un único modelo; los reemplazos requieren un pack',
   'Más datos para el modelo: pelo, piel, contextura y medidas corporales',
   'Probarte la ropa con tu propia foto',
   'Máxima calidad de imagen en el probador',
@@ -33,7 +33,7 @@ export default function Premium() {
   const { hash } = useLocation();
 
   useEffect(() => {
-    if (hash === '#avatares-extra' && !isPremium) {
+    if (hash === '#avatares-extra') {
       document.getElementById('avatares-extra')?.scrollIntoView({ block: 'start' });
     }
   }, [hash, isPremium]);
@@ -122,7 +122,7 @@ export default function Premium() {
         </p>
       </div>
 
-      {!isPremium && <div id="avatares-extra" className="scroll-mt-24 rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
+      <div id="avatares-extra" className="scroll-mt-24 rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
         <div className="flex items-center gap-2">
           <div className="rounded-xl bg-primary/10 p-2">
             <Sparkles className="h-5 w-5 text-primary" />
@@ -136,7 +136,7 @@ export default function Premium() {
         </div>
 
         <p className="font-body text-sm text-muted-foreground">
-          El plan gratis incluye {LIMITS.free.avatarFreeTotal} modelo. Si querés armar otro, sumá avatares:
+          {isPremium ? 'Premium incluye una única generación inicial con 3 opciones para elegir un modelo.' : `El plan gratis incluye ${LIMITS.free.avatarFreeTotal} modelo.`} Para generar otro, comprá avatares extra. Cada generación Premium ofrece 3 opciones y consume un solo avatar.
         </p>
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -164,7 +164,7 @@ export default function Premium() {
           Tenés {quota.avatarCredits} avatar{quota.avatarCredits === 1 ? '' : 'es'} comprado
           {quota.avatarCredits === 1 ? '' : 's'} sin usar.
         </div>
-      </div>}
+      </div>
     </div>
   );
 }
