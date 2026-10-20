@@ -1,3 +1,4 @@
+import IconText from '@/components/IconText';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -714,9 +715,7 @@ export default function Tryon() {
               <img src={frameImage || selfie || ''} alt="Tu modelo" className={`w-full h-full block ${frameIsWide ? 'object-contain' : 'object-cover object-center'}`} />
               {showResultInFrame && (
 
-                <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-body font-medium px-2 py-1 rounded-full">
-                  ✨ Resultado IA
-                </div>
+                <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-body font-medium px-2 py-1 rounded-full"><IconText text={"✨ Resultado IA"} /></div>
               )}
               {activeModelId && !isPremium && !quotaLoading && quota.avatarCredits === 0 && (
                 <Button variant="outline" size="icon"
@@ -779,7 +778,7 @@ export default function Tryon() {
                     >
                       <img src={v.image} alt={v.label} className="w-full aspect-[3/4] object-cover" />
                       <p className="text-[11px] font-body text-center py-1 text-foreground">
-                        {v.emoji} {v.label}
+                        <IconText text={v.emoji} /> {v.label}
                       </p>
                     </button>
                   ))}
@@ -881,7 +880,7 @@ export default function Tryon() {
                     { key: 'bodyType', label: 'Contextura', options: BODY_TYPES },
                   ] as const).map((f) => (
                     <div key={f.key}>
-                      <label className="text-xs font-body text-foreground">{f.label}</label>
+                      <label className="text-xs font-body text-foreground"><IconText text={f.label} /></label>
                       <select
                         value={(avatarData as any)[f.key]}
                         onChange={e => { setAvatarData(d => ({ ...d, [f.key]: e.target.value })); }}
@@ -1076,7 +1075,7 @@ export default function Tryon() {
                         isActive ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
                       }`}
                     >
-                      {emoji} {key}
+                      <IconText text={emoji} /> {key}
                     </button>
                   );
                 }
@@ -1089,9 +1088,9 @@ export default function Tryon() {
                           isActive ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
                         }`}
                       >
-                        {isActive && subFilter
+                        <IconText text={isActive && subFilter
                           ? `${emoji} ${subFilter === '__none__' ? 'Sin clasificar' : getSubcategoryLabel(key, subFilter)}`
-                          : `${emoji} ${key}`}
+                          : `${emoji} ${key}`} />
                         <ChevronDown className="h-3 w-3" />
                       </button>
                     </DropdownMenuTrigger>
@@ -1110,7 +1109,7 @@ export default function Tryon() {
                             className={hasItems ? '' : 'opacity-50'}
                           >
                             <span className="flex-1">{o.label}</span>
-                            {isActive && subFilter === o.value && <Check className="h-3.5 w-3.5 ml-2" />}
+                            <IconText text={isActive && subFilter === o.value && <Check className="h-3.5 w-3.5 ml-2" />} />
                           </DropdownMenuItem>
                         );
                       })}
@@ -1119,7 +1118,7 @@ export default function Tryon() {
                           onClick={() => { setCategoryFilter(key); setSubFilter('__none__'); }}
                         >
                           <span className="flex-1 italic">Sin clasificar</span>
-                          {isActive && subFilter === '__none__' && <Check className="h-3.5 w-3.5 ml-2" />}
+                          <IconText text={isActive && subFilter === '__none__' && <Check className="h-3.5 w-3.5 ml-2" />} />
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
@@ -1134,7 +1133,7 @@ export default function Tryon() {
           <div className="flex flex-wrap gap-2">
             {selectedItems.map(item => (
               <span key={item.id} className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs font-body px-2 py-1 rounded-full">
-                {CATEGORIES[item.category] || '📦'} {item.name}
+                <IconText text={CATEGORIES[item.category] || '📦'} /> <IconText text={item.name} />
                 <button onClick={() => removeItem(item.id)} className="hover:text-destructive">
                   <X className="h-3 w-3" />
                 </button>
@@ -1177,7 +1176,7 @@ export default function Tryon() {
                     </div>
                     <div className="p-2 space-y-0.5">
                       <p className="text-xs font-body font-medium text-foreground truncate">
-                        {CATEGORIES[item.category] || '📦'} {item.name}
+                        <IconText text={CATEGORIES[item.category] || '📦'} /> <IconText text={item.name} />
                       </p>
                       {subLabel && (
                         <p className="text-[11px] font-body text-muted-foreground truncate">{subLabel}</p>
@@ -1210,7 +1209,7 @@ export default function Tryon() {
                   {selectedItems.map(item => (
                     <div key={item.id} className="rounded-lg overflow-hidden bg-secondary">
                       <img src={item.image_url} alt={item.name} className="w-full aspect-square object-cover" loading="lazy" />
-                      <p className="text-[11px] font-body text-foreground truncate px-1.5 py-1">{item.name}</p>
+                      <p className="text-[11px] font-body text-foreground truncate px-1.5 py-1"><IconText text={item.name} /></p>
                     </div>
                   ))}
                 </div>
@@ -1272,9 +1271,7 @@ export default function Tryon() {
 
       {/* Info */}
       <div className="bg-card rounded-xl p-4 shadow-card text-center">
-        <p className="text-sm text-muted-foreground font-body">
-          Seleccioná varias prendas para armar un outfit completo. La IA genera una imagen aproximada ✨
-        </p>
+        <p className="text-sm text-muted-foreground font-body"><IconText text={"Seleccioná varias prendas para armar un outfit completo. La IA genera una imagen aproximada ✨"} /></p>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import IconText from '@/components/IconText';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -95,7 +96,7 @@ export default function Looks() {
               </div>
               <div className="p-3 space-y-1">
                 {look.note && (
-                  <p className="text-xs font-body text-foreground line-clamp-2">{look.note}</p>
+                  <p className="text-xs font-body text-foreground line-clamp-2"><IconText text={look.note} /></p>
                 )}
                 <p className="text-[10px] text-muted-foreground font-body">
                   {new Date(look.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}

@@ -1,3 +1,4 @@
+import IconText from '@/components/IconText';
 import ExplanationToggle from '@/components/ExplanationToggle';
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -144,7 +145,7 @@ export default function Favorites() {
               <FilterChip active={eventFilter === 'todos'} onClick={() => setEventFilter('todos')}>Todas</FilterChip>
               {availableEvents.map((e) => (
                 <FilterChip key={e} active={eventFilter === e} onClick={() => setEventFilter(e)}>
-                  {EVENTS[e] || e}
+                  <IconText text={EVENTS[e] || e} />
                 </FilterChip>
               ))}
             </div>
@@ -155,7 +156,7 @@ export default function Favorites() {
               <FilterChip active={weatherFilter === 'todos'} onClick={() => setWeatherFilter('todos')}>Todos</FilterChip>
               {availableWeathers.map((w) => (
                 <FilterChip key={w} active={weatherFilter === w} onClick={() => setWeatherFilter(w)}>
-                  {WEATHERS[w] || w}
+                  <IconText text={WEATHERS[w] || w} />
                 </FilterChip>
               ))}
             </div>
@@ -182,7 +183,7 @@ export default function Favorites() {
                   <div className="space-y-1">
                     <div className="text-base font-body font-semibold flex items-center gap-2">
                       {f.source === 'weekly_plans' ? <CalendarDays className="h-4 w-4 text-primary" /> : <Sparkles className="h-4 w-4 text-primary" />}
-                      {EVENTS[f.event] || f.event}
+                      <IconText text={EVENTS[f.event] || f.event} />
                     </div>
                     {f.location_name && (
                       <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" /> {f.location_name}</div>
@@ -192,13 +193,13 @@ export default function Favorites() {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1.5 text-xs">
-                    {f.weather && <span className="px-2 py-1 rounded-md bg-secondary">{f.weather_label || WEATHERS[f.weather] || f.weather}</span>}
-                    {f.temperature != null && <span className="px-2 py-1 rounded-md bg-secondary">🌡️ {f.temperature}°C</span>}
+                    {f.weather && <span className="px-2 py-1 rounded-md bg-secondary"><IconText text={f.weather_label || WEATHERS[f.weather] || f.weather} /></span>}
+                    {f.temperature != null && <span className="px-2 py-1 rounded-md bg-secondary"><IconText text={"🌡️"} />{f.temperature}°C</span>}
                   </div>
                 </div>
 
                 {f.recommendation && (
-                  <ExplanationToggle><p className="text-sm font-body whitespace-pre-wrap text-foreground/90">{f.recommendation}</p></ExplanationToggle>
+                  <ExplanationToggle><p className="text-sm font-body whitespace-pre-wrap text-foreground/90"><IconText text={f.recommendation} /></p></ExplanationToggle>
                 )}
 
                 {usedItems.length > 0 && (
@@ -208,7 +209,7 @@ export default function Favorites() {
                         <div className="aspect-square rounded-lg overflow-hidden bg-secondary">
                           <img src={it.image_url} alt={it.name} className="w-full h-full object-cover" />
                         </div>
-                        <p className="text-[10px] mt-1 truncate">{it.name}</p>
+                        <p className="text-[10px] mt-1 truncate"><IconText text={it.name} /></p>
                       </div>
                     ))}
                   </div>

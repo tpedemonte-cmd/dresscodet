@@ -1,3 +1,4 @@
+import IconText from '@/components/IconText';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -199,7 +200,7 @@ export default function Wardrobe() {
                     isActive ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
                   }`}
                 >
-                  {CATEGORIES[cat] || cat}
+                  <IconText text={CATEGORIES[cat] || cat} />
                 </button>
               );
             }
@@ -212,9 +213,9 @@ export default function Wardrobe() {
                       isActive ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
                     }`}
                   >
-                    {isActive && subFilter
+                    <IconText text={isActive && subFilter
                       ? `${CATEGORIES[cat] || cat} · ${subFilter === '__none__' ? 'Sin clasificar' : getSubcategoryLabel(cat, subFilter)}`
-                      : CATEGORIES[cat] || cat}
+                      : CATEGORIES[cat] || cat} />
                     <ChevronDown className="h-3 w-3" />
                   </button>
                 </DropdownMenuTrigger>
@@ -233,14 +234,14 @@ export default function Wardrobe() {
                         className={hasItems ? '' : 'opacity-50'}
                       >
                         <span className="flex-1">{o.label}</span>
-                        {isActive && subFilter === o.value && <Check className="h-3.5 w-3.5 ml-2" />}
+                        <IconText text={isActive && subFilter === o.value && <Check className="h-3.5 w-3.5 ml-2" />} />
                       </DropdownMenuItem>
                     );
                   })}
                   {items.some((i) => i.category === cat && !(i as any).subcategory) && (
                     <DropdownMenuItem onClick={() => { setFilter(cat); setSubFilter('__none__'); }}>
                       <span className="flex-1 italic">Sin clasificar</span>
-                      {isActive && subFilter === '__none__' && <Check className="h-3.5 w-3.5 ml-2" />}
+                      <IconText text={isActive && subFilter === '__none__' && <Check className="h-3.5 w-3.5 ml-2" />} />
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
@@ -271,7 +272,7 @@ export default function Wardrobe() {
                 availFilter === o.value ? 'bg-foreground text-background' : 'bg-secondary text-secondary-foreground'
               }`}
             >
-              {o.emoji} {o.label} ({count})
+              <IconText text={o.emoji} /> {o.label} ({count})
             </button>
           );
         })}
@@ -279,7 +280,7 @@ export default function Wardrobe() {
 
       {filtered.length === 0 ? (
         <div className="text-center py-16 space-y-2">
-          <p className="text-4xl">👕</p>
+          <p className="text-4xl"><IconText text={"👕"} /></p>
           <p className="text-muted-foreground font-body">
             {items.length === 0 ? 'Tu placard está vacío. ¡Agregá tu primera prenda!' : 'No hay prendas en esta categoría.'}
           </p>
@@ -301,9 +302,9 @@ export default function Wardrobe() {
               </div>
               <div className="p-3 space-y-2">
                 <div>
-                  <p className="font-body font-medium text-sm text-foreground truncate">{item.name}</p>
+                  <p className="font-body font-medium text-sm text-foreground truncate"><IconText text={item.name} /></p>
                   <p className="text-xs text-muted-foreground">
-                    {CATEGORIES[item.category] || item.category}
+                    <IconText text={CATEGORIES[item.category] || item.category} />
                     {getSubcategoryLabel(item.category, (item as any).subcategory)
                       ? ` · ${getSubcategoryLabel(item.category, (item as any).subcategory)}`
                       : ''}
@@ -315,7 +316,7 @@ export default function Wardrobe() {
                     <button
                       className={`w-full px-2 py-1 rounded-full text-xs font-body font-medium transition-opacity hover:opacity-80 ${getAvailability((item as any).availability).className}`}
                     >
-                      {getAvailability((item as any).availability).emoji} {getAvailability((item as any).availability).label}
+                      <IconText text={getAvailability((item as any).availability).emoji} /> {getAvailability((item as any).availability).label}
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="bg-popover z-50">
@@ -324,7 +325,7 @@ export default function Wardrobe() {
                         key={o.value}
                         onClick={() => availabilityMutation.mutate({ id: item.id, availability: o.value })}
                       >
-                        {o.emoji} {o.label}
+                        <IconText text={o.emoji} /> {o.label}
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuContent>

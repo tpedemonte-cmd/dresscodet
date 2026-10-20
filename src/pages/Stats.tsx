@@ -1,3 +1,4 @@
+import IconText from '@/components/IconText';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -91,7 +92,7 @@ export default function Stats() {
 
       {history.length === 0 && items.length === 0 ? (
         <div className="text-center py-16 space-y-2">
-          <p className="text-4xl">📊</p>
+          <p className="text-4xl"><IconText text={"📊"} /></p>
           <p className="text-muted-foreground font-body">Pedí algunas recomendaciones para ver tus estadísticas.</p>
         </div>
       ) : (
@@ -99,9 +100,7 @@ export default function Stats() {
           {/* Usage analysis summary */}
           {items.length > 0 && (
             <div className="bg-card rounded-xl shadow-card p-4 space-y-3">
-              <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
-                👗 Análisis de uso de prendas
-              </h3>
+              <h3 className="font-display font-semibold text-foreground flex items-center gap-2"><IconText text={"👗 Análisis de uso de prendas"} /></h3>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <button
                   onClick={() => setStatusFilter(statusFilter === 'frecuente' ? null : 'frecuente')}
@@ -164,7 +163,7 @@ export default function Stats() {
                 {topCategories.map(([cat, count]) => (
                   <div key={cat} className="space-y-1">
                     <div className="flex justify-between text-sm font-body">
-                      <span className="text-foreground">{CATEGORY_LABELS[cat] || cat}</span>
+                      <span className="text-foreground"><IconText text={CATEGORY_LABELS[cat] || cat} /></span>
                       <span className="text-muted-foreground">{count}×</span>
                     </div>
                     <div className="h-2 rounded-full bg-secondary overflow-hidden">
@@ -182,7 +181,7 @@ export default function Stats() {
           {/* Top items */}
           {topItems.length > 0 && (
             <div className="bg-card rounded-xl shadow-card p-4 space-y-3">
-              <h3 className="font-display font-semibold text-foreground">🏆 Prendas más recomendadas</h3>
+              <h3 className="font-display font-semibold text-foreground"><IconText text={"🏆 Prendas más recomendadas"} /></h3>
               <div className="space-y-2">
                 {topItems.map(({ item, count }, i) => (
                   <div key={item!.id} className="flex items-center gap-3">
@@ -192,7 +191,7 @@ export default function Stats() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-body font-medium text-foreground truncate">{item!.name}</p>
-                      <p className="text-xs text-muted-foreground">{CATEGORY_LABELS[item!.category] || item!.category}</p>
+                      <p className="text-xs text-muted-foreground"><IconText text={CATEGORY_LABELS[item!.category] || item!.category} /></p>
                     </div>
                     <div className="flex-shrink-0">
                       <div className="flex items-center gap-1">

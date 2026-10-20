@@ -1,3 +1,4 @@
+import IconText from '@/components/IconText';
 import ExplanationToggle from '@/components/ExplanationToggle';
 import OccasionLabel, { OCCASIONS as EVENTS } from '@/components/OccasionLabel';
 import { useState, useEffect, useRef } from 'react';
@@ -427,7 +428,7 @@ export default function Plan() {
                     formality === f.value ? 'bg-primary text-primary-foreground border-primary' : 'bg-background border-border hover:bg-secondary'
                   }`}
                 >
-                  {f.label}
+                  <IconText text={f.label} />
                 </button>
               ))}
             </div>
@@ -509,10 +510,10 @@ export default function Plan() {
                       </div>
 
                       <div className="flex flex-wrap gap-2 text-xs">
-                        <span className="px-2 py-1 rounded-md bg-secondary">{p.weather_label || p.weather}</span>
-                        <span className="px-2 py-1 rounded-md bg-secondary">🌡️ {p.temperature}°C</span>
-                        {p.wind_kmh != null && <span className="px-2 py-1 rounded-md bg-secondary">💨 {p.wind_kmh} km/h</span>}
-                        {p.rain_probability != null && <span className="px-2 py-1 rounded-md bg-secondary">🌧️ {p.rain_probability}%</span>}
+                        <span className="px-2 py-1 rounded-md bg-secondary"><IconText text={p.weather_label || p.weather} /></span>
+                        <span className="px-2 py-1 rounded-md bg-secondary"><IconText text={"🌡️"} />{p.temperature}°C</span>
+                        {p.wind_kmh != null && <span className="px-2 py-1 rounded-md bg-secondary"><IconText text={"💨"} />{p.wind_kmh} km/h</span>}
+                        {p.rain_probability != null && <span className="px-2 py-1 rounded-md bg-secondary"><IconText text={"🌧️"} />{p.rain_probability}%</span>}
                       </div>
 
                       {p.recommendation && (
@@ -526,7 +527,7 @@ export default function Plan() {
                               <div className="aspect-square rounded-lg overflow-hidden bg-secondary">
                                 <img src={it.image_url} alt={it.name} className="w-full h-full object-cover" />
                               </div>
-                              <p className="text-[10px] mt-1 truncate">{it.name}</p>
+                              <p className="text-[10px] mt-1 truncate"><IconText text={it.name} /></p>
                             </div>
                           ))}
                         </div>
@@ -534,7 +535,7 @@ export default function Plan() {
 
                       {usedWishlist.length > 0 && (
                         <div className="space-y-2 pt-2 border-t border-border">
-                          <p className="text-sm font-body font-medium text-muted-foreground">🛒 De tu wishlist (todavía no lo tenés):</p>
+                          <p className="text-sm font-body font-medium text-muted-foreground"><IconText text={"🛒 De tu wishlist (todavía no lo tenés):"} /></p>
                           <div className="flex gap-2 overflow-x-auto pb-1">
                             {usedWishlist.map((w: any) => (
                               <a

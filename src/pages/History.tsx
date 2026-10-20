@@ -1,3 +1,4 @@
+import IconText from '@/components/IconText';
 import ExplanationToggle from '@/components/ExplanationToggle';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -156,7 +157,7 @@ export default function History() {
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   }`}
                 >
-                  {EVENT_LABELS[ev] || ev}
+                  <IconText text={EVENT_LABELS[ev] || ev} />
                 </button>
               ))}
             </div>
@@ -179,7 +180,7 @@ export default function History() {
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   }`}
                 >
-                  {opt.label}
+                  <IconText text={opt.label} />
                 </button>
               ))}
             </div>
@@ -217,7 +218,7 @@ export default function History() {
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   }`}
                 >
-                  {opt.label}
+                  <IconText text={opt.label} />
                 </button>
               ))}
             </div>
@@ -227,7 +228,7 @@ export default function History() {
 
       {history.length === 0 ? (
         <div className="text-center py-16 space-y-2">
-          <p className="text-4xl">📋</p>
+          <p className="text-4xl"><IconText text={"📋"} /></p>
           <p className="text-muted-foreground font-body">Todavía no pediste ninguna recomendación.</p>
         </div>
       ) : (() => {
@@ -240,7 +241,7 @@ export default function History() {
         if (filtered.length === 0) {
           return (
             <div className="text-center py-12 space-y-2">
-              <p className="text-3xl">🔍</p>
+              <p className="text-3xl"><IconText text={"🔍"} /></p>
               <p className="text-muted-foreground font-body text-sm">No hay recomendaciones para este tipo de salida o fecha.</p>
             </div>
           );
@@ -266,7 +267,7 @@ export default function History() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-body font-medium text-foreground">
-                        {EVENT_LABELS[entry.event] || entry.event}
+                        <IconText text={EVENT_LABELS[entry.event] || entry.event} />
                       </span>
                       {entry.is_favorite && <Star className="h-3.5 w-3.5 text-amber-500 fill-current" />}
 
@@ -274,7 +275,7 @@ export default function History() {
                         <>
                           <span className="text-xs text-muted-foreground">•</span>
                           <span className="text-sm text-muted-foreground">
-                            {FORMALITY_LABELS[entry.formality] || entry.formality}
+                            <IconText text={FORMALITY_LABELS[entry.formality] || entry.formality} />
                           </span>
                         </>
                       )}
@@ -282,25 +283,25 @@ export default function History() {
                         <>
                           <span className="text-xs text-muted-foreground">•</span>
                           <span className="text-sm text-muted-foreground">
-                            {MOOD_LABELS[entry.mood] || entry.mood}
+                            <IconText text={MOOD_LABELS[entry.mood] || entry.mood} />
                           </span>
                         </>
                       )}
                       <span className="text-xs text-muted-foreground">•</span>
                       <span className="text-sm text-muted-foreground">
-                        {entry.temperature}°C {WEATHER_LABELS[entry.weather] || ''} {SEASON_LABELS[entry.season] || ''}
-                        {entry.is_night ? ' 🌙' : ''}
+                        {entry.temperature}°C <IconText text={WEATHER_LABELS[entry.weather] || ''} /> <IconText text={SEASON_LABELS[entry.season] || ''} />
+                        <IconText text={entry.is_night ? ' 🌙' : ''} />
                       </span>
                       {entry.wind_kmh != null && (
                         <>
                           <span className="text-xs text-muted-foreground">•</span>
-                          <span className="text-sm text-muted-foreground">💨 {entry.wind_kmh} km/h</span>
+                          <span className="text-sm text-muted-foreground"><IconText text={"💨"} />{entry.wind_kmh} km/h</span>
                         </>
                       )}
                       {entry.rain_probability != null && (
                         <>
                           <span className="text-xs text-muted-foreground">•</span>
-                          <span className="text-sm text-muted-foreground">🌧️ {entry.rain_probability}%</span>
+                          <span className="text-sm text-muted-foreground"><IconText text={"🌧️"} />{entry.rain_probability}%</span>
                         </>
                       )}
                     </div>
@@ -314,7 +315,7 @@ export default function History() {
                 {isExpanded && (
                   <div className="px-4 pb-4 space-y-3 animate-in fade-in slide-in-from-top-2">
                     <ExplanationToggle><div className="font-body text-foreground whitespace-pre-line leading-relaxed text-sm">
-                      {entry.recommendation}
+                      <IconText text={entry.recommendation} />
                     </div></ExplanationToggle>
                     {entryItems.length > 0 && (
                       <div className="pt-2 border-t border-border">
@@ -323,7 +324,7 @@ export default function History() {
                           {entryItems.map((item) => (
                             <div key={item.id} className="rounded-lg overflow-hidden bg-secondary">
                               <img src={item.image_url} alt={item.name} className="w-full aspect-square object-cover" />
-                              <p className="text-[10px] font-body text-center py-0.5 text-foreground truncate px-1">{item.name}</p>
+                              <p className="text-[10px] font-body text-center py-0.5 text-foreground truncate px-1"><IconText text={item.name} /></p>
                             </div>
                           ))}
                         </div>

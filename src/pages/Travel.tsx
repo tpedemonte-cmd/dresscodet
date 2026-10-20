@@ -1,3 +1,4 @@
+import IconText from '@/components/IconText';
 import ExplanationToggle from '@/components/ExplanationToggle';
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -259,7 +260,7 @@ export default function Travel() {
               <p className="text-xs font-body font-semibold text-primary uppercase tracking-wide flex items-center gap-1">
                 <Globe2 className="h-3.5 w-3.5" /> {resultDestination}
               </p>
-              <p className="text-sm font-body text-foreground leading-relaxed">{result.destination_summary}</p>
+              <p className="text-sm font-body text-foreground leading-relaxed"><IconText text={result.destination_summary} /></p>
             </div>
           )}
 
@@ -269,7 +270,7 @@ export default function Travel() {
               <ul className="space-y-1.5">
                 {result.cultural_notes.map((n, i) => (
                   <li key={i} className="text-sm font-body text-muted-foreground flex gap-2">
-                    <span className="text-primary">•</span><span>{n}</span>
+                    <span className="text-primary">•</span><span><IconText text={n} /></span>
                   </li>
                 ))}
               </ul>
@@ -284,7 +285,7 @@ export default function Travel() {
               <ul className="space-y-1.5">
                 {result.avoid.map((n, i) => (
                   <li key={i} className="text-sm font-body text-muted-foreground flex gap-2">
-                    <span className="text-destructive">•</span><span>{n}</span>
+                    <span className="text-destructive">•</span><span><IconText text={n} /></span>
                   </li>
                 ))}
               </ul>
@@ -299,8 +300,8 @@ export default function Travel() {
               <div className="space-y-2">
                 {result.from_wardrobe.map((w, i) => (
                   <div key={i} className="p-3 rounded-lg bg-secondary/30 border border-border">
-                    <p className="text-sm font-body font-medium text-foreground">{w.item}</p>
-                    <ExplanationToggle label="Por qué"><p className="text-xs font-body text-muted-foreground">{w.reason}</p></ExplanationToggle>
+                    <p className="text-sm font-body font-medium text-foreground"><IconText text={w.item} /></p>
+                    <ExplanationToggle label="Por qué"><p className="text-xs font-body text-muted-foreground"><IconText text={w.reason} /></p></ExplanationToggle>
                   </div>
                 ))}
               </div>
@@ -323,8 +324,8 @@ export default function Travel() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="space-y-0.5 flex-1">
-                        <p className="text-sm font-body font-medium text-foreground">{b.item}</p>
-                        <ExplanationToggle label="Por qué"><p className="text-xs font-body text-muted-foreground">{b.reason}</p></ExplanationToggle>
+                        <p className="text-sm font-body font-medium text-foreground"><IconText text={b.item} /></p>
+                        <ExplanationToggle label="Por qué"><p className="text-xs font-body text-muted-foreground"><IconText text={b.reason} /></p></ExplanationToggle>
                       </div>
                       <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0 group-hover:text-primary transition-colors pt-0.5">
                         Comprar <ExternalLink className="h-3 w-3" />
