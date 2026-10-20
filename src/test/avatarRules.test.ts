@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canDeleteAvatar, freeAvatarAllowance, isSavedAvatarSelected, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation, avatarOptionCount, generateAvatarOptions } from '../../supabase/functions/_shared/avatarRules';
+import { canDeleteAvatar, freeAvatarAllowance, isSavedAvatarSelected, isAvatarHeightValid, isAvatarWeightValid, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation, avatarOptionCount, generateAvatarOptions } from '../../supabase/functions/_shared/avatarRules';
 
 describe('try-on outfit requires a saved avatar', () => {
   it('blocks outfit generation while the avatar is unsaved', () => {
@@ -79,5 +79,22 @@ describe('free avatar replacement rules', () => {
       return 'image';
     }, async () => { recorded++; })).rejects.toThrow('generation failed');
     expect(recorded).toBe(0);
+  });
+});
+
+describe('avatar body minimums', () => {
+  it('accepts height from 150 cm', () => {
+    expect(isAvatarHeightValid('150')).toBe(true);
+    expect(isAvatarHeightValid('170')).toBe(true);
+    expect(isAvatarHeightValid('149.9')).toBe(false);
+  });
+  it('accepts weight from 45 kg', () => {
+    expect(isAvatarWeightValid('45')).toBe(true);
+    expect(isAvatarWeightValid('65')).toBe(true);
+    expect(isAvatarWeightValid('44')).toBe(false);
+  });
+  it('allows empty fields so the default body is used', () => {
+    expect(isAvatarHeightValid('')).toBe(true);
+    expect(isAvatarWeightValid('')).toBe(true);
   });
 });

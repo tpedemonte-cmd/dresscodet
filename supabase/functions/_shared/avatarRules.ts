@@ -32,3 +32,15 @@ export function isSavedAvatarSelected(selfie: string | null, savedModelUrls: str
   if (usesOwnPhoto) return true;
   return savedModelUrls.includes(selfie);
 }
+
+/** Body minimums accepted by the avatar generator (empty string falls back to the default body). */
+export const AVATAR_MIN_HEIGHT_CM = 150;
+export const AVATAR_MIN_WEIGHT_KG = 45;
+
+export function isAvatarHeightValid(height: string) {
+  return height === '' || Number(height) >= AVATAR_MIN_HEIGHT_CM;
+}
+
+export function isAvatarWeightValid(weight: string) {
+  return weight === '' || Number(weight) >= AVATAR_MIN_WEIGHT_KG;
+}

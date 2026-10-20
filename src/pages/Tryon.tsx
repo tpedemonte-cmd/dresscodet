@@ -11,7 +11,7 @@ import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan, LIMITS } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
 import { trimImage, useTrimmedImage } from '@/lib/trimImage';
-import { canDeleteAvatar, isSavedAvatarSelected, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation } from '../../supabase/functions/_shared/avatarRules';
+import { AVATAR_MIN_HEIGHT_CM, AVATAR_MIN_WEIGHT_KG, canDeleteAvatar, isAvatarHeightValid, isAvatarWeightValid, isSavedAvatarSelected, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation } from '../../supabase/functions/_shared/avatarRules';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
   Drawer,
@@ -251,6 +251,14 @@ export default function Tryon() {
     const { gender } = avatarData;
     if (!gender) {
       toast.error('Seleccioná un género para continuar');
+      return;
+    }
+    if (!isAvatarHeightValid(avatarData.height)) {
+      toast.error(`La altura mínima es ${AVATAR_MIN_HEIGHT_CM} cm`);
+      return;
+    }
+    if (!isAvatarWeightValid(avatarData.weight)) {
+      toast.error(`El peso mínimo es ${AVATAR_MIN_WEIGHT_KG} kg`);
       return;
     }
     if (quota.avatarsLeft <= 0) {
@@ -808,7 +816,7 @@ export default function Tryon() {
                   <label className="text-xs font-body text-foreground">Altura (cm)</label>
                   <input
                     type="number"
-                    min="0"
+                    min="150"
                     value={avatarData.height}
                     onChange={handleNumberChange('height')}
                     placeholder="170"
@@ -819,7 +827,7 @@ export default function Tryon() {
                   <label className="text-xs font-body text-foreground">Peso (kg)</label>
                   <input
                     type="number"
-                    min="0"
+                    min="45"
                     value={avatarData.weight}
                     onChange={handleNumberChange('weight')}
                     placeholder="65"

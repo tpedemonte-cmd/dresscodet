@@ -14,3 +14,4 @@
 - [x] Plan gratis: 1 modelo generado + 1 modelo guardado; 3 pruebas de outfit por mes
 - [x] Premium: una generación inicial con 3 opciones, un único modelo guardado; reemplazos solo con packs
 - [x] Compra de avatares extra: 1 x USD 0,99 y pack de 3 x USD 1,99 (pago simulado)
+- [x] Altura mínima 150 cm y peso mínimo 45 kg en el formulario del modelo (aviso en la app y control también en el backend)
