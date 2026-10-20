@@ -1,5 +1,8 @@
 # DressCode roadmap
 
+## Migración a infraestructura propia
+- [ ] Migrar cuentas, prendas, imágenes de avatares y cupos; conectar APK y Vercel al destino. Bloqueado: falta identificar y conectar la base propia; solo están disponibles las credenciales de Lovable Cloud. Mantener la IA facturada a Lovable según el pedido previo y confirmar esta excepción antes del cambio definitivo. No modificar ni eliminar el origen mientras el destino no esté verificado.
+
 ## Prueba visual
 - [x] Usar medias negras en la representación de la categoría para mejorar su visibilidad (verificado en Agregar)
 - [x] Extender imágenes e íconos a todos los emojis visibles, incluidos textos de Looks guardados, Armario, formularios, clima e historial (12 pantallas verificadas sin emojis visibles)
