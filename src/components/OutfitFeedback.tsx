@@ -3,6 +3,12 @@ import { ThumbsUp, ThumbsDown, Check, X, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/auth';
+import {
+  FEEDBACK_LEARNING_MESSAGE,
+  isLearningPromptTap,
+  registerFeedbackTap,
+} from '@/lib/feedbackPrompt';
 
 type FeedbackValue = 'liked' | 'disliked' | 'used' | 'not_used' | null;
 
@@ -22,6 +28,7 @@ const OPTIONS: { value: Exclude<FeedbackValue, null>; label: string; Icon: any; 
 ];
 
 export default function OutfitFeedback({ table, recordId, initialFeedback = null, initialFavorite = false, onChange }: Props) {
+  const { user } = useAuth();
   const [feedback, setFeedback] = useState<FeedbackValue>(initialFeedback);
   const [favorite, setFavorite] = useState(initialFavorite);
   const [busy, setBusy] = useState(false);
@@ -56,7 +63,8 @@ export default function OutfitFeedback({ table, recordId, initialFeedback = null
       setFeedback(prev);
       setFavorite(prevFav);
     } else if (next) {
-      toast.success('¡Gracias por tu feedback!');
+      const taps = registerFeedbackTap(user?.id);
+      toast.success(isLearningPromptTap(taps) ? FEEDBACK_LEARNING_MESSAGE : '¡Gracias por tu feedback!');
       if (!allows && prevFav) toast.info('Se quitó de favoritos');
     }
   };
