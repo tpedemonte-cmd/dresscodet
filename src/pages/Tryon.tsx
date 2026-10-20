@@ -473,11 +473,11 @@ export default function Tryon() {
 
   const handleTryon = async () => {
     if (!selfie) {
-      toast.error('Generá tu modelo o sacate una foto primero');
+      toast.error('Generá tu modelo y guardalo primero');
       return;
     }
     if (!usingSavedAvatar) {
-      toast.error('Guardá tu avatar antes de generar el outfit');
+      toast.error('Guardá el modelo primero');
       return;
     }
     if (selectedItems.length === 0) {
@@ -1220,10 +1220,16 @@ export default function Tryon() {
           )}
           {selectedItems.length > 0 && !usingSavedAvatar && (
             <p className="text-[11px] font-body text-center text-muted-foreground">
-              {selfie ? 'Guardá tu avatar antes de generar el outfit' : 'Generá tu modelo, guardalo y después podés generar el outfit'}
+              {selfie ? 'Guardá el modelo primero' : 'Generá tu modelo, guardalo y después podés generar el outfit'}
             </p>
           )}
-          <Button variant="warm" className="w-full" disabled={!usingSavedAvatar || selectedItems.length === 0 || loading} onClick={handleTryon}>
+          <Button
+            variant="warm"
+            className={`w-full ${!usingSavedAvatar || selectedItems.length === 0 ? 'opacity-50' : ''}`}
+            aria-disabled={!usingSavedAvatar || selectedItems.length === 0 || loading}
+            disabled={loading}
+            onClick={handleTryon}
+          >
             {loading ? (
               <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando outfit virtual...</>
             ) : (
