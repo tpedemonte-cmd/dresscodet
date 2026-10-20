@@ -11,7 +11,7 @@ import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan, LIMITS } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
 import { trimImage, useTrimmedImage } from '@/lib/trimImage';
-import { canDeleteAvatar, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation } from '../../supabase/functions/_shared/avatarRules';
+import { canDeleteAvatar, isSavedAvatarSelected, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation } from '../../supabase/functions/_shared/avatarRules';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
   Drawer,
@@ -165,6 +165,14 @@ export default function Tryon() {
   });
 
   const canDeleteModel = !planLoading && !quotaLoading && canDeleteAvatar(isPremium, quota.avatarCredits);
+
+  // El outfit solo se genera con el avatar ya guardado (o con foto propia)
+  const usingSavedAvatar = isSavedAvatarSelected(
+    selfie,
+    savedModels.map((m) => m.image_url),
+    modelMode === 'selfie'
+  );
+
 
   useEffect(() => {
     if (selfie || variants.length > 0 || modelsLoading) return;
@@ -456,10 +464,19 @@ export default function Tryon() {
 
 
   const handleTryon = async () => {
-    if (!selfie || selectedItems.length === 0) {
-      toast.error('Generá o seleccioná un modelo y elegí al menos una prenda');
+    if (!selfie) {
+      toast.error('Generá tu modelo o sacate una foto primero');
       return;
     }
+    if (!usingSavedAvatar) {
+      toast.error('Guardá tu avatar antes de generar el outfit');
+      return;
+    }
+    if (selectedItems.length === 0) {
+      toast.error('Elegí al menos una prenda para probarte');
+      return;
+    }
+
 
     setLoading(true);
     setResultImage(null);
@@ -1193,13 +1210,19 @@ export default function Tryon() {
               </span>
             </div>
           )}
-          <Button variant="warm" className="w-full" disabled={!selfie || selectedItems.length === 0 || loading} onClick={handleTryon}>
+          {selectedItems.length > 0 && !usingSavedAvatar && (
+            <p className="text-[11px] font-body text-center text-muted-foreground">
+              {selfie ? 'Guardá tu avatar antes de generar el outfit' : 'Generá tu modelo, guardalo y después podés generar el outfit'}
+            </p>
+          )}
+          <Button variant="warm" className="w-full" disabled={!usingSavedAvatar || selectedItems.length === 0 || loading} onClick={handleTryon}>
             {loading ? (
               <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando outfit virtual...</>
             ) : (
               <><Sparkles className="h-4 w-4 mr-2" /> Generar con IA ({selectedItems.length > 1 ? `${selectedItems.length} prendas` : '1 prenda'})</>
             )}
           </Button>
+
 
           {resultImage && (
             <Button variant="outline" className="w-full" disabled={saving} onClick={handleSaveLook}>
