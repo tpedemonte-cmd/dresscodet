@@ -169,6 +169,7 @@ export default function Tryon() {
   });
 
   const canDeleteModel = !planLoading && !quotaLoading && canDeleteAvatar(isPremium, quota.avatarCredits);
+  const avatarAvailable = quota.avatarCredits + (!selfie && variants.length === 0 && quota.avatarsTotal === 0 ? 1 : 0);
 
   // El outfit solo se genera con el avatar ya guardado (o con foto propia)
   const usingSavedAvatar = isSavedAvatarSelected(
