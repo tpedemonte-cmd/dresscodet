@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { freeAvatarAllowance } from '../../supabase/functions/_shared/avatarRules';
 import { calculateTryonQuota, TRYON_LIMITS, tryonMonthStart } from '../../supabase/functions/_shared/tryonQuota';
+import { applyRecordedTryon } from '@/lib/tryonQuotaCache';
 
 export type PlanTier = 'free' | 'premium';
 
@@ -61,6 +62,7 @@ interface PlanContextType {
   quota: Quota;
   quotaLoading: boolean;
   refreshQuota: () => void;
+  recordSuccessfulTryon: () => Promise<void>;
   startCheckout: () => Promise<string>;
   startingCheckout: boolean;
   startAvatarCheckout: (pack: AvatarPackKey) => Promise<string>;
@@ -115,8 +117,9 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   const expired = !!data?.current_period_end && new Date(data.current_period_end) < new Date();
   const isPremium = !!data && data.plan === 'premium' && data.status === 'active' && !expired;
 
+  const quotaQueryKey = ['ai_quota', user?.id, isPremium, tryonMonthStart(), startOfDayISO()] as const;
   const { data: usage, isLoading: usageLoading } = useQuery({
-    queryKey: ['ai_quota', user?.id, isPremium, tryonMonthStart(), startOfDayISO()],
+    queryKey: quotaQueryKey,
     enabled: !!user && !isLoading,
     refetchInterval: 60_000,
     queryFn: async () => {
@@ -235,6 +238,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         quota,
         quotaLoading: isLoading || usageLoading || !usage,
         refreshQuota: () => queryClient.invalidateQueries({ queryKey: ['ai_quota'] }),
+        recordSuccessfulTryon: () => applyRecordedTryon(queryClient, quotaQueryKey),
         startCheckout: () => checkout.mutateAsync('premium'),
         startingCheckout: checkout.isPending,
         startAvatarCheckout: (pack: AvatarPackKey) => avatarCheckout.mutateAsync(pack),

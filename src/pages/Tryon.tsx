@@ -66,7 +66,7 @@ const MEASUREMENTS = [
 
 export default function Tryon() {
   const { user } = useAuth();
-  const { isPremium, quota, quotaLoading, loading: planLoading, refreshQuota } = usePlan();
+  const { isPremium, quota, quotaLoading, loading: planLoading, refreshQuota, recordSuccessfulTryon } = usePlan();
   const navigatePremium = useNavigate();
   const queryClient = useQueryClient();
   const useDraftState = <T,>(field: string, initial: T) => useTryonDraftState(user?.id ?? '', field, initial);
@@ -524,11 +524,11 @@ export default function Tryon() {
       if (data?.error) throw new Error(data.error);
 
       if (data?.image) {
+        await recordSuccessfulTryon();
         setResultImage(data.image);
         setResultItems(selectedItems);
         setSelectedItems([]);
         toast.success('¡Mirá cómo te queda el outfit! Ya podés elegir otras prendas para el siguiente');
-        refreshQuota();
 
       } else {
         throw new Error('No se pudo generar la imagen');
