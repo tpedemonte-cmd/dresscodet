@@ -32,6 +32,7 @@ export default function Wishlist() {
   const { user } = useAuth();
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [mlUrl, setMlUrl] = useState('');
   const [manualTitle, setManualTitle] = useState('');
@@ -290,16 +291,14 @@ export default function Wishlist() {
                 rel="noopener noreferrer"
                 className="shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-secondary flex items-center justify-center"
               >
-                <img
+                {failedImages.has(item.id) ? <span className="text-3xl"><IconText text="🛍️" /></span> : <img
                   src={item.image || item.thumbnail}
                   alt={item.title}
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    const img = e.target as HTMLImageElement;
-                    img.style.display = 'none';
-                    img.parentElement!.innerHTML = '<span class="text-3xl">🛍️</span>';
+                    setFailedImages((previous) => new Set([...previous, item.id]));
                   }}
-                />
+                />}
               </a>
               <div className="flex-1 min-w-0 flex flex-col justify-between">
                 <div>

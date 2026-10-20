@@ -1109,7 +1109,7 @@ export default function Tryon() {
                             className={hasItems ? '' : 'opacity-50'}
                           >
                             <span className="flex-1">{o.label}</span>
-                            <IconText text={isActive && subFilter === o.value && <Check className="h-3.5 w-3.5 ml-2" />} />
+                            {isActive && subFilter === o.value && <Check className="h-3.5 w-3.5 ml-2" />}
                           </DropdownMenuItem>
                         );
                       })}
@@ -1118,7 +1118,7 @@ export default function Tryon() {
                           onClick={() => { setCategoryFilter(key); setSubFilter('__none__'); }}
                         >
                           <span className="flex-1 italic">Sin clasificar</span>
-                          <IconText text={isActive && subFilter === '__none__' && <Check className="h-3.5 w-3.5 ml-2" />} />
+                          {isActive && subFilter === '__none__' && <Check className="h-3.5 w-3.5 ml-2" />}
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>

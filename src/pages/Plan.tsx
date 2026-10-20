@@ -223,7 +223,7 @@ export default function Plan() {
       });
       if (insertError) throw insertError;
 
-      toast.success('Outfit generado para tu salida ✨');
+      toast.success(<IconText text="Outfit generado para tu salida ✨" />);
       qc.invalidateQueries({ queryKey: ['weekly_plans', user.id] });
       resetForm();
     } catch (err: any) {
@@ -517,7 +517,7 @@ export default function Plan() {
                       </div>
 
                       {p.recommendation && (
-                        <ExplanationToggle><p className="text-sm font-body whitespace-pre-wrap text-foreground/90">{p.recommendation}</p></ExplanationToggle>
+                        <ExplanationToggle><p className="text-sm font-body whitespace-pre-wrap text-foreground/90"><IconText text={p.recommendation} /></p></ExplanationToggle>
                       )}
 
                       {usedItems.length > 0 && (
