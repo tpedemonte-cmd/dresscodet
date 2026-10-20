@@ -11,7 +11,7 @@ import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan, LIMITS } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
 import { trimImage, useTrimmedImage } from '@/lib/trimImage';
-import { canDeleteAvatar, isSavedAvatarSelected, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation } from '../../supabase/functions/_shared/avatarRules';
+import { AVATAR_MIN_HEIGHT_CM, AVATAR_MIN_WEIGHT_KG, canDeleteAvatar, isAvatarHeightValid, isAvatarWeightValid, isSavedAvatarSelected, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation } from '../../supabase/functions/_shared/avatarRules';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
   Drawer,

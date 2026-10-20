@@ -3,11 +3,11 @@ import { aiGenerateImage } from "../_shared/ai.ts";
 import { adminClient, userClient, checkQuota, recordUsage } from "../_shared/quotas.ts";
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { z } from 'npm:zod@3';
-import { generateAvatarOptions } from '../_shared/avatarRules.ts';
+import { generateAvatarOptions, AVATAR_MIN_HEIGHT_CM, AVATAR_MIN_WEIGHT_KG } from '../_shared/avatarRules.ts';
 
 const AvatarBody = z.object({
-  height: z.coerce.number().finite().min(150, 'La altura mínima es 150 cm').max(300),
-  weight: z.coerce.number().finite().min(45, 'El peso mínimo es 45 kg').max(600),
+  height: z.coerce.number().finite().min(AVATAR_MIN_HEIGHT_CM, `La altura mínima es ${AVATAR_MIN_HEIGHT_CM} cm`).max(300),
+  weight: z.coerce.number().finite().min(AVATAR_MIN_WEIGHT_KG, `El peso mínimo es ${AVATAR_MIN_WEIGHT_KG} kg`).max(600),
   age: z.coerce.number().int().min(1).max(120),
   gender: z.enum(['masculino', 'femenino', 'otro']),
   hairColor: z.string().max(80).optional(),
