@@ -1,6 +1,7 @@
 # Architecture rules
 
 - Route client function calls through the fixed Cloud endpoint with the configured data project's session; validate that session against the selected allowlisted backend and keep quota writes and locks request-scoped to it, so external data never mixes with Cloud identities while AI billing stays in Cloud.
+- Keep external-only quota RPC and model-protection setup in db/external, never in Cloud's auto-applied migrations, because the data destination must be upgraded independently without changing the source database.
 
 - Keep occasion presentation shared and render emoji-bearing interface labels and stored/AI text through the shared IconText presenter; gate the visual trial with one presentation flag so prior appearance can be restored without modifying searches, prompts or saved data.
 
