@@ -584,7 +584,7 @@ export default function Tryon() {
                 <DrawerTitle>¿Cómo querés subir tu foto?</DrawerTitle>
                 <DrawerDescription>Elegí si te sacás una foto ahora o usás una de tu galería.</DrawerDescription>
               </DrawerHeader>
-              <div className="px-4 pb-8 flex flex-col gap-2">
+              <div className="px-4 pb-28 flex flex-col gap-2">
                 <Button
                   onClick={() => {
                     setPhotoSourceOpen(false);
