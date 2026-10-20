@@ -166,6 +166,14 @@ export default function Tryon() {
 
   const canDeleteModel = !planLoading && !quotaLoading && canDeleteAvatar(isPremium, quota.avatarCredits);
 
+  // El outfit solo se genera con el avatar ya guardado (o con foto propia)
+  const usingSavedAvatar = isSavedAvatarSelected(
+    selfie,
+    savedModels.map((m) => m.image_url),
+    modelMode === 'selfie'
+  );
+
+
   useEffect(() => {
     if (selfie || variants.length > 0 || modelsLoading) return;
     const model = savedModels.find((m) => m.is_active) ?? savedModels[0];
