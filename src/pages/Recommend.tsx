@@ -285,7 +285,8 @@ export default function Recommend() {
           toast.error(body.error, { action: { label: 'Ver Premium', onClick: () => { window.location.href = '/premium'; } } });
           return;
         }
-        throw error;
+        toast.error('La IA no está disponible en este momento. Probá de nuevo más tarde.');
+        return;
       }
 
       if (data?.code === 'quota_exceeded') {
