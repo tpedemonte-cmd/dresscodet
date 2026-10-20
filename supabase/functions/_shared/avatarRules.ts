@@ -44,3 +44,8 @@ export function isAvatarHeightValid(height: string) {
 export function isAvatarWeightValid(weight: string) {
   return weight === '' || Number(weight) >= AVATAR_MIN_WEIGHT_KG;
 }
+
+/** Only a paid account may try clothes on its own photo; the free plan must save an avatar. */
+export function canUseOwnPhoto(isPremium: boolean, modelMode: string) {
+  return isPremium && modelMode === 'selfie';
+}

@@ -16,3 +16,4 @@
 - [x] Compra de avatares extra: 1 x USD 0,99 y pack de 3 x USD 1,99 (pago simulado)
 - [x] Altura mínima 150 cm y peso mínimo 45 kg en el formulario del modelo (aviso en la app y control también en el backend)
 - [x] Probador: al tocar "Generar con IA" sin tener el modelo guardado, avisa "Guardá el modelo primero" (el botón queda atenuado pero sigue tocable, y no gasta pruebas)
+- [x] Probador: la foto subida se endereza antes de enviarla a la IA (antes salía el outfit torcido), el resultado horizontal se muestra completo sin cortar la cabeza, y el fondo de habitación se reemplaza por uno de estudio

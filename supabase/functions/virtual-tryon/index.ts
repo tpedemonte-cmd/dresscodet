@@ -81,8 +81,10 @@ Garments to put on the target person:
 ${itemsList}
 
 STRICT RULES:
-- The output MUST show the exact same person from IMAGE 1: same face, hair, gender, age, body shape, skin tone, height proportions and pose.
-- Keep the exact background, lighting and camera framing of IMAGE 1 (full body, head to feet visible).
+- The output MUST show the exact same person from IMAGE 1: same face, hair, gender, age, body shape, skin tone and height proportions.
+- The person stands upright and straight, facing the camera. Never lying down, never rotated, never sideways.
+- Vertical portrait composition (3:4): the whole body from head to feet visible, centered, with some empty space above the head.
+- Replace the background with a clean, evenly lit, plain light gray seamless studio backdrop. Remove furniture, beds, rugs and any room details from IMAGE 1.
 - Garment reference photos may contain other people, mannequins or backgrounds: IGNORE them completely. Copy ONLY the garment (color, fabric, cut, details) and never copy any person or scene from them.
 - Apply each garment to the correct body area by its category, replacing what the target person wears there; layer naturally (e.g. jacket over shirt).
 - Photorealistic result. Output a single image.`;

@@ -106,6 +106,7 @@ The person should:
 - Be photographed against a clean light gray seamless studio background
 - Be evenly lit with soft natural lighting
 - Be shown from head to toe, fully visible, centered in the frame
+- Vertical portrait composition (3:4), the person standing upright and straight, never lying down or rotated
 - Photorealistic quality, like a fashion catalog base model`;
 
     const images = await generateAvatarOptions(!!quota.isPremium, async (index) => {
