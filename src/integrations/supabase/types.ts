@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           id: string
           kind: string
+          plan_tier: string
           used_credit: boolean
           user_id: string
         }
@@ -26,6 +27,7 @@ export type Database = {
           created_at?: string
           id?: string
           kind: string
+          plan_tier?: string
           used_credit?: boolean
           user_id: string
         }
@@ -33,6 +35,7 @@ export type Database = {
           created_at?: string
           id?: string
           kind?: string
+          plan_tier?: string
           used_credit?: boolean
           user_id?: string
         }
@@ -466,6 +469,10 @@ export type Database = {
       }
       record_avatar_generation: {
         Args: { p_use_credit: boolean; p_user_id: string }
+        Returns: undefined
+      }
+      record_tryon_generation: {
+        Args: { p_plan_tier: string; p_user_id: string }
         Returns: undefined
       }
       release_avatar_generation_lock: {
