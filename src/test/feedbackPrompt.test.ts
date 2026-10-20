@@ -19,7 +19,8 @@ function fakeStorage(): StorageLike {
 
 describe('feedback learning prompt', () => {
   it('marks only every 5th feedback tap', () => {
-    const counts = Array.from({ length: 12 }, () => registerFeedbackTap('user-1', fakeStorage()));
+    const storage = fakeStorage();
+    const counts = Array.from({ length: 12 }, () => registerFeedbackTap('user-1', storage));
     expect(counts).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
     expect(counts.filter(isLearningPromptTap)).toEqual([5, 10]);
   });
