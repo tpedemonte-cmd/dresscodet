@@ -248,17 +248,17 @@ export default function Tryon() {
       toast.error('Guardá tu modelo o eliminá el actual con un avatar extra antes de generar otro.');
       return;
     }
-    const { gender, height, weight } = avatarData;
+    const { gender } = avatarData;
     if (!gender) {
       toast.error('Seleccioná un género para continuar');
       return;
     }
-    if (height !== '' && Number(height) < 150) {
-      toast.error('La altura mínima es 150 cm');
+    if (!isAvatarHeightValid(avatarData.height)) {
+      toast.error(`La altura mínima es ${AVATAR_MIN_HEIGHT_CM} cm`);
       return;
     }
-    if (weight !== '' && Number(weight) < 45) {
-      toast.error('El peso mínimo es 45 kg');
+    if (!isAvatarWeightValid(avatarData.weight)) {
+      toast.error(`El peso mínimo es ${AVATAR_MIN_WEIGHT_KG} kg`);
       return;
     }
     if (quota.avatarsLeft <= 0) {
