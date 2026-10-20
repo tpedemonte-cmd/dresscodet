@@ -11,7 +11,7 @@ import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan, LIMITS } from '@/lib/plan';
 import { useNavigate } from 'react-router-dom';
 import { trimImage, useTrimmedImage } from '@/lib/trimImage';
-import { canDeleteAvatar, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation } from '../../supabase/functions/_shared/avatarRules';
+import { canDeleteAvatar, isSavedAvatarSelected, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation } from '../../supabase/functions/_shared/avatarRules';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
   Drawer,
@@ -456,10 +456,19 @@ export default function Tryon() {
 
 
   const handleTryon = async () => {
-    if (!selfie || selectedItems.length === 0) {
-      toast.error('Generá o seleccioná un modelo y elegí al menos una prenda');
+    if (!selfie) {
+      toast.error('Generá tu modelo o sacate una foto primero');
       return;
     }
+    if (!usingSavedAvatar) {
+      toast.error('Guardá tu avatar antes de generar el outfit');
+      return;
+    }
+    if (selectedItems.length === 0) {
+      toast.error('Elegí al menos una prenda para probarte');
+      return;
+    }
+
 
     setLoading(true);
     setResultImage(null);
