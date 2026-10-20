@@ -169,6 +169,7 @@ export default function Tryon() {
   });
 
   const canDeleteModel = !planLoading && !quotaLoading && canDeleteAvatar(isPremium, quota.avatarCredits);
+  const avatarAvailable = quota.avatarCredits + (!selfie && variants.length === 0 && quota.avatarsTotal === 0 ? 1 : 0);
 
   // El outfit solo se genera con el avatar ya guardado (o con foto propia)
   const usingSavedAvatar = isSavedAvatarSelected(
@@ -1003,9 +1004,19 @@ export default function Tryon() {
         )}
       </div>
 
-      <p className="text-center text-sm font-body text-muted-foreground" aria-live="polite">
-        Avatares disponibles: <span className="font-semibold text-foreground">{quotaLoading ? '…' : quota.avatarCredits + (!selfie && variants.length === 0 && quota.avatarsTotal === 0 ? 1 : 0)}</span>
-      </p>
+      <div className="flex flex-col items-center gap-0.5">
+        <p className="text-center text-sm font-body text-muted-foreground" aria-live="polite">
+          Avatares disponibles: <span className="font-semibold text-foreground">{quotaLoading ? '…' : avatarAvailable}</span>
+        </p>
+        {!quotaLoading && avatarAvailable === 0 && (
+          <button
+            onClick={() => navigatePremium('/premium#avatares-extra')}
+            className="text-xs font-body text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
+          >
+            conseguir más
+          </button>
+        )}
+      </div>
 
       <Dialog open={avatarToDelete !== null} onOpenChange={(open) => {
         if (!open && !deleteModelMutation.isPending) setAvatarToDelete(null);
