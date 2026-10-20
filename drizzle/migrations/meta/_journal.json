@@ -78,6 +78,13 @@
       "when": 1792463950304,
       "tag": "0010_avatar_lifetime_allowance_all_plans",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792464566305,
+      "tag": "0011_allow_premium_avatar_deletion",
+      "breakpoints": true
     }
   ]
 }

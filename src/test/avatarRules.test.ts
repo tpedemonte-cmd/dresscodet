@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canDeleteAvatar, freeAvatarAllowance, needsLastAvatarConfirmation, avatarOptionCount, generateAvatarOptions } from '../../supabase/functions/_shared/avatarRules';
+import { canDeleteAvatar, freeAvatarAllowance, needsLastAvatarConfirmation, needsLastAvatarDeletionConfirmation, avatarOptionCount, generateAvatarOptions } from '../../supabase/functions/_shared/avatarRules';
 
 describe('free avatar replacement rules', () => {
   it('requires confirmation only for the last available avatar', () => {
@@ -28,9 +28,15 @@ describe('free avatar replacement rules', () => {
     expect(freeAvatarAllowance(4, 0, 1)).toBe(0);
     expect(canDeleteAvatar(false, 0)).toBe(false);
   });
-  it('premium cannot delete without a purchased pack', () => {
-    expect(canDeleteAvatar(true, 0)).toBe(false);
+  it('premium can delete even without a purchased pack', () => {
+    expect(canDeleteAvatar(true, 0)).toBe(true);
     expect(canDeleteAvatar(true, 1)).toBe(true);
+  });
+  it('requires confirmation before deleting the last saved premium avatar', () => {
+    expect(needsLastAvatarDeletionConfirmation(true, 1)).toBe(true);
+    expect(needsLastAvatarDeletionConfirmation(true, 2)).toBe(false);
+    expect(needsLastAvatarDeletionConfirmation(true, 0)).toBe(false);
+    expect(needsLastAvatarDeletionConfirmation(false, 1)).toBe(false);
   });
   it('premium has only one lifetime initial generation, not a monthly renewal', () => {
     expect(freeAvatarAllowance(0, 0, 0)).toBe(1);
