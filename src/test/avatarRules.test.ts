@@ -81,3 +81,20 @@ describe('free avatar replacement rules', () => {
     expect(recorded).toBe(0);
   });
 });
+
+describe('avatar body minimums', () => {
+  it('accepts height from 150 cm', () => {
+    expect(isAvatarHeightValid('150')).toBe(true);
+    expect(isAvatarHeightValid('170')).toBe(true);
+    expect(isAvatarHeightValid('149.9')).toBe(false);
+  });
+  it('accepts weight from 45 kg', () => {
+    expect(isAvatarWeightValid('45')).toBe(true);
+    expect(isAvatarWeightValid('65')).toBe(true);
+    expect(isAvatarWeightValid('44')).toBe(false);
+  });
+  it('allows empty fields so the default body is used', () => {
+    expect(isAvatarHeightValid('')).toBe(true);
+    expect(isAvatarWeightValid('')).toBe(true);
+  });
+});
