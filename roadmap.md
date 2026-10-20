@@ -5,6 +5,7 @@
 - [x] Probador: género arranca en opción "Seleccioná uno" y luego permite masculino/femenino
 - [x] Probador Premium: "O sacarte una foto" arriba del avatar y en color naranja del tema
 - [x] Probador Premium: al tocar "O sacarte una foto" se puede abrir la cámara o elegir una foto de la galería
+- [x] Feedback: cada 5 opiniones en "¿Qué te pareció?" aparece "¡Gracias! Tu opinión ayuda a la IA a aprender tus gustos."
 
 ## Planes y avatares
 - [x] Premium: permitir eliminar sin créditos y confirmar antes de borrar el último avatar; mantener regeneración con packs
