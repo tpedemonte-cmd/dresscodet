@@ -58,12 +58,14 @@ export default function Travel() {
         );
         const json = await res.json();
         if (cancelled) return;
-        const places: Place[] = (json?.results ?? []).map((r: any) => ({
-          name: r.name,
-          label: [r.name, r.admin1 && r.admin1 !== r.name ? r.admin1 : null, r.country]
-            .filter(Boolean)
-            .join(', '),
-        }));
+        const places: Place[] = (json?.results ?? []).map((r: any) => {
+          const admin1 = r.admin1 && r.admin1 !== r.name && r.admin1 !== r.country ? r.admin1 : null;
+          const country = r.country && r.country !== r.name ? r.country : null;
+          return {
+            name: r.name,
+            label: [r.name, admin1, country].filter(Boolean).join(', '),
+          };
+        });
         const unique = places.filter((p, i) => places.findIndex((o) => o.label === p.label) === i);
         setSuggestions(unique);
       } catch {
