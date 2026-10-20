@@ -25,3 +25,10 @@ export function needsLastAvatarConfirmation(available: number) {
 export function freeAvatarAllowance(total: number, credits: number, savedModels: number) {
   return savedModels > 0 ? 0 : Math.max(0, 1 - total) + Math.max(0, credits);
 }
+
+/** The try-on outfit can only be generated with a saved avatar; own-photo mode is always allowed. */
+export function isSavedAvatarSelected(selfie: string | null, savedModelUrls: string[], usesOwnPhoto: boolean) {
+  if (!selfie) return false;
+  if (usesOwnPhoto) return true;
+  return savedModelUrls.includes(selfie);
+}
