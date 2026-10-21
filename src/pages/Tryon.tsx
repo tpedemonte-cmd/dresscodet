@@ -170,6 +170,11 @@ export default function Tryon() {
 
   const canDeleteModel = !planLoading && !quotaLoading && canDeleteAvatar(isPremium, quota.avatarCredits);
   const avatarAvailable = quota.avatarCredits + (!selfie && variants.length === 0 && quota.avatarsTotal === 0 ? 1 : 0);
+  // The frame shows a saved avatar even when the draft lost its id (e.g. after a free generation was auto-saved).
+  const frameModelId = activeModelId
+    ?? (modelMode !== 'selfie' && !avatarBeforePhoto && selfie
+      ? (savedModels.find((m) => m.image_url === selfie) ?? (variants.length === 0 ? savedModels[0] : undefined))?.id ?? null
+      : null);
 
   // El outfit solo se genera con el avatar ya guardado (o con foto propia)
   const usingSavedAvatar = isSavedAvatarSelected(
@@ -719,7 +724,7 @@ export default function Tryon() {
 
                 <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-body font-medium px-2 py-1 rounded-full"><IconText text={"✨ Resultado IA"} /></div>
               )}
-              {activeModelId && (
+              {frameModelId && (
                 <Button variant="outline" size="icon"
                   onClick={() => navigatePremium('/premium#avatares-extra')}
                   aria-label="Comprar avatares extra para modificar tu modelo"
@@ -728,9 +733,16 @@ export default function Tryon() {
                   <Plus className="h-5 w-5" />
                 </Button>
               )}
-              {activeModelId && canDeleteModel && (
+              {frameModelId && (
                 <Button variant="destructive" size="icon"
-                  onClick={() => requestDeleteModel(activeModelId)}
+                  onClick={() => {
+                    if (!canDeleteModel) {
+                      toast.error('Para eliminar tu modelo necesitás un avatar extra.');
+                      navigatePremium('/premium#avatares-extra');
+                      return;
+                    }
+                    requestDeleteModel(frameModelId);
+                  }}
                   disabled={deleteModelMutation.isPending}
                   aria-label="Eliminar modelo actual"
                   className="absolute top-14 right-2 h-9 w-9 rounded-full bg-destructive text-destructive-foreground backdrop-blur-sm flex items-center justify-center transition-colors disabled:opacity-60"
