@@ -719,7 +719,7 @@ export default function Tryon() {
 
                 <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-body font-medium px-2 py-1 rounded-full"><IconText text={"✨ Resultado IA"} /></div>
               )}
-              {activeModelId && !isPremium && !quotaLoading && quota.avatarCredits === 0 && (
+              {activeModelId && !quotaLoading && avatarAvailable === 0 && (
                 <Button variant="outline" size="icon"
                   onClick={() => navigatePremium('/premium#avatares-extra')}
                   aria-label="Comprar avatares extra para modificar tu modelo"
@@ -728,7 +728,7 @@ export default function Tryon() {
                   <Plus className="h-5 w-5" />
                 </Button>
               )}
-              {activeModelId && canDeleteModel && (
+              {activeModelId && canDeleteModel && !(!quotaLoading && avatarAvailable === 0) && (
                 <Button variant="destructive" size="icon"
                   onClick={() => requestDeleteModel(activeModelId)}
                   disabled={deleteModelMutation.isPending}
@@ -937,7 +937,9 @@ export default function Tryon() {
                 <p className="text-[11px] font-body text-muted-foreground">
                   {quota.avatarsTotal === 0
                     ? isPremium ? 'Una generación inicial con 3 opciones. Elegí un solo modelo.' : 'Un modelo inicial gratis.'
-                    : 'Para volver a generar, necesitás un avatar extra comprado.'}
+                    : avatarAvailable > 0
+                      ? `Te ${avatarAvailable === 1 ? 'queda 1 avatar' : `quedan ${avatarAvailable} avatares`} para generar.`
+                      : 'No te quedan avatares para generar. Conseguí más en la tienda.'}
                 </p>
                 <Button variant="outline" size="sm" className="w-full" onClick={() => navigatePremium('/premium#avatares-extra')}>
                   <Plus className="h-4 w-4 mr-2" /> Comprar avatares extra
