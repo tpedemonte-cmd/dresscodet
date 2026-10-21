@@ -80,3 +80,7 @@ DROP TRIGGER IF EXISTS guard_free_saved_model ON public.user_models;
 CREATE TRIGGER guard_free_saved_model BEFORE INSERT OR UPDATE OR DELETE ON public.user_models FOR EACH ROW EXECUTE FUNCTION public.guard_free_saved_model();
 
 COMMIT;
+
+-- Mock checkout product (premium, avatar_1, avatar_3)
+alter table public.payment_sessions add column if not exists product text not null default 'premium';
+notify pgrst, 'reload schema';
