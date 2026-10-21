@@ -719,7 +719,7 @@ export default function Tryon() {
 
                 <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-body font-medium px-2 py-1 rounded-full"><IconText text={"✨ Resultado IA"} /></div>
               )}
-              {activeModelId && !quotaLoading && avatarAvailable === 0 && (
+              {activeModelId && (
                 <Button variant="outline" size="icon"
                   onClick={() => navigatePremium('/premium#avatares-extra')}
                   aria-label="Comprar avatares extra para modificar tu modelo"
@@ -728,12 +728,12 @@ export default function Tryon() {
                   <Plus className="h-5 w-5" />
                 </Button>
               )}
-              {activeModelId && canDeleteModel && !(!quotaLoading && avatarAvailable === 0) && (
+              {activeModelId && canDeleteModel && (
                 <Button variant="destructive" size="icon"
                   onClick={() => requestDeleteModel(activeModelId)}
                   disabled={deleteModelMutation.isPending}
                   aria-label="Eliminar modelo actual"
-                  className="absolute top-2 right-2 h-9 w-9 rounded-full bg-destructive text-destructive-foreground backdrop-blur-sm flex items-center justify-center transition-colors disabled:opacity-60"
+                  className="absolute top-14 right-2 h-9 w-9 rounded-full bg-destructive text-destructive-foreground backdrop-blur-sm flex items-center justify-center transition-colors disabled:opacity-60"
                 >
                   {deleteModelMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                 </Button>
@@ -934,13 +934,11 @@ export default function Tryon() {
               )}
 
               <div className="rounded-xl bg-secondary p-3 space-y-2">
-                <p className="text-[11px] font-body text-muted-foreground">
-                  {quota.avatarsTotal === 0
-                    ? isPremium ? 'Una generación inicial con 3 opciones. Elegí un solo modelo.' : 'Un modelo inicial gratis.'
-                    : avatarAvailable > 0
-                      ? `Te ${avatarAvailable === 1 ? 'queda 1 avatar' : `quedan ${avatarAvailable} avatares`} para generar.`
-                      : 'No te quedan avatares para generar. Conseguí más en la tienda.'}
-                </p>
+                {quota.avatarsTotal === 0 && (
+                  <p className="text-[11px] font-body text-muted-foreground">
+                    {isPremium ? 'Una generación inicial con 3 opciones. Elegí un solo modelo.' : 'Un modelo inicial gratis.'}
+                  </p>
+                )}
                 <Button variant="outline" size="sm" className="w-full" onClick={() => navigatePremium('/premium#avatares-extra')}>
                   <Plus className="h-4 w-4 mr-2" /> Comprar avatares extra
                 </Button>
