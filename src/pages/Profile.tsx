@@ -104,7 +104,7 @@ export default function Profile() {
               <Mail className="h-5 w-5" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-body text-base font-medium text-foreground">{email || 'Sin e-mail'}</p>
+              <p className="break-all font-body text-base font-medium text-foreground">{email || 'Sin e-mail'}</p>
               <p className="font-body text-sm text-muted-foreground">E-mail de tu cuenta.</p>
             </div>
           </div>
