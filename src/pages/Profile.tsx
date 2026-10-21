@@ -75,6 +75,7 @@ export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const email = user?.email ?? '';
+  const { ref: emailRef, fit: emailFit } = useFitOneLine(email);
   const userName = String(
     user?.user_metadata?.full_name || user?.user_metadata?.name || email.split('@')[0] || 'Mi perfil'
   );
