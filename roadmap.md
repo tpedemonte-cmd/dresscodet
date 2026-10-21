@@ -1,5 +1,8 @@
 # DressCode roadmap
 
+## Ingreso
+- [x] Agregar el ojito para mostrar/ocultar la contraseña; sesión persistente ya configurada y verificada al reabrir un contexto de navegador con almacenamiento conservado, sin pedir credenciales. Comprobación física en APK pendiente del usuario al reconstruir e instalar.
+
 ## Migración a infraestructura propia
 - [x] Guardar de forma segura el acceso al proyecto propio y verificar servicios de cuentas y tablas existentes, sin cambiar la conexión activa.
 - [x] Migrar cuentas, prendas, historial, planes, looks, wishlist y fotos al proyecto propio: datos remapeados a las cuentas del destino, URLs de imágenes reescritas al almacenamiento propio y tablas ai_usage_events, avatar_credits y avatar_generation_locks creadas con RLS y permisos.
