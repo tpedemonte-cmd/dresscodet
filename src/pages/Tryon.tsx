@@ -933,16 +933,13 @@ export default function Tryon() {
                 </div>
               )}
 
-              <div className="rounded-xl bg-secondary p-3 space-y-2">
-                {quota.avatarsTotal === 0 && (
+              {quota.avatarsTotal === 0 && (
+                <div className="rounded-xl bg-secondary p-3">
                   <p className="text-[11px] font-body text-muted-foreground">
                     {isPremium ? 'Una generación inicial con 3 opciones. Elegí un solo modelo.' : 'Un modelo inicial gratis.'}
                   </p>
-                )}
-                <Button variant="outline" size="sm" className="w-full" onClick={() => navigatePremium('/premium#avatares-extra')}>
-                  <Plus className="h-4 w-4 mr-2" /> Comprar avatares extra
-                </Button>
-              </div>
+                </div>
+              )}
 
               <Button
                 variant="warm"
@@ -1004,18 +1001,18 @@ export default function Tryon() {
         )}
       </div>
 
-      <div className="flex flex-col items-center gap-0.5">
+      <div className="flex flex-col items-center gap-2">
         <p className="text-center text-sm font-body text-muted-foreground" aria-live="polite">
           Avatares disponibles: <span className="font-semibold text-foreground">{quotaLoading ? '…' : avatarAvailable}</span>
         </p>
-        {!quotaLoading && avatarAvailable === 0 && (
-          <button
-            onClick={() => navigatePremium('/premium#avatares-extra')}
-            className="text-xs font-body text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
-          >
-            conseguir más
-          </button>
-        )}
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full max-w-sm"
+          onClick={() => navigatePremium('/premium#avatares-extra')}
+        >
+          <Plus className="h-4 w-4 mr-2" /> Comprar avatares extra
+        </Button>
       </div>
 
       <Dialog open={avatarToDelete !== null} onOpenChange={(open) => {
