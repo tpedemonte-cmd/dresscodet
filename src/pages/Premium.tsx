@@ -148,8 +148,7 @@ export default function Premium() {
               </p>
               <p className="text-xs font-body text-muted-foreground">{p.note}</p>
               <Button
-                variant={p.key === 'avatar_3' ? 'warm' : 'outline'}
-                className="w-full"
+                variant="warm"
                 onClick={() => buyPack(p.key)}
                 disabled={startingAvatarCheckout}
               >
