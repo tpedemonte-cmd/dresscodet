@@ -1,7 +1,7 @@
 # DressCode roadmap
 
 ## Ingreso
-- [ ] Agregar el ojito para mostrar/ocultar la contraseña y verificar que el acceso se conserve al reabrir la app.
+- [x] Agregar el ojito para mostrar/ocultar la contraseña; sesión persistente ya configurada y verificada al reabrir un contexto de navegador con almacenamiento conservado, sin pedir credenciales. Comprobación física en APK pendiente del usuario al reconstruir e instalar.
 
 ## Migración a infraestructura propia
 - [x] Guardar de forma segura el acceso al proyecto propio y verificar servicios de cuentas y tablas existentes, sin cambiar la conexión activa.
