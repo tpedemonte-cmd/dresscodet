@@ -1,6 +1,8 @@
 # DressCode roadmap
 
 ## Ingreso
+- [ ] Permitir crear una sola cuenta adicional en la base propia y volver a bloquear nuevos registros; pendiente identificar el correo autorizado.
+- [ ] Investigar y corregir el ingreso que no se conserva al reabrir la app; verificar sin guardar contraseñas.
 - [x] Agregar el ojito para mostrar/ocultar la contraseña; sesión persistente ya configurada y verificada al reabrir un contexto de navegador con almacenamiento conservado, sin pedir credenciales. Comprobación física en APK pendiente del usuario al reconstruir e instalar.
 
 ## Migración a infraestructura propia
