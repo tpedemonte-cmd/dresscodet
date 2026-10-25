@@ -1,4 +1,6 @@
 # Architecture rules
+- Subscribe to auth events before startup reads and ignore stale reads, so returning sessions cannot be overwritten by earlier empty results.
+- Gate external registrations through a service-only, transactional signup allowance consumed by an Auth lifecycle trigger; never open unbounded signup for a private account invitation.
 
 - Route client function calls through the fixed Cloud endpoint with the configured data project's session; validate that session against the selected allowlisted backend and keep quota writes and locks request-scoped to it, so external data never mixes with Cloud identities while AI billing stays in Cloud.
 - Keep external-only quota RPC and model-protection setup in db/external, never in Cloud's auto-applied migrations, because the data destination must be upgraded independently without changing the source database.

@@ -1,8 +1,8 @@
 # DressCode roadmap
 
 ## Ingreso
-- [ ] Permitir crear una sola cuenta adicional en la base propia y volver a bloquear nuevos registros; pendiente identificar el correo autorizado.
-- [ ] Investigar y corregir el ingreso que no se conserva al reabrir la app; verificar sin guardar contraseñas.
+- [x] Base propia: permitir solo caronoval@yahoo.com mediante autorización de un uso consumida atómicamente al crear la cuenta; pruebas reales en transacción revertida verifican rechazo de otros correos y de una segunda alta, sin crear la cuenta ni cambiar confirmación por correo.
+- [x] Corregir la carrera entre lectura inicial y eventos de ingreso; 4 pruebas y reapertura real de navegador con sesión conservada verificadas. No se reprodujo pérdida de almacenamiento en APK; la comprobación física requiere que el usuario reconstruya e instale sin desinstalar.
 - [x] Agregar el ojito para mostrar/ocultar la contraseña; sesión persistente ya configurada y verificada al reabrir un contexto de navegador con almacenamiento conservado, sin pedir credenciales. Comprobación física en APK pendiente del usuario al reconstruir e instalar.
 
 ## Migración a infraestructura propia
