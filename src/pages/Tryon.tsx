@@ -847,8 +847,8 @@ export default function Tryon() {
                   <p className="text-muted-foreground font-body text-xs">
                     Sacate una foto de cuerpo completo y probate la ropa sobre tu propia imagen
                   </p>
-                  <Button className="w-full" disabled={loading || generatingAvatar} onClick={() => setPhotoSourceOpen(true)}>
-                    <Camera className="h-4 w-4 mr-2" /> Sacar o subir mi foto
+                  <Button className="w-full" disabled={loading || generatingAvatar || savingPhoto} onClick={() => setPhotoSourceOpen(true)}>
+                    {savingPhoto ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Camera className="h-4 w-4 mr-2" />} Sacar o subir mi foto
                   </Button>
                 </div>
               ) : (
@@ -1095,7 +1095,12 @@ export default function Tryon() {
           </DialogHeader>
           <div className="flex gap-3">
             <Button variant="outline" className="flex-1" onClick={() => setConfirmLastAvatar(false)}>Cancelar</Button>
-            <Button className="flex-1" disabled={generatingAvatar || quotaLoading} onClick={() => void handleGenerateAvatar(true)}>Continuar</Button>
+            <Button className="flex-1" disabled={generatingAvatar || savingPhoto || quotaLoading} onClick={() => {
+              const file = pendingPhotoFile;
+              setConfirmLastAvatar(false);
+              if (file) void handleSelfieUpload(file, true);
+              else void handleGenerateAvatar(true);
+            }}>Continuar</Button>
           </div>
         </DialogContent>
       </Dialog>
