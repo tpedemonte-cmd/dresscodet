@@ -2,16 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { hasCategoryConflict, toggleOutfitItem } from '../lib/tryonSelection';
 
 describe('outfit category selection', () => {
-  it('blocks selecting two pairs of socks in one outfit', () => {
-    const socks = { id: 'socks-1', category: 'medias' };
-    const otherSocks = { id: 'socks-2', category: 'medias' };
-    expect(hasCategoryConflict([socks], otherSocks)).toBe(true);
-    expect(toggleOutfitItem([socks], otherSocks)).toEqual([socks]);
-  });
-
-  it.each(['remera', 'pantalon', 'campera', 'buzo', 'camisa', 'short', 'vestido', 'pollera', 'zapatillas', 'zapatos', 'accesorio', 'otro'])('blocks a second item in category %s', category => {
+  it.each(['remera', 'pantalon', 'campera', 'buzo', 'camisa', 'short', 'vestido', 'pollera', 'zapatillas', 'zapatos', 'accesorio', 'otro'])('swaps a second item into category %s', category => {
     const first = { id: 'first', category };
-    expect(toggleOutfitItem([first], { id: 'second', category })).toEqual([first]);
+    const second = { id: 'second', category };
+    expect(hasCategoryConflict([first], second)).toBe(true);
+    expect(toggleOutfitItem([first], second)).toEqual([second]);
   });
 
   it('allows different categories together', () => {
@@ -20,11 +15,15 @@ describe('outfit category selection', () => {
     expect(toggleOutfitItem([shirt], socks)).toEqual([shirt, socks]);
   });
 
-  it('allows deselection and choosing another item from that category', () => {
+  it('keeps the swapped item in the same slot so the outfit order holds', () => {
+    const shirt = { id: 'shirt', category: 'remera' };
+    const jeansBlue = { id: 'jeans-blue', category: 'pantalon' };
+    const jeansBlack = { id: 'jeans-black', category: 'pantalon' };
+    expect(toggleOutfitItem([shirt, jeansBlue], jeansBlack)).toEqual([shirt, jeansBlack]);
+  });
+
+  it('deselects the item when tapped again', () => {
     const first = { id: 'first', category: 'medias' };
-    const second = { id: 'second', category: 'medias' };
-    const cleared = toggleOutfitItem([first], first);
-    expect(cleared).toEqual([]);
-    expect(toggleOutfitItem(cleared, second)).toEqual([second]);
+    expect(toggleOutfitItem([first], first)).toEqual([]);
   });
 });

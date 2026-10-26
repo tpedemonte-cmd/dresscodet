@@ -8,6 +8,7 @@ export function toggleOutfitItem<T extends CategorizedItem>(selected: readonly T
   if (selected.some(existing => existing.id === item.id)) {
     return selected.filter(existing => existing.id !== item.id);
   }
-  if (hasCategoryConflict(selected, item)) return [...selected];
-  return [...selected, item];
+  // Tapping another item from the same category swaps it in at the same
+  // position, so the outfit keeps its original order.
+  return selected.map(existing => (existing.category === item.category ? item : existing));
 }
