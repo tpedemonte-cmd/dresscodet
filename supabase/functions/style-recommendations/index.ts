@@ -130,6 +130,7 @@ Reglas:
 - NO recomiendes cosas que ya tiene (revisá bien el guardarropas).
 - Basate en colores, categorías y combinaciones que aparecen en sus outfits favoritos.
 - Los search_query deben ser específicos: "cinturón cuero marrón hombre" no "cinturón".
+- GÉNERO: si se indica el género del usuario, TODAS las recomendaciones deben ser prendas de ese género, y cada search_query debe terminar con la palabra "hombre" o "mujer" según corresponda (ej: "vestido lino mujer", "camisa oversize hombre"). NUNCA recomiendes prendas del otro género.
 - Máximo 5 recomendaciones.
 - Hablá en argentino casual, sin clichés.`;
 
