@@ -22,10 +22,21 @@ serve(async (req) => {
       });
     }
 
-    const { data: items } = await supabase
-      .from("clothing_items")
-      .select("id,name,category,subcategory,color,availability")
-      .eq("user_id", user.id);
+    const [{ data: items }, { data: models }] = await Promise.all([
+      supabase
+        .from("clothing_items")
+        .select("id,name,category,subcategory,color,availability")
+        .eq("user_id", user.id),
+      supabase
+        .from("user_models")
+        .select("gender")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1),
+    ]);
+
+    const modelGender = models?.[0]?.gender || "";
+    const genderLabel = modelGender === "femenino" ? "mujer" : modelGender === "masculino" ? "hombre" : "";
 
     const wardrobe = (items || [])
       .map((i: any) => `${i.name} (${i.category}${i.subcategory ? "/" + i.subcategory : ""}, ${i.color || "sin color"})`)
