@@ -389,6 +389,13 @@ export default function Wardrobe() {
         onConfirm={handleConfirmDelete}
         isPending={deleteMutation.isPending}
       />
+
+      <ItemLightbox
+        src={zoomItem?.image_url ?? ''}
+        alt={zoomItem?.name}
+        open={!!zoomItem}
+        onClose={() => setZoomItem(null)}
+      />
     </div>
 
   );
