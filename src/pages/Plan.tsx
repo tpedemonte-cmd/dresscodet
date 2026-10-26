@@ -549,10 +549,10 @@ export default function Plan() {
                                 <div className="aspect-square rounded-lg overflow-hidden bg-secondary/50 border border-dashed border-primary/30 group-hover:border-primary transition-colors">
                                   <img src={w.image || w.thumbnail} alt={w.title} className="w-full h-full object-contain" />
                                 </div>
-                                <p className="text-[10px] mt-1 truncate">{w.title}</p>
+                              <p className="text-[10px] mt-1 truncate">{w.title}</p>
                               </a>
                             ))}
-                          </div>
+                          </HorizontalScroller>
                         </div>
                       )}
 
