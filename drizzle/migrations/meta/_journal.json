@@ -92,6 +92,13 @@
       "when": 1792473651566,
       "tag": "0012_separate_tryon_plan_quotas",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793044977047,
+      "tag": "0013_add_sweater_category",
+      "breakpoints": true
     }
   ]
 }
