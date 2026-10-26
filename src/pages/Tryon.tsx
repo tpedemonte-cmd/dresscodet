@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cloudFunctions } from '@/lib/cloudFunctions';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock, Plus, Images } from 'lucide-react';
+import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock, Plus, Images, Maximize2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { hasCategoryConflict, toggleOutfitItem } from '@/lib/tryonSelection';
 import { useTryonDraftState } from '@/lib/tryonDraft';
@@ -1035,6 +1035,18 @@ export default function Tryon() {
                           <Check className="h-2.5 w-2.5" />
                         </div>
                       )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Ver modelo en pantalla completa"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setLightboxSrc(model.image_url);
+                        }}
+                        className="absolute top-1 left-1 bg-background/80 backdrop-blur-sm rounded-full p-1"
+                      >
+                        <Maximize2 className="h-3 w-3 text-foreground" />
+                      </Button>
                       {canDeleteModel && <Button
                         variant="ghost"
                         size="icon"
