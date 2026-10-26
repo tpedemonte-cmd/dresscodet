@@ -522,7 +522,7 @@ export default function Plan() {
                       )}
 
                       {usedItems.length > 0 && (
-                        <div className="flex gap-2 overflow-x-auto pb-1">
+                        <HorizontalScroller ariaLabel="Prendas recomendadas">
                           {usedItems.map((it) => (
                             <div key={it.id} className="flex-shrink-0 w-20 text-center">
                               <div className="aspect-square rounded-lg overflow-hidden bg-secondary">
@@ -531,13 +531,13 @@ export default function Plan() {
                               <p className="text-[10px] mt-1 truncate"><IconText text={it.name} /></p>
                             </div>
                           ))}
-                        </div>
+                        </HorizontalScroller>
                       )}
 
                       {usedWishlist.length > 0 && (
                         <div className="space-y-2 pt-2 border-t border-border">
                           <p className="text-sm font-body font-medium text-muted-foreground"><IconText text={"🛒 De tu wishlist (todavía no lo tenés):"} /></p>
-                          <div className="flex gap-2 overflow-x-auto pb-1">
+                          <HorizontalScroller ariaLabel="Prendas de tu wishlist">
                             {usedWishlist.map((w: any) => (
                               <a
                                 key={w.id}
