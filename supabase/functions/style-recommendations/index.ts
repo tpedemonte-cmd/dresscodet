@@ -16,12 +16,13 @@ serve(async (req) => {
     const { client: supabase, user } = authenticated;
 
     // Fetch user data in parallel
-    const [itemsRes, looksRes, historyRes, plansRes, wishlistRes] = await Promise.all([
+    const [itemsRes, looksRes, historyRes, plansRes, wishlistRes, modelRes] = await Promise.all([
       supabase.from("clothing_items").select("*").eq("user_id", user.id),
       supabase.from("saved_looks").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
       supabase.from("outfit_history").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
       supabase.from("weekly_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
       supabase.from("wishlist").select("*").eq("user_id", user.id),
+      supabase.from("user_models").select("gender").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
     ]);
 
     const items = itemsRes.data || [];
