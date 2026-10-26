@@ -38,12 +38,13 @@ export default function EditItemDialog({ item, open, onOpenChange }: EditItemDia
   const [category, setCategory] = useState(item.category);
   const [subcategory, setSubcategory] = useState(item.subcategory || '');
   const [color, setColor] = useState(item.color || '');
+  const [material, setMaterial] = useState((item as any).material || '');
 
   const mutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
         .from('clothing_items')
-        .update({ name, category, subcategory: subcategory || null, color: color || null })
+        .update({ name, category, subcategory: subcategory || null, color: color || null, material: material || null })
         .eq('id', item.id);
       if (error) throw error;
     },
