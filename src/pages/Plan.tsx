@@ -39,16 +39,6 @@ function formatDateLabel(iso: string) {
   const d = new Date(iso + 'T00:00:00');
   return d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
 }
-function next7Days(): string[] {
-  const days: string[] = [];
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  for (let i = 0; i < 7; i++) {
-    days.push(d.toISOString().slice(0, 10));
-    d.setDate(d.getDate() + 1);
-  }
-  return days;
-}
 
 export default function Plan() {
   const { user } = useAuth();
@@ -260,7 +250,7 @@ export default function Plan() {
     return acc;
   }, {});
 
-  const weekDays = next7Days();
+  const weekDays = Object.keys(grouped).sort();
   const [collapsedDays, setCollapsedDays] = useState<Record<string, boolean>>({});
   const toggleDay = (date: string) =>
     setCollapsedDays((prev) => ({ ...prev, [date]: !prev[date] }));
@@ -522,11 +512,6 @@ export default function Plan() {
               </button>
               {!isCollapsed && (
               <div className="space-y-3">
-                {dayPlans.length === 0 && (
-                  <div className="bg-card/60 border border-dashed border-border p-4 rounded-xl text-center">
-                    <p className="text-sm font-body text-muted-foreground">Sin salidas este día</p>
-                  </div>
-                )}
                 {dayPlans.map((p) => {
                   const usedItems = (items as any[]).filter(i => (p.recommended_item_ids || []).includes(i.id));
                   const usedWishlist = (wishlistItems as any[]).filter((w: any) => (p.recommended_wishlist_ids || []).includes(w.id));
