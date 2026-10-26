@@ -14,6 +14,7 @@ const CATEGORIES = [
   { value: 'pantalon', label: '👖 Pantalón' },
   { value: 'campera', label: '🧥 Campera' },
   { value: 'buzo', label: '🧶 Buzo' },
+  { value: 'sweater', label: '🥼 Sweater' },
   { value: 'camisa', label: '👔 Camisa' },
   { value: 'short', label: '🩳 Short' },
   { value: 'vestido', label: '👗 Vestido' },
@@ -37,12 +38,13 @@ export default function EditItemDialog({ item, open, onOpenChange }: EditItemDia
   const [category, setCategory] = useState(item.category);
   const [subcategory, setSubcategory] = useState(item.subcategory || '');
   const [color, setColor] = useState(item.color || '');
+  const [material, setMaterial] = useState((item as any).material || '');
 
   const mutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
         .from('clothing_items')
-        .update({ name, category, subcategory: subcategory || null, color: color || null })
+        .update({ name, category, subcategory: subcategory || null, color: color || null, material: material || null })
         .eq('id', item.id);
       if (error) throw error;
     },
@@ -88,6 +90,7 @@ export default function EditItemDialog({ item, open, onOpenChange }: EditItemDia
             </Select>
           )}
           <Input placeholder="Color (opcional)" value={color} onChange={(e) => setColor(e.target.value)} />
+          <Input placeholder="Material (opcional)" value={material} onChange={(e) => setMaterial(e.target.value)} />
           <Button variant="warm" className="w-full" disabled={!name || !category || mutation.isPending} onClick={() => mutation.mutate()}>
             {mutation.isPending ? 'Guardando...' : 'Guardar cambios'}
           </Button>

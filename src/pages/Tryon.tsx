@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const CATEGORIES: Record<string, string> = {
-  remera: '👕', pantalon: '👖', campera: '🧥', buzo: '🧶',
+  remera: '👕', pantalon: '👖', campera: '🧥', buzo: '🧶', sweater: '🥼',
   camisa: '👔', short: '🩳', vestido: '👗', pollera: '💃',
   zapatillas: '👟', zapatos: '👞', medias: '🧦', accesorio: '🎒', otro: '📦',
 };

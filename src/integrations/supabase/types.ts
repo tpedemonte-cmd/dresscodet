@@ -86,6 +86,7 @@ export type Database = {
           id: string
           image_url: string
           is_favorite: boolean
+          material: string | null
           name: string
           subcategory: string | null
           user_id: string
@@ -98,6 +99,7 @@ export type Database = {
           id?: string
           image_url: string
           is_favorite?: boolean
+          material?: string | null
           name: string
           subcategory?: string | null
           user_id: string
@@ -110,6 +112,7 @@ export type Database = {
           id?: string
           image_url?: string
           is_favorite?: boolean
+          material?: string | null
           name?: string
           subcategory?: string | null
           user_id?: string

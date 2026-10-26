@@ -8,7 +8,7 @@ import { useState } from 'react';
 
 const CATEGORY_LABELS: Record<string, string> = {
   remera: '👕 Remera', pantalon: '👖 Pantalón', campera: '🧥 Campera',
-  buzo: '🧶 Buzo', camisa: '👔 Camisa', short: '🩳 Short',
+  buzo: '🧶 Buzo', sweater: '🥼 Sweater', camisa: '👔 Camisa', short: '🩳 Short',
   vestido: '👗 Vestido', pollera: '💃 Pollera', zapatillas: '👟 Zapatillas',
   zapatos: '👞 Zapatos', medias: '🧦 Medias', accesorio: '🎒 Accesorio',
 };
