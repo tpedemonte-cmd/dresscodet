@@ -215,17 +215,52 @@ export default function Tryon() {
   );
 
 
-  const handleSelfieUpload = async (file: File) => {
-    // La foto del teléfono viene torcida en sus pixels (con una marca EXIF que la IA ignora):
-    // se re-codifica bien parada y más liviana antes de usarla.
-    const photo = await fileToUprightPhoto(file);
-    if (selfie && !avatarBeforePhoto) setAvatarBeforePhoto({ image: selfie, id: activeModelId });
-    setSelfie(photo);
-    setActiveModelId(null);
-    setModelMode('selfie');
-    setShowVariantPicker(false);
-    setResultImage(null);
-    toast.success('¡Foto lista! Elegí prendas para probártelas.');
+  const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null);
+  const [savingPhoto, setSavingPhoto] = useState(false);
+
+  // La foto propia se guarda como modelo fijo y descuenta una generación de avatar,
+  // igual que un avatar generado con IA (gratis inicial o crédito comprado).
+  const handleSelfieUpload = async (file: File, lastAvatarConfirmed = false) => {
+    if (savingPhoto || quotaLoading || modelsLoading || planLoading) return;
+    if (!quotaError && quota.avatarsLeft <= 0) {
+      toast.error('Ya usaste tu generación inicial. Comprá un pack para armar otro avatar.');
+      navigatePremium('/premium#avatares-extra');
+      return;
+    }
+    if (!quotaError && !lastAvatarConfirmed && needsLastAvatarConfirmation(quota.avatarsLeft)) {
+      setPendingPhotoFile(file);
+      setConfirmLastAvatar(true);
+      return;
+    }
+    setConfirmLastAvatar(false);
+    setPendingPhotoFile(null);
+    setSavingPhoto(true);
+    try {
+      // La foto del teléfono viene torcida en sus pixels (con una marca EXIF que la IA ignora):
+      // se re-codifica bien parada y más liviana antes de usarla.
+      const photo = await fileToUprightPhoto(file);
+      const { data, error } = await cloudFunctions.invoke('save-photo-model', {
+        body: { ...buildAvatarBody(), gender: avatarData.gender || 'otro', imageBase64: photo },
+      });
+      if (error || data?.error) throw new Error(data?.error || 'No se pudo guardar tu modelo');
+      const model = data?.model;
+      if (!model?.image_url) throw new Error('No se pudo guardar tu modelo');
+      if (selfie && !avatarBeforePhoto) setAvatarBeforePhoto({ image: selfie, id: activeModelId });
+      setSelfie(model.image_url);
+      setActiveModelId(model.id);
+      setModelMode('selfie');
+      setShowVariantPicker(false);
+      setResultImage(null);
+      queryClient.invalidateQueries({ queryKey: ['user_models'] });
+      refreshQuota();
+      toast.success('¡Foto lista! Quedó guardada como tu modelo. Elegí prendas para probártelas.');
+    } catch (err: any) {
+      console.error('Photo model error:', err);
+      toast.error(err.message || 'Error al guardar tu modelo');
+      refreshQuota();
+    } finally {
+      setSavingPhoto(false);
+    }
   };
 
   const buildAvatarBody = (overrides: Partial<typeof avatarData> = {}) => {
