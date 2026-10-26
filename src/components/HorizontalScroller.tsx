@@ -40,6 +40,32 @@ export default function HorizontalScroller({ children, ariaLabel }: { children: 
     el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' });
   };
 
+  // La barra también se puede arrastrar directamente (dedo o mouse)
+  const trackRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+
+  const scrollToRatio = (clientX: number) => {
+    const el = scrollRef.current;
+    const track = trackRef.current;
+    if (!el || !track) return;
+    const rect = track.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+    el.scrollLeft = ratio * (el.scrollWidth - el.clientWidth);
+  };
+
+  const onTrackPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    draggingRef.current = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    scrollToRatio(e.clientX);
+  };
+  const onTrackPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (draggingRef.current) scrollToRatio(e.clientX);
+  };
+  const onTrackPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    draggingRef.current = false;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  };
+
   return (
     <div className="space-y-1.5">
       <div
@@ -60,7 +86,14 @@ export default function HorizontalScroller({ children, ariaLabel }: { children: 
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <div className="relative flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+        <div
+          ref={trackRef}
+          className="relative flex-1 h-1.5 rounded-full bg-secondary overflow-hidden cursor-pointer touch-none"
+          onPointerDown={onTrackPointerDown}
+          onPointerMove={onTrackPointerMove}
+          onPointerUp={onTrackPointerUp}
+          onPointerCancel={onTrackPointerUp}
+        >
           <div
             className="absolute top-0 h-full rounded-full bg-muted-foreground/50 transition-[left,width] duration-100"
             style={{ left: `${thumb.left}%`, width: `${thumb.width}%` }}
