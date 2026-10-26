@@ -100,7 +100,7 @@ export default function AddItem() {
 
       const { error } = await supabase.from('clothing_items').insert({
         user_id: user.id,
-        name,
+        name: finalName,
         category,
         subcategory: subcategory || null,
         color: color || null,
@@ -118,7 +118,8 @@ export default function AddItem() {
     },
   });
 
-  const canSubmit = name && category && file && !detecting;
+  const finalName = name.trim() || [subcategory, color].filter(Boolean).join(' ') || category;
+  const canSubmit = finalName && category && file && !detecting;
 
   return (
     <div className="max-w-md mx-auto space-y-6">

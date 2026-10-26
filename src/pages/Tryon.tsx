@@ -68,7 +68,7 @@ const MEASUREMENTS = [
 
 export default function Tryon() {
   const { user } = useAuth();
-  const { isPremium, quota, quotaLoading, loading: planLoading, refreshQuota, recordSuccessfulTryon } = usePlan();
+  const { isPremium, quota, quotaLoading, quotaError, loading: planLoading, refreshQuota, recordSuccessfulTryon } = usePlan();
   const navigatePremium = useNavigate();
   const queryClient = useQueryClient();
   const useDraftState = <T,>(field: string, initial: T) => useTryonDraftState(user?.id ?? '', field, initial);
@@ -270,12 +270,13 @@ export default function Tryon() {
       toast.error(`El peso mínimo es ${AVATAR_MIN_WEIGHT_KG} kg`);
       return;
     }
-    if (quota.avatarsLeft <= 0) {
+    // Si no se pudieron leer los cupos, el servidor decide si corresponde generar.
+    if (!quotaError && quota.avatarsLeft <= 0) {
       toast.error('Ya usaste tu generación inicial. Comprá un pack para armar otro avatar.');
       navigatePremium('/premium#avatares-extra');
       return;
     }
-    if (!lastAvatarConfirmed && needsLastAvatarConfirmation(quota.avatarsLeft)) {
+    if (!quotaError && !lastAvatarConfirmed && needsLastAvatarConfirmation(quota.avatarsLeft)) {
       setConfirmLastAvatar(true);
       return;
     }
@@ -957,7 +958,7 @@ export default function Tryon() {
                 variant="warm"
                 size="sm"
                 className="w-full"
-                disabled={generatingAvatar || quotaLoading || modelsLoading || planLoading || quota.avatarsLeft <= 0 || (savedModels.length > 0 || variants.length > 0)}
+                disabled={generatingAvatar || quotaLoading || modelsLoading || planLoading || (!quotaError && quota.avatarsLeft <= 0) || (savedModels.length > 0 || variants.length > 0)}
                 onClick={() => void handleGenerateAvatar()}
               >
                 {generatingAvatar ? (
@@ -1015,8 +1016,13 @@ export default function Tryon() {
 
       <div className="flex flex-col items-center gap-2">
         <p className="text-center text-sm font-body text-muted-foreground" aria-live="polite">
-          Avatares disponibles: <span className="font-semibold text-foreground">{quotaLoading ? '…' : avatarAvailable}</span>
+          Avatares disponibles: <span className="font-semibold text-foreground">{quotaLoading ? '…' : quotaError ? '—' : avatarAvailable}</span>
         </p>
+        {quotaError && (
+          <button type="button" className="text-xs font-body text-primary underline" onClick={() => refreshQuota()}>
+            No pudimos cargar tus avatares. Reintentar
+          </button>
+        )}
         <Button
           variant="outline"
           size="sm"
