@@ -31,6 +31,10 @@ serve(async (req) => {
     const plans = plansRes.data || [];
     const wishlist = wishlistRes.data || [];
 
+    // Gender from the user's latest avatar model (femenino/masculino/otro)
+    const modelGender = modelRes.data?.[0]?.gender || "";
+    const genderLabel = modelGender === "femenino" ? "mujer" : modelGender === "masculino" ? "hombre" : "";
+
     if (items.length === 0) {
       return new Response(JSON.stringify({ recommendations: [] }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
