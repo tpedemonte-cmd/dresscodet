@@ -109,7 +109,7 @@ serve(async (req) => {
     return jsonResponse({ error: 'No se pudo guardar tu modelo. Probá de nuevo.' }, 500);
   } finally {
     if (lockUserId) {
-      await adminClient(lockBackend).rpc('release_avatar_generation_lock', { p_user_id: lockUserId, p_token: lockToken }).catch(() => {});
+      await adminClient(lockBackend).rpc('release_avatar_generation_lock', { p_user_id: lockUserId, p_token: lockToken }).then(() => {}, () => {});
     }
   }
 });
