@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, ExternalLink, Loader2, Lock, MapPin, Plus, Search, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
+import { ChevronDown, ExternalLink, Loader2, Lock, MapPin, Plus, Search, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchForecastForDate, searchCity, type GeoResult } from '@/lib/weather';
 import OutfitFeedback from '@/components/OutfitFeedback';
@@ -38,6 +38,16 @@ function maxDateISO() {
 function formatDateLabel(iso: string) {
   const d = new Date(iso + 'T00:00:00');
   return d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+function next7Days(): string[] {
+  const days: string[] = [];
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  for (let i = 0; i < 7; i++) {
+    days.push(d.toISOString().slice(0, 10));
+    d.setDate(d.getDate() + 1);
+  }
+  return days;
 }
 
 export default function Plan() {
@@ -249,6 +259,11 @@ export default function Plan() {
     (acc[p.plan_date] = acc[p.plan_date] || []).push(p);
     return acc;
   }, {});
+
+  const weekDays = next7Days();
+  const [collapsedDays, setCollapsedDays] = useState<Record<string, boolean>>({});
+  const toggleDay = (date: string) =>
+    setCollapsedDays((prev) => ({ ...prev, [date]: !prev[date] }));
 
   if (planLoading) {
     return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
@@ -487,17 +502,31 @@ export default function Plan() {
 
       {isLoading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-      ) : Object.keys(grouped).length === 0 ? (
-        <div className="bg-card p-10 rounded-xl shadow-card text-center space-y-2">
-          <Calendar className="h-10 w-10 mx-auto text-muted-foreground" />
-          <p className="font-body text-muted-foreground">No tenés salidas planificadas. Agregá la primera.</p>
-        </div>
       ) : (
         <div className="space-y-6">
-          {Object.entries(grouped).map(([date, dayPlans]) => (
+          {weekDays.map((date) => {
+            const dayPlans = grouped[date] || [];
+            const isCollapsed = !!collapsedDays[date];
+            return (
             <div key={date} className="space-y-3">
-              <h3 className="text-lg font-display font-semibold capitalize text-foreground">{formatDateLabel(date)}</h3>
+              <button
+                type="button"
+                onClick={() => toggleDay(date)}
+                className="flex items-center gap-2 w-full text-left group"
+              >
+                <h3 className="text-lg font-display font-semibold capitalize text-foreground">{formatDateLabel(date)}</h3>
+                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform group-hover:text-foreground ${isCollapsed ? '-rotate-90' : ''}`} />
+                {dayPlans.length > 0 && (
+                  <span className="text-xs text-muted-foreground">{dayPlans.length} {dayPlans.length === 1 ? 'salida' : 'salidas'}</span>
+                )}
+              </button>
+              {!isCollapsed && (
               <div className="space-y-3">
+                {dayPlans.length === 0 && (
+                  <div className="bg-card/60 border border-dashed border-border p-4 rounded-xl text-center">
+                    <p className="text-sm font-body text-muted-foreground">Sin salidas este día</p>
+                  </div>
+                )}
                 {dayPlans.map((p) => {
                   const usedItems = (items as any[]).filter(i => (p.recommended_item_ids || []).includes(i.id));
                   const usedWishlist = (wishlistItems as any[]).filter((w: any) => (p.recommended_wishlist_ids || []).includes(w.id));
@@ -588,13 +617,15 @@ export default function Plan() {
                         initialFeedback={(p.feedback ?? null) as any}
                         initialFavorite={!!p.is_favorite}
                         onChange={() => qc.invalidateQueries({ queryKey: ['weekly_plans', user?.id] })}
-                      />
+                  />
                     </div>
                   );
                 })}
               </div>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
