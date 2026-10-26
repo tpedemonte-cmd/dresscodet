@@ -1,5 +1,6 @@
 import IconText from '@/components/IconText';
 import ExplanationToggle from '@/components/ExplanationToggle';
+import HorizontalScroller from '@/components/HorizontalScroller';
 import OccasionLabel, { OCCASIONS as EVENTS } from '@/components/OccasionLabel';
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
