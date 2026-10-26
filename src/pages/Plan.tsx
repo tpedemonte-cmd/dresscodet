@@ -617,13 +617,15 @@ export default function Plan() {
                         initialFeedback={(p.feedback ?? null) as any}
                         initialFavorite={!!p.is_favorite}
                         onChange={() => qc.invalidateQueries({ queryKey: ['weekly_plans', user?.id] })}
-                      />
+                  />
                     </div>
                   );
                 })}
               </div>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
