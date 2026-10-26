@@ -502,17 +502,31 @@ export default function Plan() {
 
       {isLoading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-      ) : Object.keys(grouped).length === 0 ? (
-        <div className="bg-card p-10 rounded-xl shadow-card text-center space-y-2">
-          <Calendar className="h-10 w-10 mx-auto text-muted-foreground" />
-          <p className="font-body text-muted-foreground">No tenés salidas planificadas. Agregá la primera.</p>
-        </div>
       ) : (
         <div className="space-y-6">
-          {Object.entries(grouped).map(([date, dayPlans]) => (
+          {weekDays.map((date) => {
+            const dayPlans = grouped[date] || [];
+            const isCollapsed = !!collapsedDays[date];
+            return (
             <div key={date} className="space-y-3">
-              <h3 className="text-lg font-display font-semibold capitalize text-foreground">{formatDateLabel(date)}</h3>
+              <button
+                type="button"
+                onClick={() => toggleDay(date)}
+                className="flex items-center gap-2 w-full text-left group"
+              >
+                <h3 className="text-lg font-display font-semibold capitalize text-foreground">{formatDateLabel(date)}</h3>
+                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform group-hover:text-foreground ${isCollapsed ? '-rotate-90' : ''}`} />
+                {dayPlans.length > 0 && (
+                  <span className="text-xs text-muted-foreground">{dayPlans.length} {dayPlans.length === 1 ? 'salida' : 'salidas'}</span>
+                )}
+              </button>
+              {!isCollapsed && (
               <div className="space-y-3">
+                {dayPlans.length === 0 && (
+                  <div className="bg-card/60 border border-dashed border-border p-4 rounded-xl text-center">
+                    <p className="text-sm font-body text-muted-foreground">Sin salidas este día</p>
+                  </div>
+                )}
                 {dayPlans.map((p) => {
                   const usedItems = (items as any[]).filter(i => (p.recommended_item_ids || []).includes(i.id));
                   const usedWishlist = (wishlistItems as any[]).filter((w: any) => (p.recommended_wishlist_ids || []).includes(w.id));
