@@ -76,6 +76,7 @@ export default function Tryon() {
   const [modelMode, setModelMode] = useDraftState<'ia' | 'selfie'>('modelMode', 'ia');
   const [confirmLastAvatar, setConfirmLastAvatar] = useState(false);
   const [avatarToDelete, setAvatarToDelete] = useState<string | null>(null);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   
   const [variants, setVariants] = useDraftState<(Look & { image: string })[]>('variants', []);
