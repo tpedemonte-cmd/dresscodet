@@ -172,7 +172,7 @@ export default function AddItem() {
       {/* Form */}
       <div className="space-y-4">
         <Input
-          placeholder="Nombre de la prenda"
+          placeholder="Nombre de la prenda (opcional)"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
