@@ -86,7 +86,14 @@ export default function HorizontalScroller({ children, ariaLabel }: { children: 
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <div className="relative flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+        <div
+          ref={trackRef}
+          className="relative flex-1 h-1.5 rounded-full bg-secondary overflow-hidden cursor-pointer touch-none"
+          onPointerDown={onTrackPointerDown}
+          onPointerMove={onTrackPointerMove}
+          onPointerUp={onTrackPointerUp}
+          onPointerCancel={onTrackPointerUp}
+        >
           <div
             className="absolute top-0 h-full rounded-full bg-muted-foreground/50 transition-[left,width] duration-100"
             style={{ left: `${thumb.left}%`, width: `${thumb.width}%` }}
