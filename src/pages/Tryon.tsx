@@ -215,17 +215,52 @@ export default function Tryon() {
   );
 
 
-  const handleSelfieUpload = async (file: File) => {
-    // La foto del teléfono viene torcida en sus pixels (con una marca EXIF que la IA ignora):
-    // se re-codifica bien parada y más liviana antes de usarla.
-    const photo = await fileToUprightPhoto(file);
-    if (selfie && !avatarBeforePhoto) setAvatarBeforePhoto({ image: selfie, id: activeModelId });
-    setSelfie(photo);
-    setActiveModelId(null);
-    setModelMode('selfie');
-    setShowVariantPicker(false);
-    setResultImage(null);
-    toast.success('¡Foto lista! Elegí prendas para probártelas.');
+  const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null);
+  const [savingPhoto, setSavingPhoto] = useState(false);
+
+  // La foto propia se guarda como modelo fijo y descuenta una generación de avatar,
+  // igual que un avatar generado con IA (gratis inicial o crédito comprado).
+  const handleSelfieUpload = async (file: File, lastAvatarConfirmed = false) => {
+    if (savingPhoto || quotaLoading || modelsLoading || planLoading) return;
+    if (!quotaError && quota.avatarsLeft <= 0) {
+      toast.error('Ya usaste tu generación inicial. Comprá un pack para armar otro avatar.');
+      navigatePremium('/premium#avatares-extra');
+      return;
+    }
+    if (!quotaError && !lastAvatarConfirmed && needsLastAvatarConfirmation(quota.avatarsLeft)) {
+      setPendingPhotoFile(file);
+      setConfirmLastAvatar(true);
+      return;
+    }
+    setConfirmLastAvatar(false);
+    setPendingPhotoFile(null);
+    setSavingPhoto(true);
+    try {
+      // La foto del teléfono viene torcida en sus pixels (con una marca EXIF que la IA ignora):
+      // se re-codifica bien parada y más liviana antes de usarla.
+      const photo = await fileToUprightPhoto(file);
+      const { data, error } = await cloudFunctions.invoke('save-photo-model', {
+        body: { ...buildAvatarBody(), gender: avatarData.gender || 'otro', imageBase64: photo },
+      });
+      if (error || data?.error) throw new Error(data?.error || 'No se pudo guardar tu modelo');
+      const model = data?.model;
+      if (!model?.image_url) throw new Error('No se pudo guardar tu modelo');
+      if (selfie && !avatarBeforePhoto) setAvatarBeforePhoto({ image: selfie, id: activeModelId });
+      setSelfie(model.image_url);
+      setActiveModelId(model.id);
+      setModelMode('selfie');
+      setShowVariantPicker(false);
+      setResultImage(null);
+      queryClient.invalidateQueries({ queryKey: ['user_models'] });
+      refreshQuota();
+      toast.success('¡Foto lista! Quedó guardada como tu modelo. Elegí prendas para probártelas.');
+    } catch (err: any) {
+      console.error('Photo model error:', err);
+      toast.error(err.message || 'Error al guardar tu modelo');
+      refreshQuota();
+    } finally {
+      setSavingPhoto(false);
+    }
   };
 
   const buildAvatarBody = (overrides: Partial<typeof avatarData> = {}) => {
@@ -697,10 +732,10 @@ export default function Tryon() {
               <div className="max-w-sm mx-auto flex gap-2">
                 <Button
                   className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                  disabled={loading || generatingAvatar}
+                  disabled={loading || generatingAvatar || savingPhoto}
                   onClick={() => setPhotoSourceOpen(true)}
                 >
-                  <Camera className="h-4 w-4 mr-2" /> O sacarte una foto
+                  {savingPhoto ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Camera className="h-4 w-4 mr-2" />} O sacarte una foto
                 </Button>
                 {avatarBeforePhoto && (
                   <Button
@@ -812,8 +847,8 @@ export default function Tryon() {
                   <p className="text-muted-foreground font-body text-xs">
                     Sacate una foto de cuerpo completo y probate la ropa sobre tu propia imagen
                   </p>
-                  <Button className="w-full" disabled={loading || generatingAvatar} onClick={() => setPhotoSourceOpen(true)}>
-                    <Camera className="h-4 w-4 mr-2" /> Sacar o subir mi foto
+                  <Button className="w-full" disabled={loading || generatingAvatar || savingPhoto} onClick={() => setPhotoSourceOpen(true)}>
+                    {savingPhoto ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Camera className="h-4 w-4 mr-2" />} Sacar o subir mi foto
                   </Button>
                 </div>
               ) : (
@@ -1052,15 +1087,23 @@ export default function Tryon() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={confirmLastAvatar} onOpenChange={setConfirmLastAvatar}>
+      <Dialog open={confirmLastAvatar} onOpenChange={(open) => {
+        setConfirmLastAvatar(open);
+        if (!open) setPendingPhotoFile(null);
+      }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>¿Estás usando tu último avatar, querés continuar?</DialogTitle>
             <DialogDescription>Si se genera correctamente, se descontará un avatar y conservarás ese último modelo.</DialogDescription>
           </DialogHeader>
           <div className="flex gap-3">
-            <Button variant="outline" className="flex-1" onClick={() => setConfirmLastAvatar(false)}>Cancelar</Button>
-            <Button className="flex-1" disabled={generatingAvatar || quotaLoading} onClick={() => void handleGenerateAvatar(true)}>Continuar</Button>
+            <Button variant="outline" className="flex-1" onClick={() => { setConfirmLastAvatar(false); setPendingPhotoFile(null); }}>Cancelar</Button>
+            <Button className="flex-1" disabled={generatingAvatar || savingPhoto || quotaLoading} onClick={() => {
+              const file = pendingPhotoFile;
+              setConfirmLastAvatar(false);
+              if (file) void handleSelfieUpload(file, true);
+              else void handleGenerateAvatar(true);
+            }}>Continuar</Button>
           </div>
         </DialogContent>
       </Dialog>
