@@ -1,11 +1,12 @@
 import IconText from '@/components/IconText';
 import { useState, useMemo, useEffect, useRef } from 'react';
+import ItemLightbox from '@/components/ItemLightbox';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { cloudFunctions } from '@/lib/cloudFunctions';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock, Plus, Images } from 'lucide-react';
+import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock, Plus, Images, Maximize2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { hasCategoryConflict, toggleOutfitItem } from '@/lib/tryonSelection';
 import { useTryonDraftState } from '@/lib/tryonDraft';
@@ -75,6 +76,7 @@ export default function Tryon() {
   const [modelMode, setModelMode] = useDraftState<'ia' | 'selfie'>('modelMode', 'ia');
   const [confirmLastAvatar, setConfirmLastAvatar] = useState(false);
   const [avatarToDelete, setAvatarToDelete] = useState<string | null>(null);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   
   const [variants, setVariants] = useDraftState<(Look & { image: string })[]>('variants', []);
@@ -755,7 +757,13 @@ export default function Tryon() {
               </div>
             )}
             <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card bg-muted">
-              <img src={frameImage || selfie || ''} alt="Tu modelo" className={`w-full h-full block ${frameIsWide ? 'object-contain' : 'object-cover object-center'}`} />
+              <img
+                src={frameImage || selfie || ''}
+                alt="Tu modelo"
+                className={`w-full h-full block ${frameIsWide ? 'object-contain' : 'object-cover object-center'} cursor-zoom-in`}
+                onClick={() => setLightboxSrc(frameImage || selfie || '')}
+                aria-label="Ver avatar en pantalla completa"
+              />
               {showResultInFrame && (
 
                 <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-body font-medium px-2 py-1 rounded-full"><IconText text={"✨ Resultado IA"} /></div>
@@ -1027,6 +1035,18 @@ export default function Tryon() {
                           <Check className="h-2.5 w-2.5" />
                         </div>
                       )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Ver modelo en pantalla completa"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setLightboxSrc(model.image_url);
+                        }}
+                        className="absolute top-1 left-1 bg-background/80 backdrop-blur-sm rounded-full p-1"
+                      >
+                        <Maximize2 className="h-3 w-3 text-foreground" />
+                      </Button>
                       {canDeleteModel && <Button
                         variant="ghost"
                         size="icon"
@@ -1270,9 +1290,8 @@ export default function Tryon() {
               </div>
               <div className="flex gap-3">
                 {selfie && (
-                  <div className="w-1/3 shrink-0 rounded-lg overflow-hidden bg-secondary">
+                  <div className="w-1/3 shrink-0 rounded-lg overflow-hidden bg-secondary cursor-zoom-in" onClick={() => setLightboxSrc(modelImage || selfie || '')}>
                     <img src={modelImage || selfie || ''} alt="Tu modelo" className="w-full h-full object-contain aspect-[3/4] bg-muted" />
-
                   </div>
                 )}
                 <div className={`grid gap-2 flex-1 ${selectedItems.length > 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
@@ -1338,6 +1357,8 @@ export default function Tryon() {
             </Button>
           )}
       </div>
+
+      <ItemLightbox src={lightboxSrc ?? ''} alt="Tu avatar en pantalla completa" open={!!lightboxSrc} onClose={() => setLightboxSrc(null)} />
 
       {/* Info */}
       <div className="bg-card rounded-xl p-4 shadow-card text-center">
