@@ -134,7 +134,9 @@ Reglas:
 - Máximo 5 recomendaciones.
 - Hablá en argentino casual, sin clichés.`;
 
-    const userPrompt = `GUARDARROPAS:
+    const userPrompt = `GÉNERO DEL USUARIO: ${genderLabel ? genderLabel.toUpperCase() + " (recomendá SOLO prendas de " + genderLabel + ")" : "no especificado (inferilo del guardarropas)"}
+
+GUARDARROPAS:
 ${wardrobeSummary}
 
 DISTRIBUCIÓN POR CATEGORÍA:
