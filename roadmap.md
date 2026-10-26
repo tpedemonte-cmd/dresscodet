@@ -22,6 +22,7 @@
 
 ## En curso
 - [x] Armario: la foto de una prenda se abre en pantalla completa al tocarla y se cierra con la cruz (también tocando afuera o Escape); verificado en navegador.
+- [x] Solapas: "Outfit" pasa a "Sugerencias" y "Looks" a "Mis Looks" en la barra inferior y en el menú; verificado en navegador sin cortes ni desbordes.
 
 ## Hecho
 - [x] Probador: actualizar ambos contadores inmediatamente al confirmar un outfit generado, sin esperar la consulta de cupos
