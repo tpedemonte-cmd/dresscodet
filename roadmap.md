@@ -20,6 +20,9 @@
 ## En curso
 - [x] Armario: categoría Sweater (todo lo tejido/cocido) agregada en alta, armario, estadísticas, probador y autodetección; bases Lovable y propia actualizadas; detección de material (lana, hilo, algodón…) verificada con foto real de sweater (sweater, cuello_redondo, lana). En APK requiere reconstruir.
 
+## En curso
+- [ ] Armario: abrir la foto de una prenda en pantalla completa al tocarla y cerrarla con una cruz.
+
 ## Hecho
 - [x] Probador: actualizar ambos contadores inmediatamente al confirmar un outfit generado, sin esperar la consulta de cupos
 - [x] Probador: conservar el avatar sin guardar y el estado al cambiar de solapa, sin consumir otra generación
