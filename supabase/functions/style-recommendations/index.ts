@@ -16,12 +16,13 @@ serve(async (req) => {
     const { client: supabase, user } = authenticated;
 
     // Fetch user data in parallel
-    const [itemsRes, looksRes, historyRes, plansRes, wishlistRes] = await Promise.all([
+    const [itemsRes, looksRes, historyRes, plansRes, wishlistRes, modelRes] = await Promise.all([
       supabase.from("clothing_items").select("*").eq("user_id", user.id),
       supabase.from("saved_looks").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
       supabase.from("outfit_history").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
       supabase.from("weekly_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
       supabase.from("wishlist").select("*").eq("user_id", user.id),
+      supabase.from("user_models").select("gender").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
     ]);
 
     const items = itemsRes.data || [];
@@ -29,6 +30,10 @@ serve(async (req) => {
     const history = historyRes.data || [];
     const plans = plansRes.data || [];
     const wishlist = wishlistRes.data || [];
+
+    // Gender from the user's latest avatar model (femenino/masculino/otro)
+    const modelGender = modelRes.data?.[0]?.gender || "";
+    const genderLabel = modelGender === "femenino" ? "mujer" : modelGender === "masculino" ? "hombre" : "";
 
     if (items.length === 0) {
       return new Response(JSON.stringify({ recommendations: [] }), {
@@ -125,10 +130,13 @@ Reglas:
 - NO recomiendes cosas que ya tiene (revisá bien el guardarropas).
 - Basate en colores, categorías y combinaciones que aparecen en sus outfits favoritos.
 - Los search_query deben ser específicos: "cinturón cuero marrón hombre" no "cinturón".
+- GÉNERO: si se indica el género del usuario, TODAS las recomendaciones deben ser prendas de ese género, y cada search_query debe terminar con la palabra "hombre" o "mujer" según corresponda (ej: "vestido lino mujer", "camisa oversize hombre"). NUNCA recomiendes prendas del otro género.
 - Máximo 5 recomendaciones.
 - Hablá en argentino casual, sin clichés.`;
 
-    const userPrompt = `GUARDARROPAS:
+    const userPrompt = `GÉNERO DEL USUARIO: ${genderLabel ? genderLabel.toUpperCase() + " (recomendá SOLO prendas de " + genderLabel + ")" : "no especificado (inferilo del guardarropas)"}
+
+GUARDARROPAS:
 ${wardrobeSummary}
 
 DISTRIBUCIÓN POR CATEGORÍA:

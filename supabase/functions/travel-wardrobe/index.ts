@@ -22,10 +22,21 @@ serve(async (req) => {
       });
     }
 
-    const { data: items } = await supabase
-      .from("clothing_items")
-      .select("id,name,category,subcategory,color,availability")
-      .eq("user_id", user.id);
+    const [{ data: items }, { data: models }] = await Promise.all([
+      supabase
+        .from("clothing_items")
+        .select("id,name,category,subcategory,color,availability")
+        .eq("user_id", user.id),
+      supabase
+        .from("user_models")
+        .select("gender")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1),
+    ]);
+
+    const modelGender = models?.[0]?.gender || "";
+    const genderLabel = modelGender === "femenino" ? "mujer" : modelGender === "masculino" ? "hombre" : "";
 
     const wardrobe = (items || [])
       .map((i: any) => `${i.name} (${i.category}${i.subcategory ? "/" + i.subcategory : ""}, ${i.color || "sin color"})`)
@@ -44,11 +55,13 @@ Reglas:
 - "avoid": 2 a 5 cosas que conviene evitar usar allá.
 - "from_wardrobe": prendas que YA tiene y le van a servir, con un motivo corto. Usá los nombres tal cual figuran en el placard. Si el placard está vacío, devolvé lista vacía.
 - "to_buy": 3 a 7 prendas o accesorios que necesita incorporar, con motivo cultural/climático y un "search_query" corto y específico para Mercado Libre Argentina (ej: "pañuelo pashmina liso mujer", "pantalón lino suelto hombre").
+- GÉNERO: si se indica el género del usuario, TODAS las prendas de "to_buy" y "from_wardrobe" deben ser de ese género, y cada search_query debe terminar con "hombre" o "mujer" según corresponda. NUNCA recomiendes prendas del otro género.
 - No inventes reglas legales inexistentes; si algo depende de la zona, aclaralo.`;
 
     const userPrompt = `Destino: ${destination}
 Mes del viaje: ${month || "no especificado"}
 Tipo de viaje: ${tripType || "turismo"}
+Género del usuario: ${genderLabel ? genderLabel + " (recomendá SOLO prendas de " + genderLabel + ")" : "no especificado (inferilo del placard)"}
 
 MI PLACARD:
 ${wardrobe}

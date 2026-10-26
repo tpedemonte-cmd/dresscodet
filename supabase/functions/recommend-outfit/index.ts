@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getAiConfig } from "../_shared/ai.ts";
-import { checkQuota, recordUsage } from "../_shared/quotas.ts";
+import { checkQuota, recordUsage, adminClient } from "../_shared/quotas.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,6 +19,21 @@ serve(async (req) => {
       });
     }
     const { wardrobe, wishlist, mood, event, formality, temperature, weather, season, windKmh, rainProbability, isNight, likedOutfits, dislikedOutfits } = await req.json();
+
+    // Gender from the user's latest avatar model, so purchase suggestions match it
+    let genderLabel = "";
+    try {
+      const { data: models } = await adminClient(quota.backend ?? 'cloud')
+        .from("user_models")
+        .select("gender")
+        .eq("user_id", quota.userId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const g = models?.[0]?.gender || "";
+      genderLabel = g === "femenino" ? "mujer" : g === "masculino" ? "hombre" : "";
+    } catch (e) {
+      console.error("gender lookup failed:", e);
+    }
 
     const ai = getAiConfig("google/gemini-3-flash-preview");
 
@@ -48,6 +63,7 @@ donde los IDs son los de los productos de la WISHLIST que mencionaste o recomend
 
 COMPRAR: término1 | término2 | término3
 donde cada término es una búsqueda corta para Mercado Libre de CUALQUIER prenda que le falte al usuario para completar el outfit, incluyendo básicos como ropa interior (calzones/bóxers/bombachas), medias o calzado si no los tiene en el placard (ej: "medias deportivas blancas", "bóxer algodón negro", "campera de cuero negra", "zapatillas blancas casual"). Listá TODO lo que falte, no solo lo "principal". Si realmente no falta nada, poné COMPRAR: nada
+GÉNERO: si se indica el género del usuario, TODAS las prendas sugeridas en COMPRAR deben ser de ese género y cada término debe terminar con la palabra "hombre" o "mujer" según corresponda (ej: "bóxer algodón negro hombre", "campera de cuero negra mujer"). NUNCA sugieras prendas del otro género.
 
 POR_QUE: motivo1 | motivo2 | motivo3
 donde cada motivo es una frase corta (máximo 12 palabras) en segunda persona que explique POR QUÉ elegiste este outfit. Incluí al menos: (1) cómo influyó el clima/temperatura/lluvia/viento, (2) por qué esas prendas (favoritas, apropiadas para el evento, formalidad elegida), y (3) si aplica, qué evitaste o repetiste según outfits que te gustaron o no te gustaron antes (ej: "Repetí el estilo del outfit que marcaste como favorito", "Evité la combinación que no te gustó"). Escribilo siempre, mínimo 2 motivos.`;
@@ -65,7 +81,9 @@ donde cada motivo es una frase corta (máximo 12 palabras) en segunda persona qu
       feedbackSection += `\n\nOUTFITS QUE NO LE GUSTARON (evitar):\n${dislikedOutfits}`;
     }
 
-    const userPrompt = `Mi guardarropas:
+    const userPrompt = `Género del usuario: ${genderLabel ? genderLabel + " (las sugerencias de COMPRAR deben ser SOLO de " + genderLabel + ")" : "no especificado (inferilo del guardarropas)"}
+
+Mi guardarropas:
 ${wardrobe}${wishlistSection}${feedbackSection}
 
 
