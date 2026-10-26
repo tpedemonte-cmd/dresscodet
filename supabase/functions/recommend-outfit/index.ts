@@ -20,6 +20,21 @@ serve(async (req) => {
     }
     const { wardrobe, wishlist, mood, event, formality, temperature, weather, season, windKmh, rainProbability, isNight, likedOutfits, dislikedOutfits } = await req.json();
 
+    // Gender from the user's latest avatar model, so purchase suggestions match it
+    let genderLabel = "";
+    try {
+      const { data: models } = await adminClient(quota.backend ?? 'cloud')
+        .from("user_models")
+        .select("gender")
+        .eq("user_id", quota.userId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const g = models?.[0]?.gender || "";
+      genderLabel = g === "femenino" ? "mujer" : g === "masculino" ? "hombre" : "";
+    } catch (e) {
+      console.error("gender lookup failed:", e);
+    }
+
     const ai = getAiConfig("google/gemini-3-flash-preview");
 
     const systemPrompt = `Sos un estilista personal argentino. El usuario te va a dar su guardarropas (cada prenda tiene un ID interno, y las marcadas con ⭐ FAVORITA son sus prendas preferidas). También puede tener una WISHLIST con productos que le gustan de tiendas online pero que todavía no compró. Estado de ánimo, tipo de evento, temperatura, clima y estación del año. 
