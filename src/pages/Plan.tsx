@@ -506,9 +506,6 @@ export default function Plan() {
               >
                 <h3 className="text-lg font-display font-semibold capitalize text-foreground">{formatDateLabel(date)}</h3>
                 <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform group-hover:text-foreground ${isCollapsed ? '-rotate-90' : ''}`} />
-                {dayPlans.length > 0 && (
-                  <span className="text-xs text-muted-foreground">{dayPlans.length} {dayPlans.length === 1 ? 'salida' : 'salidas'}</span>
-                )}
               </button>
               {!isCollapsed && (
               <div className="space-y-3">
