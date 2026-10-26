@@ -90,6 +90,7 @@ export default function EditItemDialog({ item, open, onOpenChange }: EditItemDia
             </Select>
           )}
           <Input placeholder="Color (opcional)" value={color} onChange={(e) => setColor(e.target.value)} />
+          <Input placeholder="Material (opcional)" value={material} onChange={(e) => setMaterial(e.target.value)} />
           <Button variant="warm" className="w-full" disabled={!name || !category || mutation.isPending} onClick={() => mutation.mutate()}>
             {mutation.isPending ? 'Guardando...' : 'Guardar cambios'}
           </Button>

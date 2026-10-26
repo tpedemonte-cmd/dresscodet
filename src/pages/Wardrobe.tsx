@@ -307,8 +307,9 @@ export default function Wardrobe() {
                   <p className="text-xs text-muted-foreground">
                     <IconText text={CATEGORIES[item.category] || item.category} />
                     {getSubcategoryLabel(item.category, (item as any).subcategory)
-                      ? ` · ${getSubcategoryLabel(item.category, (item as any).subcategory)}`
-                      : ''}
+                       ? ` · ${getSubcategoryLabel(item.category, (item as any).subcategory)}`
+                       : ''}
+                    {(item as any).material ? ` · ${(item as any).material}` : ''}
                   </p>
                   {item.color && <p className="text-xs text-muted-foreground mt-0.5">{item.color}</p>}
                 </div>

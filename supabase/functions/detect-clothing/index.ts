@@ -29,6 +29,8 @@ const SUBCATEGORIES: Record<string, string[]> = {
   otro: [],
 };
 
+const MATERIALS = ['lana', 'hilo', 'algodón', 'acrílico', 'cuero', 'jean', 'lino', 'seda', 'polar', 'frisa', 'gabardina'];
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -66,6 +68,7 @@ Deno.serve(async (req) => {
 ${Object.entries(SUBCATEGORIES).map(([c, subs]) => `  ${c}: ${subs.length ? subs.join(', ') : '(none)'}`).join('\n')}
   If you cannot tell the subtype confidently, use null.
 - "color": the main color in Spanish (e.g. "negro", "blanco", "azul", "rojo", "verde", "gris", "beige", "marrón", "rosa", "celeste", "naranja", "amarillo", "violeta", "bordo")
+- "material": the main fabric/material of the garment in Spanish lowercase, one of these exact values: ${MATERIALS.join(', ')}. For knitted sweaters prefer "lana" (wool), "hilo" (yarn/thread knit) or "algodón" (cotton knit). If you cannot tell the material confidently, use null.
 
 If you see multiple colors, pick the dominant one. If unsure about category, use "otro".
 Use "medias" for socks of any kind (ankle socks, crew socks, sport socks, stockings, thigh-highs).
@@ -101,9 +104,11 @@ Respond with ONLY the JSON, no extra text.`,
     const color = typeof parsed.color === 'string' ? parsed.color.toLowerCase().trim() : '';
     const rawSub = typeof parsed.subcategory === 'string' ? parsed.subcategory.toLowerCase().trim() : '';
     const subcategory = (SUBCATEGORIES[category] ?? []).includes(rawSub) ? rawSub : null;
+    const rawMat = typeof parsed.material === 'string' ? parsed.material.toLowerCase().trim() : '';
+    const material = MATERIALS.includes(rawMat) ? rawMat : null;
 
     return new Response(
-      JSON.stringify({ category, color, subcategory }),
+      JSON.stringify({ category, color, subcategory, material }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
