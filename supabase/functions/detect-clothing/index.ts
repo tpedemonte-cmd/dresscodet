@@ -16,7 +16,7 @@ const SUBCATEGORIES: Record<string, string[]> = {
   remera: ['manga_corta', 'manga_larga', 'musculosa', 'oversize', 'deportiva'],
   pantalon: ['jean', 'jogging', 'chino', 'cargo', 'vestir', 'calza'],
   campera: ['inflable', 'jean', 'cuero', 'rompeviento', 'sobretodo', 'liviana'],
-  buzo: ['lana', 'frisa', 'canguro', 'medio_cierre'],
+  buzo: ['canguro', 'capucha_cierre', 'sin_capucha', 'medio_cierre', 'cierre_completo', 'cuello_alto', 'polar', 'deportivo', 'oversize', 'corto'],
   sweater: ['cuello_redondo', 'cuello_v', 'cuello_alto', 'cardigan', 'chaleco'],
   camisa: ['manga_corta', 'manga_larga', 'lino', 'jean', 'franela'],
   short: ['jean', 'deportivo', 'bermuda', 'baño'],
@@ -29,7 +29,7 @@ const SUBCATEGORIES: Record<string, string[]> = {
   otro: [],
 };
 
-const MATERIALS = ['lana', 'hilo', 'algodón', 'acrílico', 'cuero', 'jean', 'lino', 'seda', 'polar', 'frisa', 'gabardina'];
+const MATERIALS = ['lana', 'hilo', 'algodón', 'acrílico', 'cuero', 'jean', 'lino', 'seda', 'polar', 'frisa', 'gabardina', 'poliéster', 'rústico'];
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -73,6 +73,7 @@ ${Object.entries(SUBCATEGORIES).map(([c, subs]) => `  ${c}: ${subs.length ? subs
 If you see multiple colors, pick the dominant one. If unsure about category, use "otro".
 Use "medias" for socks of any kind (ankle socks, crew socks, sport socks, stockings, thigh-highs).
 Use "sweater" for any knitted garment (sweaters, cardigans, knitted vests). A hooded fleece or sweatshirt is "buzo", not "sweater".
+For "buzo" (non-knitted sweatshirts/hoodies) pick the subtype by shape: canguro = hood without zipper (usually front pocket), capucha_cierre = hood with full zipper, sin_capucha = crewneck without hood or zipper, medio_cierre = half/quarter zip, cierre_completo = full zip without hood, cuello_alto = high/mock neck, polar = fleece, deportivo = technical/sport training top, oversize = clearly oversized fit, corto = cropped. For buzo material prefer "frisa", "rústico", "algodón", "polar" or "poliéster".
 Pay attention to sleeve length (manga_corta vs manga_larga), fabric (jean, lana, frisa, cuero, lino) and shape to decide the subcategory.
 Respond with ONLY the JSON, no extra text.`,
               },
