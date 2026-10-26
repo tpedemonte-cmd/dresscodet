@@ -10,5 +10,8 @@ export function toggleOutfitItem<T extends CategorizedItem>(selected: readonly T
   }
   // Tapping another item from the same category swaps it in at the same
   // position, so the outfit keeps its original order.
-  return selected.map(existing => (existing.category === item.category ? item : existing));
+  const swapped = selected.map(existing => (existing.category === item.category ? item : existing));
+  if (swapped.some(existing => existing.id === item.id)) return swapped;
+  // No item of this category yet: add it.
+  return [...selected, item];
 }
