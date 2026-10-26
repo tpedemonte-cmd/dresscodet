@@ -6,6 +6,7 @@ import { Trash2, Pencil, Heart, ChevronDown, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import EditItemDialog from '@/components/EditItemDialog';
+import ItemLightbox from '@/components/ItemLightbox';
 import DeleteItemConfirmDialog from '@/components/DeleteItemConfirmDialog';
 import ClassifySubcategoriesButton from '@/components/ClassifySubcategoriesButton';
 import { AVAILABILITY_OPTIONS, getAvailability, type Availability } from '@/lib/availability';
@@ -46,6 +47,7 @@ export default function Wardrobe() {
   const [availFilter, setAvailFilter] = useState<Availability | null>(null);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
+  const [zoomItem, setZoomItem] = useState<{ image_url: string; name: string } | null>(null);
   const [deleteRefs, setDeleteRefs] = useState({ history: 0, plans: 0 });
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
@@ -294,12 +296,19 @@ export default function Wardrobe() {
               className="group relative bg-card rounded-xl overflow-hidden shadow-card hover:shadow-elevated transition-shadow"
             >
               <div className="aspect-square">
-                <img
-                  src={item.image_url}
-                  alt={item.name}
-                  className={`w-full h-full object-cover ${((item as any).availability ?? 'disponible') !== 'disponible' ? 'opacity-60 grayscale' : ''}`}
-                  loading="lazy"
-                />
+                <button
+                  type="button"
+                  aria-label={`Ver ${item.name} en pantalla completa`}
+                  onClick={() => setZoomItem({ image_url: item.image_url, name: item.name })}
+                  className="block w-full h-full cursor-zoom-in"
+                >
+                  <img
+                    src={item.image_url}
+                    alt={item.name}
+                    className={`w-full h-full object-cover ${((item as any).availability ?? 'disponible') !== 'disponible' ? 'opacity-60 grayscale' : ''}`}
+                    loading="lazy"
+                  />
+                </button>
               </div>
               <div className="p-3 space-y-2">
                 <div>
@@ -379,6 +388,13 @@ export default function Wardrobe() {
         }}
         onConfirm={handleConfirmDelete}
         isPending={deleteMutation.isPending}
+      />
+
+      <ItemLightbox
+        src={zoomItem?.image_url ?? ''}
+        alt={zoomItem?.name}
+        open={!!zoomItem}
+        onClose={() => setZoomItem(null)}
       />
     </div>
 
