@@ -17,6 +17,9 @@
 - [x] Extender imágenes e íconos a todos los emojis visibles, incluidos textos de Looks guardados, Armario, formularios, clima e historial (12 pantallas verificadas sin emojis visibles)
 - [x] Tienda: probar imágenes realistas en las categorías; Outfit y Plan semanal: íconos simples para ocasiones, con opción de restaurar el aspecto anterior (imágenes y selección verificadas)
 
+## En curso
+- [ ] Armario: agregar la categoría Sweater (todo lo tejido/cocido) en alta, armario, estadísticas, probador, autodetección y bases de datos (Lovable y propia). Falta verificación en pantalla y el usuario debe reconstruir el APK.
+
 ## Hecho
 - [x] Probador: actualizar ambos contadores inmediatamente al confirmar un outfit generado, sin esperar la consulta de cupos
 - [x] Probador: conservar el avatar sin guardar y el estado al cambiar de solapa, sin consumir otra generación
