@@ -41,6 +41,7 @@ export default function AddItem() {
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
   const [color, setColor] = useState('');
+  const [material, setMaterial] = useState('');
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [detecting, setDetecting] = useState(false);
@@ -59,6 +60,9 @@ export default function AddItem() {
       if (data?.color) {
         setColor(data.color);
       }
+      if (data?.material) {
+        setMaterial(data.material);
+      }
       setSubcategory(data?.subcategory ?? '');
       setAutoDetected(true);
       toast.success('Tipo, subtipo y color detectados automáticamente');
@@ -75,6 +79,7 @@ export default function AddItem() {
     if (!f) return;
     setFile(f);
     setAutoDetected(false);
+    setMaterial('');
     const reader = new FileReader();
     reader.onload = () => {
       const base64 = reader.result as string;
@@ -106,6 +111,7 @@ export default function AddItem() {
         category,
         subcategory: subcategory || null,
         color,
+        material: material || null,
         image_url: publicUrl,
       });
       if (error) throw error;
@@ -227,6 +233,10 @@ export default function AddItem() {
             </div>
           )}
         </div>
+
+        {material && (
+          <p className="text-xs text-muted-foreground -mt-2">Material: {material}</p>
+        )}
 
         <Button
           variant="warm"
