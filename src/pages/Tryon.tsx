@@ -757,7 +757,13 @@ export default function Tryon() {
               </div>
             )}
             <div className="relative w-full max-w-sm mx-auto aspect-[3/4] rounded-xl overflow-hidden shadow-card bg-muted">
-              <img src={frameImage || selfie || ''} alt="Tu modelo" className={`w-full h-full block ${frameIsWide ? 'object-contain' : 'object-cover object-center'}`} />
+              <img
+                src={frameImage || selfie || ''}
+                alt="Tu modelo"
+                className={`w-full h-full block ${frameIsWide ? 'object-contain' : 'object-cover object-center'} cursor-zoom-in`}
+                onClick={() => setLightboxSrc(frameImage || selfie || '')}
+                aria-label="Ver avatar en pantalla completa"
+              />
               {showResultInFrame && (
 
                 <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-body font-medium px-2 py-1 rounded-full"><IconText text={"✨ Resultado IA"} /></div>
