@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, ExternalLink, Loader2, Lock, MapPin, Plus, Search, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
+import { Calendar, ChevronDown, ExternalLink, Loader2, Lock, MapPin, Plus, Search, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchForecastForDate, searchCity, type GeoResult } from '@/lib/weather';
 import OutfitFeedback from '@/components/OutfitFeedback';
@@ -38,6 +38,16 @@ function maxDateISO() {
 function formatDateLabel(iso: string) {
   const d = new Date(iso + 'T00:00:00');
   return d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+function next7Days(): string[] {
+  const days: string[] = [];
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  for (let i = 0; i < 7; i++) {
+    days.push(d.toISOString().slice(0, 10));
+    d.setDate(d.getDate() + 1);
+  }
+  return days;
 }
 
 export default function Plan() {
