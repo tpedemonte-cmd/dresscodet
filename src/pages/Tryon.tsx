@@ -732,10 +732,10 @@ export default function Tryon() {
               <div className="max-w-sm mx-auto flex gap-2">
                 <Button
                   className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                  disabled={loading || generatingAvatar}
+                  disabled={loading || generatingAvatar || savingPhoto}
                   onClick={() => setPhotoSourceOpen(true)}
                 >
-                  <Camera className="h-4 w-4 mr-2" /> O sacarte una foto
+                  {savingPhoto ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Camera className="h-4 w-4 mr-2" />} O sacarte una foto
                 </Button>
                 {avatarBeforePhoto && (
                   <Button
@@ -1087,14 +1087,17 @@ export default function Tryon() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={confirmLastAvatar} onOpenChange={setConfirmLastAvatar}>
+      <Dialog open={confirmLastAvatar} onOpenChange={(open) => {
+        setConfirmLastAvatar(open);
+        if (!open) setPendingPhotoFile(null);
+      }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>¿Estás usando tu último avatar, querés continuar?</DialogTitle>
             <DialogDescription>Si se genera correctamente, se descontará un avatar y conservarás ese último modelo.</DialogDescription>
           </DialogHeader>
           <div className="flex gap-3">
-            <Button variant="outline" className="flex-1" onClick={() => setConfirmLastAvatar(false)}>Cancelar</Button>
+            <Button variant="outline" className="flex-1" onClick={() => { setConfirmLastAvatar(false); setPendingPhotoFile(null); }}>Cancelar</Button>
             <Button className="flex-1" disabled={generatingAvatar || savingPhoto || quotaLoading} onClick={() => {
               const file = pendingPhotoFile;
               setConfirmLastAvatar(false);
