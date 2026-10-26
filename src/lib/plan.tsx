@@ -62,6 +62,7 @@ interface PlanContextType {
   subscription: Subscription | null;
   quota: Quota;
   quotaLoading: boolean;
+  quotaError: boolean;
   refreshQuota: () => void;
   recordSuccessfulTryon: () => Promise<void>;
   startCheckout: () => Promise<string>;
@@ -93,7 +94,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError: subscriptionError } = useQuery({
     queryKey: ['subscription', user?.id],
     enabled: !!user,
     queryFn: async (): Promise<Subscription | null> => {
@@ -119,7 +120,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   const isPremium = !!data && data.plan === 'premium' && data.status === 'active' && !expired;
 
   const quotaQueryKey = ['ai_quota', user?.id, isPremium, tryonMonthStart(), startOfDayISO()] as const;
-  const { data: usage, isLoading: usageLoading } = useQuery({
+  const { data: usage, isLoading: usageLoading, isError: usageError } = useQuery({
     queryKey: quotaQueryKey,
     enabled: !!user && !isLoading,
     refetchInterval: 60_000,
@@ -237,7 +238,8 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         loading: isLoading,
         subscription: data ?? null,
         quota,
-        quotaLoading: isLoading || usageLoading || !usage,
+        quotaLoading: !(subscriptionError || usageError) && (isLoading || usageLoading || !usage),
+        quotaError: !usage && (subscriptionError || usageError),
         refreshQuota: () => queryClient.invalidateQueries({ queryKey: ['ai_quota'] }),
         recordSuccessfulTryon: () => applyRecordedTryon(queryClient, quotaQueryKey),
         startCheckout: () => checkout.mutateAsync('premium'),
