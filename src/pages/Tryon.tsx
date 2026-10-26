@@ -8,7 +8,7 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock, Plus, Images, Maximize2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { hasCategoryConflict, toggleOutfitItem } from '@/lib/tryonSelection';
+import { toggleOutfitItem } from '@/lib/tryonSelection';
 import { useTryonDraftState } from '@/lib/tryonDraft';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan, LIMITS } from '@/lib/plan';
@@ -506,10 +506,6 @@ export default function Tryon() {
   };
 
   const toggleItem = (item: any) => {
-    if (hasCategoryConflict(selectedItems, item)) {
-      toast.error('Ya elegiste una prenda de esta categoría. Quitala para seleccionar otra.');
-      return;
-    }
     setSelectedItems(prev => toggleOutfitItem(prev, item));
   };
 
@@ -1241,7 +1237,6 @@ export default function Tryon() {
             <div className="flex flex-col gap-3 overflow-y-auto max-h-[420px] snap-y snap-mandatory pb-2 px-1 sm:grid sm:grid-cols-4 lg:grid-cols-5 sm:snap-none sm:max-h-96">
               {visibleItems.map((item: any) => {
                 const isSelected = selectedItems.some(i => i.id === item.id);
-                const categoryBlocked = hasCategoryConflict(selectedItems, item);
                 const subLabel = getSubcategoryLabel(item.category, item.subcategory);
                 return (
                   <Button
@@ -1250,7 +1245,7 @@ export default function Tryon() {
                     onClick={() => toggleItem(item)}
                     aria-pressed={isSelected}
                     aria-label={item.name}
-                    className={`h-auto justify-start p-0 whitespace-normal w-full sm:w-auto shrink-0 snap-start rounded-xl overflow-hidden bg-card text-left transition-all relative flex sm:block ${categoryBlocked ? 'opacity-50' : ''} ${
+                    className={`h-auto justify-start p-0 whitespace-normal w-full sm:w-auto shrink-0 snap-start rounded-xl overflow-hidden bg-card text-left transition-all relative flex sm:block ${
                       isSelected
                         ? 'ring-2 ring-primary shadow-elevated'
                         : 'shadow-card hover:shadow-elevated'
