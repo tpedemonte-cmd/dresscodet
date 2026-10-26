@@ -18,6 +18,7 @@ const CATEGORIES = [
   { value: 'pantalon', label: '👖 Pantalón' },
   { value: 'campera', label: '🧥 Campera' },
   { value: 'buzo', label: '🧶 Buzo' },
+  { value: 'sweater', label: '🥼 Sweater' },
   { value: 'camisa', label: '👔 Camisa' },
   { value: 'short', label: '🩳 Short' },
   { value: 'vestido', label: '👗 Vestido' },

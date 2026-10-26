@@ -26,10 +26,17 @@ export const SUBCATEGORIES: Record<string, SubcategoryOption[]> = {
     { value: 'liviana', label: 'Liviana' },
   ],
   buzo: [
-    { value: 'lana', label: 'De lana / Sweater' },
+    { value: 'lana', label: 'De lana' },
     { value: 'frisa', label: 'De frisa' },
     { value: 'canguro', label: 'Canguro con capucha' },
     { value: 'medio_cierre', label: 'Medio cierre' },
+  ],
+  sweater: [
+    { value: 'cuello_redondo', label: 'Cuello redondo' },
+    { value: 'cuello_v', label: 'Cuello en V' },
+    { value: 'cuello_alto', label: 'Cuello alto / Rollito' },
+    { value: 'cardigan', label: 'Cardigan / Sacón' },
+    { value: 'chaleco', label: 'Chaleco tejido' },
   ],
   camisa: [
     { value: 'manga_corta', label: 'Manga corta' },

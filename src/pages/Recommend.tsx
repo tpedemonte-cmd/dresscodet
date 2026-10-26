@@ -219,7 +219,7 @@ export default function Recommend() {
     const forgotten = allUsage.filter(u => u.estado === 'olvidada');
 
     // Filter forgotten items by categories relevant to the season/weather
-    const coldCategories = ['campera', 'buzo'];
+    const coldCategories = ['campera', 'buzo', 'sweater'];
     const hotCategories = ['remera', 'short', 'vestido', 'pollera'];
     const isCold = temperature[0] < 15 || season === 'invierno';
     const isHot = temperature[0] > 25 || season === 'verano';

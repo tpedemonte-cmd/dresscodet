@@ -4,7 +4,7 @@ import { REALISTIC_ICON_TRIAL } from './OccasionLabel';
 
 const photos = import.meta.glob<string>('../assets/category-photos/*.jpg', { eager: true, import: 'default' });
 const clothing: Record<string, string> = {
-  '👕': 'remera', '👖': 'jean', '🧥': 'campera', '🧶': 'buzo', '👔': 'camisa', '🩳': 'short', '👗': 'vestido', '💃': 'pollera', '👟': 'zapatillas', '👞': 'zapatos', '🧦': 'medias', '🎒': 'mochila', '👜': 'cartera', '📿': 'cadena', '💍': 'anillo', '🧿': 'pulsera', '🕶': 'lentes', '🧢': 'gorra', '🩴': 'ojotas', '🧣': 'bufanda', '👛': 'billetera', '🧤': 'guantes', '💎': 'aros',
+  '👕': 'remera', '👖': 'jean', '🧥': 'campera', '🧶': 'buzo', '🥼': 'sweater', '👔': 'camisa', '🩳': 'short', '👗': 'vestido', '💃': 'pollera', '👟': 'zapatillas', '👞': 'zapatos', '🧦': 'medias', '🎒': 'mochila', '👜': 'cartera', '📿': 'cadena', '💍': 'anillo', '🧿': 'pulsera', '🕶': 'lentes', '🧢': 'gorra', '🩴': 'ojotas', '🧣': 'bufanda', '👛': 'billetera', '🧤': 'guantes', '💎': 'aros',
 };
 const symbols: Record<string, LucideIcon> = {
   '💼': BriefcaseBusiness, '❤': Heart, '💕': Heart, '🍻': Users, '👨‍👩‍👧': House, '🎉': PartyPopper, '🏋': Dumbbell, '📚': GraduationCap,

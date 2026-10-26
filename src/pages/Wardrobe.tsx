@@ -26,6 +26,7 @@ const CATEGORIES: Record<string, string> = {
   pantalon: '👖 Pantalón',
   campera: '🧥 Campera',
   buzo: '🧶 Buzo',
+  sweater: '🥼 Sweater',
   camisa: '👔 Camisa',
   short: '🩳 Short',
   vestido: '👗 Vestido',
