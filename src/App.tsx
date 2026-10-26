@@ -23,21 +23,6 @@ import Premium from "./pages/Premium";
 import Profile from "./pages/Profile";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
-import HorizontalScroller from "@/components/HorizontalScroller";
-
-// TEMP: verificación visual del scroller, se borra después de probarla
-const DevScroller = () => (
-  <div className="max-w-sm mx-auto p-4 space-y-8">
-    <HorizontalScroller ariaLabel="una sola">
-      <div className="flex-shrink-0 w-20 h-20 rounded-lg bg-secondary" />
-    </HorizontalScroller>
-    <HorizontalScroller ariaLabel="muchas">
-      {Array.from({ length: 12 }).map((_, i) => (
-        <div key={i} className="flex-shrink-0 w-20 h-20 rounded-lg bg-secondary" />
-      ))}
-    </HorizontalScroller>
-  </div>
-);
 
 const queryClient = new QueryClient();
 
@@ -71,7 +56,6 @@ const AppRoutes = () => {
       <Route path="/pago/:sessionId" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
       <Route path="/favoritos" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
       <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-      <Route path="/dev-scroller" element={<DevScroller />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
