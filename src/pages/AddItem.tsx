@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Camera, Upload, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSubcategories } from '@/lib/subcategories';
+import { canSaveItem, resolveItemName } from '@/lib/addItemForm';
 
 const CATEGORIES = [
   { value: 'remera', label: '👕 Remera' },
@@ -103,7 +104,7 @@ export default function AddItem() {
         name: finalName,
         category,
         subcategory: subcategory || null,
-        color: color || null,
+        color,
         image_url: publicUrl,
       });
       if (error) throw error;
@@ -118,8 +119,8 @@ export default function AddItem() {
     },
   });
 
-  const finalName = name.trim() || [subcategory, color].filter(Boolean).join(' ') || category;
-  const canSubmit = finalName && category && file && !detecting;
+  const finalName = resolveItemName({ name, subcategory, color, category });
+  const canSubmit = canSaveItem({ name, category, subcategory, color, hasPhoto: Boolean(file), detecting });
 
   return (
     <div className="max-w-md mx-auto space-y-6">
@@ -215,7 +216,7 @@ export default function AddItem() {
 
         <div className="relative">
           <Input
-            placeholder="Color (opcional)"
+            placeholder="Color"
             value={color}
             onChange={(e) => setColor(e.target.value)}
           />
