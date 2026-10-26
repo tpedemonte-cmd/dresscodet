@@ -1290,9 +1290,8 @@ export default function Tryon() {
               </div>
               <div className="flex gap-3">
                 {selfie && (
-                  <div className="w-1/3 shrink-0 rounded-lg overflow-hidden bg-secondary">
+                  <div className="w-1/3 shrink-0 rounded-lg overflow-hidden bg-secondary cursor-zoom-in" onClick={() => setLightboxSrc(modelImage || selfie || '')}>
                     <img src={modelImage || selfie || ''} alt="Tu modelo" className="w-full h-full object-contain aspect-[3/4] bg-muted" />
-
                   </div>
                 )}
                 <div className={`grid gap-2 flex-1 ${selectedItems.length > 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
@@ -1358,6 +1357,8 @@ export default function Tryon() {
             </Button>
           )}
       </div>
+
+      <ItemLightbox src={lightboxSrc ?? ''} alt="Tu avatar en pantalla completa" open={!!lightboxSrc} onClose={() => setLightboxSrc(null)} />
 
       {/* Info */}
       <div className="bg-card rounded-xl p-4 shadow-card text-center">
