@@ -18,7 +18,7 @@
 - [x] Tienda: probar imágenes realistas en las categorías; Outfit y Plan semanal: íconos simples para ocasiones, con opción de restaurar el aspecto anterior (imágenes y selección verificadas)
 
 ## En curso
-- [ ] Armario: agregar la categoría Sweater (todo lo tejido/cocido) en alta, armario, estadísticas, probador, autodetección y bases de datos (Lovable y propia). Falta verificación en pantalla y el usuario debe reconstruir el APK.
+- [x] Armario: categoría Sweater (todo lo tejido/cocido) agregada en alta, armario, estadísticas, probador y autodetección; bases Lovable y propia actualizadas; detección de material (lana, hilo, algodón…) verificada con foto real de sweater (sweater, cuello_redondo, lana). En APK requiere reconstruir.
 
 ## Hecho
 - [x] Probador: actualizar ambos contadores inmediatamente al confirmar un outfit generado, sin esperar la consulta de cupos
