@@ -70,6 +70,10 @@ serve(async (req) => {
 
     const { data: urlData } = admin.storage.from('look-images').getPublicUrl(fileName);
 
+    // Se registra el consumo ANTES de guardar el modelo: record_avatar_generation
+    // rechaza la generación gratis si ya existe un modelo guardado.
+    await recordUsage(quota, 'avatar');
+
     const { data: model, error: insertError } = await admin
       .from('user_models')
       .insert({
@@ -84,6 +88,17 @@ serve(async (req) => {
       .select()
       .single();
     if (insertError) {
+      // Si el guardado falla después de registrar, se devuelve el consumo para no cobrar de más.
+      await admin.from('ai_usage_events').delete()
+        .eq('user_id', authenticated.user.id).eq('kind', 'avatar')
+        .order('created_at', { ascending: false }).limit(1);
+      if (quota.useCredit) {
+        const { data: credits } = await admin.from('avatar_credits').select('balance').eq('user_id', authenticated.user.id).maybeSingle();
+        await admin.from('avatar_credits').upsert(
+          { user_id: authenticated.user.id, balance: (credits?.balance ?? 0) + 1, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id' },
+        );
+      }
       await admin.storage.from('look-images').remove([fileName]);
       throw insertError;
     }
@@ -93,15 +108,6 @@ serve(async (req) => {
       .update({ is_active: false })
       .neq('id', model.id)
       .eq('user_id', authenticated.user.id);
-
-    // Si el registro del consumo falla, deshacemos el modelo para no cobrar de más ni de menos.
-    try {
-      await recordUsage(quota, 'avatar');
-    } catch (recordError) {
-      await admin.from('user_models').delete().eq('id', model.id);
-      await admin.storage.from('look-images').remove([fileName]);
-      throw recordError;
-    }
 
     return jsonResponse({ model });
   } catch (err) {
