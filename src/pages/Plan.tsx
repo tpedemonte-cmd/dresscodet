@@ -260,6 +260,11 @@ export default function Plan() {
     return acc;
   }, {});
 
+  const weekDays = next7Days();
+  const [collapsedDays, setCollapsedDays] = useState<Record<string, boolean>>({});
+  const toggleDay = (date: string) =>
+    setCollapsedDays((prev) => ({ ...prev, [date]: !prev[date] }));
+
   if (planLoading) {
     return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   }
