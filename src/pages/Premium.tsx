@@ -132,9 +132,11 @@ export default function Premium() {
         </p>
       </div>
 
-      <section id="outfits-extra" className="scroll-mt-24 space-y-4 border-t border-border pt-6">
+      <section id="outfits-extra" className="scroll-mt-24 rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-primary" />
+          <div className="rounded-xl bg-primary/10 p-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+          </div>
           <div>
             <h3 className="font-body font-semibold text-foreground">Outfits extra</h3>
             <p className="text-sm font-body text-muted-foreground">Pago único, sin suscripción. No vencen.</p>
@@ -143,7 +145,7 @@ export default function Premium() {
         <p className="font-body text-sm text-muted-foreground">Disponibles para gratis y Premium. Se usan al agotar tus outfits incluidos del mes o del día; cada combinación generada consume un outfit extra.</p>
         <div className="grid gap-3 sm:grid-cols-2">
           {TRYON_PACKS.map(pack => (
-            <div key={pack.key} className="rounded-lg border border-border bg-card p-4 space-y-2">
+            <div key={pack.key} className="rounded-xl border border-border p-4 space-y-2">
               <p className="font-body font-semibold text-foreground">{pack.title}</p>
               <p className="text-xl font-display font-bold text-foreground">{formatPrice(pack.price)}</p>
               <p className="text-xs font-body text-muted-foreground">{pack.note}</p>
@@ -154,7 +156,9 @@ export default function Premium() {
             </div>
           ))}
         </div>
-        <p className="font-body text-sm text-foreground">Tenés {quota.tryonCredits} outfit{quota.tryonCredits === 1 ? '' : 's'} extra sin usar.</p>
+        <div className="rounded-xl bg-secondary p-3 font-body text-sm text-foreground">
+          Tenés {quota.tryonCredits} outfit{quota.tryonCredits === 1 ? '' : 's'} extra sin usar.
+        </div>
         <p className="text-xs font-body text-muted-foreground">Entorno de prueba: el pago es simulado y no se cobra dinero real.</p>
       </section>
 
