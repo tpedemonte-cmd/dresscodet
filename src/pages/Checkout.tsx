@@ -56,6 +56,7 @@ export default function Checkout() {
   }, [sessionId]);
 
   const isSubscription = session?.product === 'premium';
+  const isOutfit = session?.product.startsWith('tryon_');
   const priceText = session ? `${session.amount.toFixed(2)} ${session.currency}` : '';
 
   const pay = async () => {
@@ -69,7 +70,7 @@ export default function Checkout() {
       setPaid(true);
       refreshPlan();
       toast.success(
-        isSubscription ? '¡Pago simulado aprobado! Ya sos Premium.' : '¡Pago simulado aprobado! Ya tenés tus avatares.'
+        isSubscription ? '¡Pago simulado aprobado! Ya sos Premium.' : isOutfit ? '¡Pago simulado aprobado! Ya tenés tus outfits extra.' : '¡Pago simulado aprobado! Ya tenés tus avatares.'
       );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'No pudimos procesar el pago');
@@ -100,7 +101,7 @@ export default function Checkout() {
       <div className="max-w-md mx-auto text-center space-y-4 py-10">
         <CheckCircle2 className="h-14 w-14 text-primary mx-auto" />
         <h2 className="text-2xl font-display font-bold text-foreground">
-          {isSubscription ? '¡Listo, sos Premium!' : '¡Listo, ya tenés tus avatares!'}
+          {isSubscription ? '¡Listo, sos Premium!' : isOutfit ? '¡Listo, ya tenés tus outfits extra!' : '¡Listo, ya tenés tus avatares!'}
         </h2>
         <p className="font-body text-muted-foreground">
           {isSubscription
@@ -119,7 +120,7 @@ export default function Checkout() {
     <div className="max-w-md mx-auto space-y-5">
       <div className="text-center space-y-1">
         <h2 className="text-2xl font-display font-bold text-foreground">
-          {isSubscription ? 'Pago de la suscripción' : 'Pago de avatares'}
+          {isSubscription ? 'Pago de la suscripción' : isOutfit ? 'Pago de outfits extra' : 'Pago de avatares'}
         </h2>
         <p className="font-body text-muted-foreground">
           {session.product_label} · {priceText}

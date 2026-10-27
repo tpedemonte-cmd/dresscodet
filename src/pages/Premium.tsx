@@ -1,4 +1,4 @@
-import { usePlan, PREMIUM_PRICE, formatPrice, LIMITS, AVATAR_PACKS, AvatarPackKey } from '@/lib/plan';
+import { usePlan, PREMIUM_PRICE, formatPrice, LIMITS, AVATAR_PACKS, AvatarPackKey, TRYON_PACKS, TryonPackKey } from '@/lib/plan';
 import { Button } from '@/components/ui/button';
 import { Crown, Check, Loader2, Sparkles } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -27,14 +27,16 @@ export default function Premium() {
     cancelSubscription,
     startAvatarCheckout,
     startingAvatarCheckout,
+    startTryonCheckout,
+    startingTryonCheckout,
     quota,
   } = usePlan();
   const navigate = useNavigate();
   const { hash } = useLocation();
 
   useEffect(() => {
-    if (hash === '#avatares-extra') {
-      document.getElementById('avatares-extra')?.scrollIntoView({ block: 'start' });
+    if (hash === '#avatares-extra' || hash === '#outfits-extra') {
+      document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' });
     }
   }, [hash, isPremium]);
 
@@ -62,6 +64,14 @@ export default function Premium() {
       toast.success('Suscripción cancelada. Volvés al plan gratis.');
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'No pudimos cancelar la suscripción');
+    }
+  };
+
+  const buyOutfits = async (pack: TryonPackKey) => {
+    try {
+      navigate(await startTryonCheckout(pack));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'No pudimos iniciar el pago');
     }
   };
 
@@ -121,6 +131,32 @@ export default function Premium() {
           Entorno de prueba: el pago es simulado y no se cobra dinero real.
         </p>
       </div>
+
+      <section id="outfits-extra" className="scroll-mt-24 space-y-4 border-t border-border pt-6">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-primary" />
+          <div>
+            <h3 className="font-body font-semibold text-foreground">Outfits extra</h3>
+            <p className="text-sm font-body text-muted-foreground">Pago único, sin suscripción. No vencen.</p>
+          </div>
+        </div>
+        <p className="font-body text-sm text-muted-foreground">Disponibles para gratis y Premium. Se usan al agotar tus outfits incluidos del mes o del día; cada combinación generada consume un outfit extra.</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {TRYON_PACKS.map(pack => (
+            <div key={pack.key} className="rounded-lg border border-border bg-card p-4 space-y-2">
+              <p className="font-body font-semibold text-foreground">{pack.title}</p>
+              <p className="text-xl font-display font-bold text-foreground">{formatPrice(pack.price)}</p>
+              <p className="text-xs font-body text-muted-foreground">{pack.note}</p>
+              <Button variant="warm" className="w-full" onClick={() => buyOutfits(pack.key)} disabled={startingTryonCheckout}>
+                {startingTryonCheckout && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Comprar
+              </Button>
+            </div>
+          ))}
+        </div>
+        <p className="font-body text-sm text-foreground">Tenés {quota.tryonCredits} outfit{quota.tryonCredits === 1 ? '' : 's'} extra sin usar.</p>
+        <p className="text-xs font-body text-muted-foreground">Entorno de prueba: el pago es simulado y no se cobra dinero real.</p>
+      </section>
 
       <div id="avatares-extra" className="scroll-mt-24 rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
         <div className="flex items-center gap-2">
