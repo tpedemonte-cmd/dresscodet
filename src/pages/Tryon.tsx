@@ -531,12 +531,8 @@ export default function Tryon() {
       toast.error('Esperá a que se actualicen tus cupos.');
       return;
     }
-    if (quota.tryonsLeft === 0) {
-      toast.error('Llegaste al límite de outfits de este mes.');
-      return;
-    }
-    if (isPremium && quota.tryonsDailyLeft === 0) {
-      toast.error('Llegaste a los 5 outfits de hoy. Volvé mañana.');
+    if (!quota.canGenerateTryon) {
+      navigatePremium('/premium#outfits-extra');
       return;
     }
 
@@ -558,7 +554,7 @@ export default function Tryon() {
       if (error) throw error;
       if (data?.quota_exceeded) {
         toast.error(data.error, {
-          action: { label: 'Ver Premium', onClick: () => navigatePremium('/premium') },
+          action: { label: 'Comprar outfits extra', onClick: () => navigatePremium('/premium#outfits-extra') },
         });
         refreshQuota();
         return;
@@ -566,7 +562,7 @@ export default function Tryon() {
       if (data?.error) throw new Error(data.error);
 
       if (data?.image) {
-        await recordSuccessfulTryon();
+        await recordSuccessfulTryon(data.used_credit === true);
         setResultImage(data.image);
         setResultItems(selectedItems);
         setSelectedItems([]);
@@ -984,7 +980,6 @@ export default function Tryon() {
                   </p>
                 </div>
               )}
-
               {quota.avatarsTotal === 0 && (
                 <div className="rounded-xl bg-secondary p-3">
                   <p className="text-[11px] font-body text-muted-foreground">
@@ -1319,6 +1314,12 @@ export default function Tryon() {
                   </span>
                   {` de ${LIMITS.premium.tryonsPerDay}`}
                 </span>
+              )}
+              {quota.tryonCredits > 0 && <span className="text-[11px] font-body text-foreground">Outfits extra: {quota.tryonCredits}</span>}
+              {(quota.tryonsLeft === 0 || quota.tryonsDailyLeft === 0) && (
+                <Button variant="outline" size="sm" className="basis-full text-xs" onClick={() => navigatePremium('/premium#outfits-extra')}>
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Comprar outfits extra
+                </Button>
               )}
             </div>
           )}

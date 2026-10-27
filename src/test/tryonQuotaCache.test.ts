@@ -3,6 +3,13 @@ import { QueryClient } from '@tanstack/react-query';
 import { applyRecordedTryon } from '../lib/tryonQuotaCache';
 
 describe('confirmed try-on quota updates', () => {
+  it('debits a purchased outfit without changing the included counters', async () => {
+    const client = new QueryClient();
+    const key = ['ai_quota', 'account', true];
+    client.setQueryData(key, { tryonsThisMonth: 15, tryonsToday: 5, tryonCredits: 15 });
+    await applyRecordedTryon(client, key, true);
+    expect(client.getQueryData(key)).toEqual({ tryonsThisMonth: 15, tryonsToday: 5, tryonCredits: 14 });
+  });
   it('immediately decreases Premium availability from 15/5 to 14/4 without a network read', async () => {
     const client = new QueryClient();
     const key = ['ai_quota', 'account', true, 'month', 'day'];

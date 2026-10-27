@@ -6,6 +6,8 @@ import { useAuth } from '@/lib/auth';
 import { freeAvatarAllowance } from '../../supabase/functions/_shared/avatarRules';
 import { calculateTryonQuota, TRYON_LIMITS, tryonMonthStart } from '../../supabase/functions/_shared/tryonQuota';
 import { applyRecordedTryon } from '@/lib/tryonQuotaCache';
+import { availableTryonCredits, canGenerateTryon, type TryonPackKey } from '../../supabase/functions/_shared/tryonPacks';
+export { TRYON_PACKS, type TryonPackKey } from '../../supabase/functions/_shared/tryonPacks';
 
 export type PlanTier = 'free' | 'premium';
 
@@ -40,6 +42,8 @@ interface Subscription {
 }
 
 export interface Quota {
+  tryonCredits: number;
+  canGenerateTryon: boolean;
   avatarCredits: number;
   avatarsTotal: number;
   avatarsThisMonth: number;
@@ -64,7 +68,9 @@ interface PlanContextType {
   quotaLoading: boolean;
   quotaError: boolean;
   refreshQuota: () => void;
-  recordSuccessfulTryon: () => Promise<void>;
+  recordSuccessfulTryon: (usedCredit?: boolean) => Promise<void>;
+  startTryonCheckout: (pack: TryonPackKey) => Promise<string>;
+  startingTryonCheckout: boolean;
   startCheckout: () => Promise<string>;
   startingCheckout: boolean;
   startAvatarCheckout: (pack: AvatarPackKey) => Promise<string>;
@@ -129,7 +135,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       const monthStart = startOfMonthISO();
       const dayStart = startOfDayISO();
 
-      const [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models] = await Promise.all([
+      const [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models, tryonGrants, tryonSpent] = await Promise.all([
         supabase.from('avatar_credits').select('balance').eq('user_id', user.id).maybeSingle(),
         supabase.from('ai_usage_events').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('kind', 'avatar'),
         supabase
@@ -146,19 +152,22 @@ export function PlanProvider({ children }: { children: ReactNode }) {
           .gte('created_at', dayStart),
         supabase
           .from('ai_usage_events')
-          .select('plan_tier, created_at')
+          .select('plan_tier, created_at, used_credit')
           .eq('kind', 'tryon')
           .eq('user_id', user.id)
           .eq('plan_tier', isPremium ? 'premium' : 'free')
           .gte('created_at', monthStart),
         supabase.from('user_models').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('ai_usage_events').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('kind', 'tryon_credit'),
+        supabase.from('ai_usage_events').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('kind', 'tryon').eq('used_credit', true),
       ]);
 
-      for (const result of [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models]) {
+      for (const result of [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models, tryonGrants, tryonSpent]) {
         if (result.error) throw result.error;
       }
 
       return {
+        tryonCredits: availableTryonCredits(tryonGrants.count ?? 0, tryonSpent.count ?? 0),
         avatarCredits: credits.data?.balance ?? 0,
         avatarsTotal: avatarsTotal.count ?? 0,
         avatarsThisMonth: avatarsMonth.count ?? 0,
@@ -170,6 +179,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   });
 
   const base = usage ?? {
+    tryonCredits: 0,
     avatarCredits: 0,
     avatarsTotal: 0,
     avatarsThisMonth: 0,
@@ -190,6 +200,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
   const quota: Quota = {
     ...base,
+    canGenerateTryon: canGenerateTryon(tryonsLeft, isPremium ? Math.max(0, LIMITS.premium.tryonsPerDay - base.tryonsToday) : null, base.tryonCredits),
     avatarsLeft,
     tryonsLeft,
     tryonsDailyLeft: isPremium ? Math.max(0, LIMITS.premium.tryonsPerDay - base.tryonsToday) : null,
@@ -219,6 +230,15 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     },
   });
 
+  const tryonCheckout = useMutation({
+    mutationFn: async (product: TryonPackKey): Promise<string> => {
+      const { data, error } = await cloudFunctions.invoke('mock-payments', { body: { action: 'create_session', product } });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data.checkout_url as string;
+    },
+  });
+
   const cancel = useMutation({
     mutationFn: async () => {
       const { data, error } = await cloudFunctions.invoke('mock-payments', {
@@ -241,7 +261,9 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         quotaLoading: !(subscriptionError || usageError) && (isLoading || usageLoading || !usage),
         quotaError: !usage && (subscriptionError || usageError),
         refreshQuota: () => queryClient.invalidateQueries({ queryKey: ['ai_quota'] }),
-        recordSuccessfulTryon: () => applyRecordedTryon(queryClient, quotaQueryKey),
+        recordSuccessfulTryon: (usedCredit = false) => applyRecordedTryon(queryClient, quotaQueryKey, usedCredit),
+        startTryonCheckout: (pack: TryonPackKey) => tryonCheckout.mutateAsync(pack),
+        startingTryonCheckout: tryonCheckout.isPending,
         startCheckout: () => checkout.mutateAsync('premium'),
         startingCheckout: checkout.isPending,
         startAvatarCheckout: (pack: AvatarPackKey) => avatarCheckout.mutateAsync(pack),

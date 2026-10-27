@@ -1,5 +1,9 @@
 # DressCode roadmap
 
+## Outfits extra
+- [x] Calcular costo estimado y precios con margen; agregar packs de 1 y 15 a la tienda y enlace al agotar cupos.
+- [x] Persistir saldo comprado separado de cupos incluidos, descontar solo al éxito y verificar compra y consumo. Compra simulada de 15, repetición sin duplicados y generación real 15→14 verificadas; cupo diario/mensual intacto, datos temporales retirados. Base propia acepta los registros nuevos sin cambios de estructura. APK/Vercel requieren actualización local del usuario.
+
 ## Ingreso
 - [x] Base propia: permitir solo caronoval@yahoo.com mediante autorización de un uso consumida atómicamente al crear la cuenta; pruebas reales en transacción revertida verifican rechazo de otros correos y de una segunda alta, sin crear la cuenta ni cambiar confirmación por correo.
 - [x] Corregir la carrera entre lectura inicial y eventos de ingreso; 4 pruebas y reapertura real de navegador con sesión conservada verificadas. No se reprodujo pérdida de almacenamiento en APK; la comprobación física requiere que el usuario reconstruya e instale sin desinstalar.

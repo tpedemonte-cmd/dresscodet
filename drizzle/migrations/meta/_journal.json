@@ -106,6 +106,13 @@
       "when": 1793045110524,
       "tag": "0014_add_item_material",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1793074833171,
+      "tag": "0015_allow_purchased_tryon_ledger",
+      "breakpoints": true
     }
   ]
 }
