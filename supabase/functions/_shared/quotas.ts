@@ -4,6 +4,7 @@ import type { DataBackend } from './backendSelection.ts';
 export { adminClient, userClient } from './backend.ts';
 import { freeAvatarAllowance } from './avatarRules.ts';
 import { calculateTryonQuota, TRYON_LIMITS, tryonMonthStart } from './tryonQuota.ts';
+import { readTryonCredits, spendTryonCredit } from './tryonCredits.ts';
 
 export const LIMITS = {
   free: {
@@ -62,11 +63,11 @@ export async function checkQuota(req: Request, kind: UsageKind): Promise<QuotaDe
   if (!authenticated) {
     return { ok: false, status: 401, error: 'Iniciá sesión para usar esta función.', useCredit: false, userId: '' };
   }
-  const decision = await checkUserQuota(authenticated.client, authenticated.user.id, kind);
+  const decision = await checkUserQuota(authenticated.client, authenticated.user.id, kind, authenticated.backend);
   return { ...decision, backend: authenticated.backend };
 }
 
-async function checkUserQuota(sb: any, userId: string, kind: UsageKind): Promise<QuotaDecision> {
+async function checkUserQuota(sb: any, userId: string, kind: UsageKind, backend?: DataBackend): Promise<QuotaDecision> {
   const user = { id: userId };
 
   const { data: sub, error: subError } = await sb
@@ -101,19 +102,24 @@ async function checkUserQuota(sb: any, userId: string, kind: UsageKind): Promise
       .eq('plan_tier', isPremium ? 'premium' : 'free').gte('created_at', tryonMonthStart());
     if (error) throw error;
     const remaining = calculateTryonQuota(events ?? [], isPremium ? 'premium' : 'free');
+    if (remaining.tryonsLeft === 0 || remaining.tryonsDailyLeft === 0) {
+      if (await readTryonCredits(backend, user.id) > 0) {
+        return { ok: true, useCredit: true, userId: user.id, isPremium };
+      }
+    }
     if (remaining.tryonsLeft === 0) {
       return {
         ok: false,
         status: 403,
         error: isPremium
-          ? `Llegaste a las ${limit} pruebas de outfit de este mes. Se renuevan el mes que viene.`
-          : `El plan gratis incluye ${limit} pruebas de outfit por mes. Pasate a Premium para tener ${LIMITS.premium.tryonsPerMonth}.`,
+          ? `Llegaste a las ${limit} pruebas de este mes. Comprá outfits extra para continuar.`
+          : `Usaste las ${limit} pruebas de este mes. Comprá outfits extra para continuar.`,
         useCredit: false,
         userId: user.id,
       };
     }
     if (remaining.tryonsDailyLeft === 0) {
-      return { ok: false, status: 403, error: 'Llegaste a los 5 outfits de hoy. Volvé mañana; tu cupo mensual restante se conserva.', useCredit: false, userId: user.id, isPremium };
+      return { ok: false, status: 403, error: 'Llegaste a los 5 outfits de hoy. Comprá outfits extra o volvé mañana.', useCredit: false, userId: user.id, isPremium };
     }
     return { ok: true, useCredit: false, userId: user.id, isPremium };
   }
@@ -160,6 +166,10 @@ export async function recordUsage(decision: QuotaDecision, kind: UsageKind) {
     return;
   }
   if (kind === 'tryon') {
+    if (decision.useCredit) {
+      await spendTryonCredit(decision.backend, decision.userId);
+      return;
+    }
     const { error } = await admin.rpc('record_tryon_generation', {
       p_user_id: decision.userId,
       p_plan_tier: decision.isPremium ? 'premium' : 'free',
