@@ -1315,7 +1315,7 @@ export default function Tryon() {
                   {` de ${LIMITS.premium.tryonsPerDay}`}
                 </span>
               )}
-              {quota.tryonCredits > 0 && <span className="text-[11px] font-body text-foreground">Outfits extra: {quota.tryonCredits}</span>}
+              <span className="text-[11px] font-body text-foreground">Outfits extra: {quota.tryonCredits ?? 0}</span>
               {(quota.tryonsLeft === 0 || quota.tryonsDailyLeft === 0) && (
                 <Button variant="outline" size="sm" className="basis-full text-xs" onClick={() => navigatePremium('/premium#outfits-extra')}>
                   <Plus className="h-3.5 w-3.5 mr-1" /> Comprar outfits extra
