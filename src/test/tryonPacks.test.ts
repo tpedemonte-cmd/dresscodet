@@ -6,8 +6,14 @@ describe('purchased outfits', () => {
   it('offers exactly one outfit for 0.99 USD', () => {
     expect(TRYON_PACKS.find(pack => pack.key === 'tryon_1')).toMatchObject({ credits: 1, price: 0.99 });
   });
-  it('offers exactly 15 outfits for 2.49 USD', () => {
-    expect(TRYON_PACKS.find(pack => pack.key === 'tryon_15')).toMatchObject({ credits: 15, price: 2.49 });
+  it('offers 10 outfits for 1.99 USD', () => {
+    expect(TRYON_PACKS.find(pack => pack.key === 'tryon_10')).toMatchObject({ credits: 10, price: 1.99 });
+  });
+  it('offers 25 outfits for 3.99 USD', () => {
+    expect(TRYON_PACKS.find(pack => pack.key === 'tryon_25')).toMatchObject({ credits: 25, price: 3.99 });
+  });
+  it('offers exactly 15 outfits for 2.79 USD', () => {
+    expect(TRYON_PACKS.find(pack => pack.key === 'tryon_15')).toMatchObject({ credits: 15, price: 2.79 });
   });
   it('allows free users with no monthly allowance to spend one extra', () => {
     expect(canGenerateTryon(0, null, 1)).toBe(true);
