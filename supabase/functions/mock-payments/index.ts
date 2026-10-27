@@ -1,4 +1,6 @@
 import { authenticatedClient, adminClient } from '../_shared/backend.ts';
+import { TRYON_PACKS } from '../_shared/tryonPacks.ts';
+import { grantTryonPack } from '../_shared/tryonCredits.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +13,7 @@ const PRODUCTS: Record<string, { amount: number; credits: number; label: string 
   premium: { amount: 4.99, credits: 0, label: 'DressCode Premium (mensual)' },
   avatar_1: { amount: 0.99, credits: 1, label: '1 avatar extra' },
   avatar_3: { amount: 1.99, credits: 3, label: 'Pack de 3 avatares' },
+  ...Object.fromEntries(TRYON_PACKS.map(pack => [pack.key, { amount: pack.price, credits: pack.credits, label: pack.title }])),
 };
 
 function json(body: unknown, status = 200) {
@@ -80,7 +83,7 @@ Deno.serve(async (req) => {
     if (action === 'confirm_payment') {
       const { data: session, error: sessionError } = await supabase
         .from('payment_sessions')
-        .select('id, status, product')
+        .select('id, status, product, amount, currency')
         .eq('id', body?.session_id)
         .maybeSingle();
       if (sessionError) return json({ error: sessionError.message }, 400);
@@ -91,6 +94,17 @@ Deno.serve(async (req) => {
       if (!product) return json({ error: 'Producto inválido' }, 400);
 
       const paidAt = new Date();
+
+      if (productKey.startsWith('tryon_')) {
+        if (Number(session.amount) !== product.amount || session.currency !== CURRENCY) {
+          return json({ error: 'El precio de esta sesión no coincide con el pack.' }, 400);
+        }
+        const balance = await grantTryonPack(backend, user.id, session.id, product.credits);
+        const { error } = await adminClient(backend).from('payment_sessions')
+          .update({ status: 'paid', paid_at: paidAt.toISOString() }).eq('id', session.id).eq('user_id', user.id);
+        if (error) return json({ error: error.message }, 400);
+        return json({ ok: true, product: productKey, tryon_credits: balance });
+      }
 
       if (session.status !== 'paid') {
         const { error: payError } = await supabase

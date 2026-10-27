@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { aiGenerateImage } from "../_shared/ai.ts";
 import { checkQuota, recordUsage } from "../_shared/quotas.ts";
 import { clothingReplacementPlan } from '../_shared/clothingRules.ts';
+import { adminClient, authenticatedClient } from '../_shared/backend.ts';
+import type { DataBackend } from '../_shared/backendSelection.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,7 +35,15 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let locked: { backend: DataBackend; userId: string; token: string } | undefined;
   try {
+    const authenticated = await authenticatedClient(req);
+    if (!authenticated) return new Response(JSON.stringify({ error: 'Iniciá sesión para generar.' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    const token = crypto.randomUUID();
+    const { data: acquired, error: lockError } = await adminClient(authenticated.backend).rpc('acquire_avatar_generation_lock', { p_user_id: authenticated.user.id, p_token: token });
+    if (lockError) throw lockError;
+    if (!acquired) return new Response(JSON.stringify({ error: 'Ya hay una generación en curso. Esperá a que termine.' }), { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    locked = { backend: authenticated.backend, userId: authenticated.user.id, token };
     const quota = await checkQuota(req, "tryon");
     if (!quota.ok) {
       return new Response(
@@ -120,7 +130,7 @@ STRICT RULES:
     await recordUsage(quota, "tryon");
 
     return new Response(
-      JSON.stringify({ image: result.dataUrl, text: result.text || "" }),
+      JSON.stringify({ image: result.dataUrl, text: result.text || "", used_credit: quota.useCredit }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
@@ -130,5 +140,10 @@ STRICT RULES:
       JSON.stringify({ error: message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+  } finally {
+    if (locked) {
+      const { error } = await adminClient(locked.backend).rpc('release_avatar_generation_lock', { p_user_id: locked.userId, p_token: locked.token });
+      if (error) console.error('No se pudo liberar la generación');
+    }
   }
 });

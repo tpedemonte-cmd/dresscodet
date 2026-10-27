@@ -1,7 +1,7 @@
 # DressCode roadmap
 
 ## Outfits extra
-- [ ] Calcular costo estimado y precios con margen; agregar packs de 1 y 15 a la tienda y enlace al agotar cupos.
+- [x] Calcular costo estimado y precios con margen; agregar packs de 1 y 15 a la tienda y enlace al agotar cupos.
 - [ ] Persistir saldo comprado separado de cupos incluidos, descontar solo al éxito y verificar compra y consumo.
 
 ## Ingreso
