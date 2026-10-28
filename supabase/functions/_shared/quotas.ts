@@ -17,6 +17,7 @@ export const LIMITS = {
     avatarFreeTotal: 1,
     savedModels: 1,
     ...TRYON_LIMITS.premium,
+    outfitsPerDay: 5,
   },
 } as const;
 
@@ -81,13 +82,15 @@ async function checkUserQuota(sb: any, userId: string, kind: UsageKind, backend?
   const isPremium = sub?.plan === 'premium' && sub?.status === 'active' && !expired;
 
   if (kind === 'outfit') {
-    if (isPremium) return { ok: true, useCredit: false, userId: user.id };
+    const limit = isPremium ? LIMITS.premium.outfitsPerDay : LIMITS.free.outfitsPerDay;
     const used = await countUsage(sb, user.id, 'outfit', startOfDay());
-    if (used >= LIMITS.free.outfitsPerDay) {
+    if (used >= limit) {
       return {
         ok: false,
         status: 403,
-        error: `El plan gratis incluye ${LIMITS.free.outfitsPerDay} outfits del momento por día. Volvé mañana o pasate a Premium para pedir sin límite.`,
+        error: isPremium
+          ? `Usaste las ${limit} sugerencias de hoy. Volvé mañana para pedir más.`
+          : `El plan gratis incluye ${limit} outfits del momento por día. Volvé mañana o pasate a Premium para pedir más.`,
         useCredit: false,
         userId: user.id,
       };
