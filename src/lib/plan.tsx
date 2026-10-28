@@ -20,6 +20,9 @@ export function formatPrice(amount: number) {
 }
 export const FREE_HISTORY_LIMIT = 5;
 
+/** Sugerencias de outfit por día del plan gratis (debe coincidir con quotas.ts) */
+export const FREE_OUTFITS_PER_DAY = 2;
+
 /** Límites de uso de IA por plan (deben coincidir con supabase/functions/_shared/quotas.ts) */
 export const LIMITS = {
   free: { avatarFreeTotal: 1, savedModels: 1, ...TRYON_LIMITS.free },
@@ -57,6 +60,10 @@ export interface Quota {
   tryonsLeft: number;
   savedModelsLimit: number;
   canSaveModel: boolean;
+  /** Sugerencias de outfit usadas hoy (plan gratis) */
+  outfitsToday: number;
+  /** Sugerencias restantes hoy; null = ilimitadas (Premium) */
+  outfitsLeft: number | null;
 }
 
 interface PlanContextType {
@@ -135,7 +142,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       const monthStart = startOfMonthISO();
       const dayStart = startOfDayISO();
 
-      const [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models, tryonGrants, tryonSpent] = await Promise.all([
+      const [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models, tryonGrants, tryonSpent, outfitsDay] = await Promise.all([
         supabase.from('avatar_credits').select('balance').eq('user_id', user.id).maybeSingle(),
         supabase.from('ai_usage_events').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('kind', 'avatar'),
         supabase
@@ -160,9 +167,15 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         supabase.from('user_models').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('ai_usage_events').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('kind', 'tryon_credit'),
         supabase.from('ai_usage_events').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('kind', 'tryon').eq('used_credit', true),
+        supabase
+          .from('ai_usage_events')
+          .select('id', { count: 'exact', head: true })
+          .eq('kind', 'outfit')
+          .eq('user_id', user.id)
+          .gte('created_at', dayStart),
       ]);
 
-      for (const result of [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models, tryonGrants, tryonSpent]) {
+      for (const result of [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models, tryonGrants, tryonSpent, outfitsDay]) {
         if (result.error) throw result.error;
       }
 
@@ -174,6 +187,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         avatarsToday: avatarsDay.count ?? 0,
         ...calculateTryonQuota(tryonsMonth.data ?? [], isPremium ? 'premium' : 'free'),
         savedModels: models.count ?? 0,
+        outfitsToday: outfitsDay.count ?? 0,
       };
     },
   });
@@ -187,6 +201,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     tryonsThisMonth: 0,
     tryonsToday: 0,
     savedModels: 0,
+    outfitsToday: 0,
   };
 
   const savedModelsLimit = isPremium ? LIMITS.premium.savedModels : LIMITS.free.savedModels;
@@ -206,6 +221,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     tryonsDailyLeft: isPremium ? Math.max(0, LIMITS.premium.tryonsPerDay - base.tryonsToday) : null,
     savedModelsLimit,
     canSaveModel: base.savedModels < savedModelsLimit,
+    outfitsLeft: isPremium ? null : Math.max(0, FREE_OUTFITS_PER_DAY - base.outfitsToday),
   };
 
   const checkout = useMutation({
