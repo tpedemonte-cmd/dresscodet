@@ -222,7 +222,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     tryonsDailyLeft: isPremium ? Math.max(0, LIMITS.premium.tryonsPerDay - base.tryonsToday) : null,
     savedModelsLimit,
     canSaveModel: base.savedModels < savedModelsLimit,
-    outfitsLeft: isPremium ? null : Math.max(0, FREE_OUTFITS_PER_DAY - base.outfitsToday),
+    outfitsLeft: Math.max(0, (isPremium ? PREMIUM_OUTFITS_PER_DAY : FREE_OUTFITS_PER_DAY) - base.outfitsToday),
   };
 
   const checkout = useMutation({

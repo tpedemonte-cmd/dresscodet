@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { cloudFunctions } from '@/lib/cloudFunctions';
 import { useAuth } from '@/lib/auth';
-import { usePlan, FREE_OUTFITS_PER_DAY } from '@/lib/plan';
+import { usePlan, FREE_OUTFITS_PER_DAY, PREMIUM_OUTFITS_PER_DAY } from '@/lib/plan';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
@@ -502,15 +502,10 @@ export default function Recommend() {
 
         {!quotaLoading && (
           <p className="text-center text-sm font-body text-muted-foreground">
-            {isPremium ? (
-              <>Sugerencias de hoy: <span className="font-semibold text-foreground">ilimitadas</span></>
-            ) : (
-              <>Sugerencias restantes hoy:{' '}
-                <span className={`font-semibold ${(quota.outfitsLeft ?? 0) > 0 ? 'text-foreground' : 'text-destructive'}`}>
-                  {quota.outfitsLeft ?? 0} de {FREE_OUTFITS_PER_DAY}
-                </span>
-              </>
-            )}
+            Sugerencias restantes hoy:{' '}
+            <span className={`font-semibold ${quota.outfitsLeft > 0 ? 'text-foreground' : 'text-destructive'}`}>
+              {quota.outfitsLeft} de {isPremium ? PREMIUM_OUTFITS_PER_DAY : FREE_OUTFITS_PER_DAY}
+            </span>
           </p>
         )}
       </div>
