@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { cloudFunctions } from '@/lib/cloudFunctions';
 import { useAuth } from '@/lib/auth';
+import { usePlan, FREE_OUTFITS_PER_DAY } from '@/lib/plan';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
@@ -41,6 +42,7 @@ type ShoppingSuggestion = {
 
 export default function Recommend() {
   const { user } = useAuth();
+  const { isPremium, quota, quotaLoading, refreshQuota } = usePlan();
   
   const [event, setEvent] = useState('');
   const [formality, setFormality] = useState('equilibrado');
