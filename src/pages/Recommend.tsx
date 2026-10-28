@@ -347,6 +347,9 @@ export default function Recommend() {
         } as any).select('id').single();
         if (inserted?.id) setRecommendationId(inserted.id);
       }
+
+      // Actualizar el contador de sugerencias restantes
+      refreshQuota();
     } catch (err: any) {
       if (err?.message?.includes('429') || err?.status === 429) {
         toast.error('Demasiadas solicitudes, intentá de nuevo en un momento');
@@ -496,6 +499,20 @@ export default function Recommend() {
             </span>
           )}
         </Button>
+
+        {!quotaLoading && (
+          <p className="text-center text-sm font-body text-muted-foreground">
+            {isPremium ? (
+              <>Sugerencias de hoy: <span className="font-semibold text-foreground">ilimitadas</span></>
+            ) : (
+              <>Sugerencias restantes hoy:{' '}
+                <span className={`font-semibold ${(quota.outfitsLeft ?? 0) > 0 ? 'text-foreground' : 'text-destructive'}`}>
+                  {quota.outfitsLeft ?? 0} de {FREE_OUTFITS_PER_DAY}
+                </span>
+              </>
+            )}
+          </p>
+        )}
       </div>
 
 
