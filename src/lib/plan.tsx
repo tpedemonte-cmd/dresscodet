@@ -201,6 +201,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     tryonsThisMonth: 0,
     tryonsToday: 0,
     savedModels: 0,
+    outfitsToday: 0,
   };
 
   const savedModelsLimit = isPremium ? LIMITS.premium.savedModels : LIMITS.free.savedModels;
@@ -220,6 +221,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     tryonsDailyLeft: isPremium ? Math.max(0, LIMITS.premium.tryonsPerDay - base.tryonsToday) : null,
     savedModelsLimit,
     canSaveModel: base.savedModels < savedModelsLimit,
+    outfitsLeft: isPremium ? null : Math.max(0, FREE_OUTFITS_PER_DAY - base.outfitsToday),
   };
 
   const checkout = useMutation({
