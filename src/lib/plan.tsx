@@ -20,6 +20,9 @@ export function formatPrice(amount: number) {
 }
 export const FREE_HISTORY_LIMIT = 5;
 
+/** Sugerencias de outfit por día del plan gratis (debe coincidir con quotas.ts) */
+export const FREE_OUTFITS_PER_DAY = 2;
+
 /** Límites de uso de IA por plan (deben coincidir con supabase/functions/_shared/quotas.ts) */
 export const LIMITS = {
   free: { avatarFreeTotal: 1, savedModels: 1, ...TRYON_LIMITS.free },
@@ -57,6 +60,10 @@ export interface Quota {
   tryonsLeft: number;
   savedModelsLimit: number;
   canSaveModel: boolean;
+  /** Sugerencias de outfit usadas hoy (plan gratis) */
+  outfitsToday: number;
+  /** Sugerencias restantes hoy; null = ilimitadas (Premium) */
+  outfitsLeft: number | null;
 }
 
 interface PlanContextType {
