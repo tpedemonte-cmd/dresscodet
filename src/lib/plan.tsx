@@ -142,7 +142,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       const monthStart = startOfMonthISO();
       const dayStart = startOfDayISO();
 
-      const [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models, tryonGrants, tryonSpent] = await Promise.all([
+      const [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models, tryonGrants, tryonSpent, outfitsDay] = await Promise.all([
         supabase.from('avatar_credits').select('balance').eq('user_id', user.id).maybeSingle(),
         supabase.from('ai_usage_events').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('kind', 'avatar'),
         supabase
@@ -167,9 +167,15 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         supabase.from('user_models').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('ai_usage_events').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('kind', 'tryon_credit'),
         supabase.from('ai_usage_events').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('kind', 'tryon').eq('used_credit', true),
+        supabase
+          .from('ai_usage_events')
+          .select('id', { count: 'exact', head: true })
+          .eq('kind', 'outfit')
+          .eq('user_id', user.id)
+          .gte('created_at', dayStart),
       ]);
 
-      for (const result of [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models, tryonGrants, tryonSpent]) {
+      for (const result of [credits, avatarsTotal, avatarsMonth, avatarsDay, tryonsMonth, models, tryonGrants, tryonSpent, outfitsDay]) {
         if (result.error) throw result.error;
       }
 
@@ -181,6 +187,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         avatarsToday: avatarsDay.count ?? 0,
         ...calculateTryonQuota(tryonsMonth.data ?? [], isPremium ? 'premium' : 'free'),
         savedModels: models.count ?? 0,
+        outfitsToday: outfitsDay.count ?? 0,
       };
     },
   });
