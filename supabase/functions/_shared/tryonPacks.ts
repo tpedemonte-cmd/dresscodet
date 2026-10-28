@@ -1,12 +1,11 @@
-export type TryonPackKey = 'tryon_1' | 'tryon_10' | 'tryon_15' | 'tryon_25';
+export type TryonPackKey = 'tryon_1' | 'tryon_5' | 'tryon_10';
 
 // Estimated image cost: ~0.15 credits × USD 0.30 per purchased credit.
 // Sale prices include headroom, but do not promise net profit after taxes/fees.
 export const TRYON_PACKS: { key: TryonPackKey; credits: number; price: number; title: string; note: string }[] = [
   { key: 'tryon_1', credits: 1, price: 0.99, title: '1 outfit extra', note: 'Para probar una combinación más' },
-  { key: 'tryon_10', credits: 10, price: 1.99, title: 'Pack de 10 outfits extra', note: 'Para varias combinaciones' },
-  { key: 'tryon_15', credits: 15, price: 2.79, title: 'Pack de 15 outfits extra', note: 'Mejor precio por outfit' },
-  { key: 'tryon_25', credits: 25, price: 3.99, title: 'Pack de 25 outfits extra', note: 'La opción más conveniente' },
+  { key: 'tryon_5', credits: 5, price: 1.49, title: 'Pack de 5 outfits extra', note: 'Varias combinaciones al mejor precio' },
+  { key: 'tryon_10', credits: 10, price: 1.99, title: 'Pack de 10 outfits extra', note: 'La opción más conveniente' },
 ];
 
 /** Stable ledger IDs make payment retries and consumption idempotent. */
