@@ -7,13 +7,16 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import StyleRecommendationsWidget from '@/components/StyleRecommendationsWidget';
+import ItemLightbox from '@/components/ItemLightbox';
 
 export default function Looks() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [zoomUrl, setZoomUrl] = useState<string | null>(null);
+  const closeZoom = useCallback(() => setZoomUrl(null), []);
 
   const shareLook = (imageUrl: string, note: string | null, method: 'whatsapp' | 'twitter' | 'copy') => {
     const text = note ? `Mirá mi look: ${note}` : '¡Mirá el look que armé!';
@@ -91,9 +94,14 @@ export default function Looks() {
         <div className="grid grid-cols-2 gap-4">
           {looks.map((look) => (
             <div key={look.id} className="bg-card rounded-xl overflow-hidden shadow-card group relative">
-              <div className="aspect-[3/4]">
+              <button
+                type="button"
+                onClick={() => setZoomUrl(look.image_url)}
+                aria-label="Ver look en pantalla completa"
+                className="block w-full aspect-[3/4] cursor-zoom-in"
+              >
                 <img src={look.image_url} alt="Look guardado" className="w-full h-full object-cover" loading="lazy" />
-              </div>
+              </button>
               <div className="p-3 space-y-1">
                 {look.note && (
                   <p className="text-xs font-body text-foreground line-clamp-2"><IconText text={look.note} /></p>
@@ -142,6 +150,8 @@ export default function Looks() {
           ))}
         </div>
       )}
+
+      <ItemLightbox src={zoomUrl ?? ''} alt="Look guardado" open={!!zoomUrl} onClose={closeZoom} />
     </div>
   );
 }
