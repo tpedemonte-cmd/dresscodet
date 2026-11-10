@@ -110,7 +110,7 @@ export default function Looks() {
                   {new Date(look.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
-              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-2 right-2 z-10 flex gap-1">
                 <Popover>
                   <PopoverTrigger asChild>
                     <button className="bg-background/80 backdrop-blur-sm rounded-full p-1.5">
