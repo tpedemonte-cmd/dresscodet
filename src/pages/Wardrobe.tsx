@@ -2,7 +2,9 @@ import IconText from '@/components/IconText';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { Trash2, Pencil, Heart, ChevronDown, Check } from 'lucide-react';
+import { Trash2, Pencil, Heart, ChevronDown, Check, Share2, X, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { prepareImageShare } from '@/lib/shareImages';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import EditItemDialog from '@/components/EditItemDialog';
@@ -50,6 +52,58 @@ export default function Wardrobe() {
   const [zoomItem, setZoomItem] = useState<{ image_url: string; name: string } | null>(null);
   const [deleteRefs, setDeleteRefs] = useState({ history: 0, plans: 0 });
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [selecting, setSelecting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [sharingId, setSharingId] = useState<string | null>(null);
+
+  const shareItems = async (list: { image_url: string; name: string; category?: string }[], key: string) => {
+    if (list.length === 0 || sharingId) return;
+    setSharingId(key);
+    try {
+      const prepared = await prepareImageShare(
+        list.map((i) => ({ url: i.image_url, name: i.name && /[a-z0-9]/i.test(i.name) ? i.name : (i.category ?? 'prenda') })),
+        list.length === 1 ? list[0].name : 'Mis prendas',
+      );
+      const finish = (result: string) => {
+        if (result === 'downloaded') {
+          toast.success(
+            prepared.files.length === 1
+              ? 'Se descargó la imagen. Adjuntala a tu mail o mensaje.'
+              : `Se descargaron ${prepared.files.length} imágenes separadas. Adjuntalas a tu mail o mensaje.`,
+          );
+        }
+        if (result !== 'cancelled' && key === 'seleccion') {
+          setSelecting(false);
+          setSelectedIds(new Set());
+        }
+      };
+      try {
+        finish(await prepared.share());
+      } catch (err) {
+        if ((err as { name?: string })?.name === 'NotAllowedError') {
+          toast('Las imágenes están listas', {
+            action: { label: 'Compartir', onClick: () => { prepared.share().then(finish).catch(() => toast.error('No se pudo compartir')); } },
+            duration: 15000,
+          });
+        } else {
+          throw err;
+        }
+      }
+    } catch {
+      toast.error('No se pudieron compartir las imágenes');
+    } finally {
+      setSharingId(null);
+    }
+  };
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
 
   const { data: items = [], isLoading } = useQuery({
@@ -170,10 +224,46 @@ export default function Wardrobe() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-display font-bold text-foreground">Tu Guardarropas</h2>
-        <p className="text-muted-foreground font-body">{items.length} prendas</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-display font-bold text-foreground">Tu Guardarropas</h2>
+          <p className="text-muted-foreground font-body">{items.length} prendas</p>
+        </div>
+        {items.length > 0 && !selecting && (
+          <Button variant="outline" size="sm" onClick={() => { setSelecting(true); setSelectedIds(new Set()); }}>
+            <Share2 className="h-4 w-4" /> Compartir
+          </Button>
+        )}
       </div>
+
+      {selecting && (
+        <div className="sticky top-[4.5rem] z-40 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card/95 p-3 shadow-card backdrop-blur-sm">
+          <p className="mr-auto text-sm font-body text-foreground">
+            {selectedIds.size === 0 ? 'Tocá las prendas que querés compartir' : `${selectedIds.size} seleccionada${selectedIds.size === 1 ? '' : 's'}`}
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              const allSelected = filtered.length > 0 && filtered.every((i) => selectedIds.has(i.id));
+              setSelectedIds(allSelected ? new Set() : new Set(filtered.map((i) => i.id)));
+            }}
+          >
+            {filtered.length > 0 && filtered.every((i) => selectedIds.has(i.id)) ? 'Quitar todas' : 'Seleccionar todas'}
+          </Button>
+          <Button
+            size="sm"
+            disabled={selectedIds.size === 0 || !!sharingId}
+            onClick={() => shareItems(items.filter((i) => selectedIds.has(i.id)), 'seleccion')}
+          >
+            {sharingId === 'seleccion' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
+            Compartir{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
+          </Button>
+          <Button variant="ghost" size="icon" aria-label="Cancelar" onClick={() => { setSelecting(false); setSelectedIds(new Set()); }}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       <ClassifySubcategoriesButton items={items as any} />
 
@@ -293,14 +383,15 @@ export default function Wardrobe() {
           {filtered.map((item) => (
             <div
               key={item.id}
-              className="group relative bg-card rounded-xl overflow-hidden shadow-card hover:shadow-elevated transition-shadow"
+              className={`group relative bg-card rounded-xl overflow-hidden shadow-card hover:shadow-elevated transition-shadow ${selecting && selectedIds.has(item.id) ? 'ring-2 ring-primary' : ''}`}
             >
-              <div className="aspect-square">
+              <div className="aspect-square relative">
                 <button
                   type="button"
-                  aria-label={`Ver ${item.name} en pantalla completa`}
-                  onClick={() => setZoomItem({ image_url: item.image_url, name: item.name })}
-                  className="block w-full h-full cursor-zoom-in"
+                  aria-label={selecting ? `Seleccionar ${item.name}` : `Ver ${item.name} en pantalla completa`}
+                  aria-pressed={selecting ? selectedIds.has(item.id) : undefined}
+                  onClick={() => selecting ? toggleSelected(item.id) : setZoomItem({ image_url: item.image_url, name: item.name })}
+                  className={`block w-full h-full ${selecting ? 'cursor-pointer' : 'cursor-zoom-in'}`}
                 >
                   <img
                     src={item.image_url}
@@ -309,6 +400,24 @@ export default function Wardrobe() {
                     loading="lazy"
                   />
                 </button>
+                {selecting ? (
+                  <span
+                    aria-hidden
+                    className={`pointer-events-none absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full border-2 ${selectedIds.has(item.id) ? 'border-primary bg-primary text-primary-foreground' : 'border-background bg-background/70'}`}
+                  >
+                    {selectedIds.has(item.id) && <Check className="h-4 w-4" />}
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    aria-label={`Compartir ${item.name}`}
+                    onClick={() => shareItems([item], item.id)}
+                    disabled={!!sharingId}
+                    className="absolute bottom-2 right-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+                  >
+                    {sharingId === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
+                  </button>
+                )}
               </div>
               <div className="p-3 space-y-2">
                 <div>

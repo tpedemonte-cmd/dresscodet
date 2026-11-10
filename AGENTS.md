@@ -18,3 +18,4 @@
 - Store purchased try-on units as service-written usage-ledger grants with deterministic payment/consumption IDs; paid usage uses a separate tier and the existing account generation lock, preserving included quotas and making payment retries idempotent without external schema changes.
 - Apply confirmed try-on usage to the account/plan query cache immediately after success, cancel stale reads and reconcile in the background so counters never wait for polling.
 - The Android APK bundles the built web app (webDir dist, no server.url) so it runs standalone; it talks to the same backend, and code changes require npm run build + cap sync + a new APK.
+- Share wardrobe images through the shared shareImages helper (native Share with cached files in the APK, Web Share files on web, separate downloads as fallback) so every image stays a separate attachment on all platforms.
