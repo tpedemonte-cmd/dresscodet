@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Trash2, Pencil, Heart, ChevronDown, Check, Share2, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { prepareImageShare } from '@/lib/shareImages';
+import { useImageShare } from '@/lib/useImageShare';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import EditItemDialog from '@/components/EditItemDialog';
@@ -54,47 +54,18 @@ export default function Wardrobe() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [sharingId, setSharingId] = useState<string | null>(null);
+  const { shareImages, sharingKey: sharingId } = useImageShare();
 
-  const shareItems = async (list: { image_url: string; name: string; category?: string }[], key: string) => {
-    if (list.length === 0 || sharingId) return;
-    setSharingId(key);
-    try {
-      const prepared = await prepareImageShare(
-        list.map((i) => ({ url: i.image_url, name: i.name && /[a-z0-9]/i.test(i.name) ? i.name : (i.category ?? 'prenda') })),
-        list.length === 1 ? list[0].name : 'Mis prendas',
-      );
-      const finish = (result: string) => {
-        if (result === 'downloaded') {
-          toast.success(
-            prepared.files.length === 1
-              ? 'Se descargó la imagen. Adjuntala a tu mail o mensaje.'
-              : `Se descargaron ${prepared.files.length} imágenes separadas. Adjuntalas a tu mail o mensaje.`,
-          );
-        }
-        if (result !== 'cancelled' && key === 'seleccion') {
-          setSelecting(false);
-          setSelectedIds(new Set());
-        }
-      };
-      try {
-        finish(await prepared.share());
-      } catch (err) {
-        if ((err as { name?: string })?.name === 'NotAllowedError') {
-          toast('Las imágenes están listas', {
-            action: { label: 'Compartir', onClick: () => { prepared.share().then(finish).catch(() => toast.error('No se pudo compartir')); } },
-            duration: 15000,
-          });
-        } else {
-          throw err;
-        }
-      }
-    } catch {
-      toast.error('No se pudieron compartir las imágenes');
-    } finally {
-      setSharingId(null);
-    }
-  };
+  const shareItems = (list: { image_url: string; name: string; category?: string }[], key: string) =>
+    shareImages(
+      list.map((i) => ({ url: i.image_url, name: i.name && /[a-z0-9]/i.test(i.name) ? i.name : (i.category ?? 'prenda') })),
+      key,
+      {
+        title: list.length === 1 ? list[0].name : 'Mis prendas',
+        text: 'Prendas de mi armario en DressCode',
+        onShared: key === 'seleccion' ? () => { setSelecting(false); setSelectedIds(new Set()); } : undefined,
+      },
+    );
 
   const toggleSelected = (id: string) => {
     setSelectedIds((prev) => {
