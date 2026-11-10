@@ -237,7 +237,7 @@ export default function Wardrobe() {
       </div>
 
       {selecting && (
-        <div className="sticky top-2 z-20 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card/95 p-3 shadow-card backdrop-blur-sm">
+        <div className="sticky top-[4.5rem] z-40 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card/95 p-3 shadow-card backdrop-blur-sm">
           <p className="mr-auto text-sm font-body text-foreground">
             {selectedIds.size === 0 ? 'Tocá las prendas que querés compartir' : `${selectedIds.size} seleccionada${selectedIds.size === 1 ? '' : 's'}`}
           </p>
