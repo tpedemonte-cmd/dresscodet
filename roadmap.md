@@ -50,3 +50,4 @@
 - [x] Probador: la foto subida se endereza antes de enviarla a la IA (antes salía el outfit torcido), el resultado horizontal se muestra completo sin cortar la cabeza, y el fondo de habitación se reemplaza por uno de estudio
 
 - [x] Armario: compartir fotos de prendas (una o varias/todas) como imágenes separadas por el menú del sistema (mail, WhatsApp…); en computadoras sin menú se descargan por separado. Verificado en navegador; en APK requiere reconstruir.
+- [x] Mis Looks: compartir uno («Imagen / Mail») o varios/todos como imágenes separadas; verificado en navegador.
