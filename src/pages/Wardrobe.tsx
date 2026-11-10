@@ -56,12 +56,12 @@ export default function Wardrobe() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sharingId, setSharingId] = useState<string | null>(null);
 
-  const shareItems = async (list: { image_url: string; name: string }[], key: string) => {
+  const shareItems = async (list: { image_url: string; name: string; category?: string }[], key: string) => {
     if (list.length === 0 || sharingId) return;
     setSharingId(key);
     try {
       const prepared = await prepareImageShare(
-        list.map((i) => ({ url: i.image_url, name: i.name })),
+        list.map((i) => ({ url: i.image_url, name: i.name && /[a-z0-9]/i.test(i.name) ? i.name : (i.category ?? 'prenda') })),
         list.length === 1 ? list[0].name : 'Mis prendas',
       );
       const finish = (result: string) => {
