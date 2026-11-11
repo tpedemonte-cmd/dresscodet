@@ -5,6 +5,7 @@ export { adminClient, userClient } from './backend.ts';
 import { freeAvatarAllowance } from './avatarRules.ts';
 import { calculateTryonQuota, TRYON_LIMITS, tryonMonthStart } from './tryonQuota.ts';
 import { readTryonCredits, spendTryonCredit } from './tryonCredits.ts';
+import { suggestionDailyLimit } from './suggestionLimits.ts';
 
 export const LIMITS = {
   free: {
@@ -17,7 +18,7 @@ export const LIMITS = {
     avatarFreeTotal: 1,
     savedModels: 1,
     ...TRYON_LIMITS.premium,
-    outfitsPerDay: 5,
+    outfitsPerDay: null, // sin límite diario de sugerencias
   },
 } as const;
 
@@ -82,15 +83,14 @@ async function checkUserQuota(sb: any, userId: string, kind: UsageKind, backend?
   const isPremium = sub?.plan === 'premium' && sub?.status === 'active' && !expired;
 
   if (kind === 'outfit') {
-    const limit = isPremium ? LIMITS.premium.outfitsPerDay : LIMITS.free.outfitsPerDay;
+    const limit = suggestionDailyLimit(isPremium);
+    if (limit === null) return { ok: true, useCredit: false, userId: user.id };
     const used = await countUsage(sb, user.id, 'outfit', startOfDay());
     if (used >= limit) {
       return {
         ok: false,
         status: 403,
-        error: isPremium
-          ? `Usaste las ${limit} sugerencias de hoy. Volvé mañana para pedir más.`
-          : `El plan gratis incluye ${limit} outfits del momento por día. Volvé mañana o pasate a Premium para pedir más.`,
+        error: `El plan gratis incluye ${limit} outfits del momento por día. Volvé mañana o pasate a Premium para pedir más.`,
         useCredit: false,
         userId: user.id,
       };

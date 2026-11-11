@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cloudFunctions } from '@/lib/cloudFunctions';
 import { useAuth } from '@/lib/auth';
 import { freeAvatarAllowance } from '../../supabase/functions/_shared/avatarRules';
+import { suggestionsLeft } from '../../supabase/functions/_shared/suggestionLimits';
 import { calculateTryonQuota, TRYON_LIMITS, tryonMonthStart } from '../../supabase/functions/_shared/tryonQuota';
 import { applyRecordedTryon } from '@/lib/tryonQuotaCache';
 import { availableTryonCredits, canGenerateTryon, type TryonPackKey } from '../../supabase/functions/_shared/tryonPacks';
@@ -20,9 +21,8 @@ export function formatPrice(amount: number) {
 }
 export const FREE_HISTORY_LIMIT = 5;
 
-/** Sugerencias de outfit por día por plan (deben coincidir con quotas.ts) */
-export const FREE_OUTFITS_PER_DAY = 2;
-export const PREMIUM_OUTFITS_PER_DAY = 5;
+/** Sugerencias de outfit por día: gratis tiene límite, Premium no. */
+export { FREE_SUGGESTIONS_PER_DAY as FREE_OUTFITS_PER_DAY } from '../../supabase/functions/_shared/suggestionLimits';
 
 /** Límites de uso de IA por plan (deben coincidir con supabase/functions/_shared/quotas.ts) */
 export const LIMITS = {
@@ -64,7 +64,8 @@ export interface Quota {
   /** Sugerencias de outfit usadas hoy */
   outfitsToday: number;
   /** Sugerencias restantes hoy */
-  outfitsLeft: number;
+  /** null = sin límite diario (Premium) */
+  outfitsLeft: number | null;
 }
 
 interface PlanContextType {
@@ -222,7 +223,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     tryonsDailyLeft: isPremium ? Math.max(0, LIMITS.premium.tryonsPerDay - base.tryonsToday) : null,
     savedModelsLimit,
     canSaveModel: base.savedModels < savedModelsLimit,
-    outfitsLeft: Math.max(0, (isPremium ? PREMIUM_OUTFITS_PER_DAY : FREE_OUTFITS_PER_DAY) - base.outfitsToday),
+    outfitsLeft: suggestionsLeft(isPremium, base.outfitsToday),
   };
 
   const checkout = useMutation({
