@@ -72,19 +72,8 @@ export async function fetchWeatherFromCoords(latitude: number, longitude: number
 
   const mapped = mapWeatherCode(code, isDay);
 
+  // Open-Meteo has no reverse geocoding, so the city name comes from OpenStreetMap.
   let city: string | undefined;
-  try {
-    const geoRes = await fetch(
-      `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=es&count=1`
-    );
-    if (geoRes.ok) {
-      const geo = await geoRes.json();
-      const r = geo?.results?.[0];
-      if (r?.name) city = r.name;
-    }
-  } catch {
-    // ignorar
-  }
 
   if (!city) {
     try {
