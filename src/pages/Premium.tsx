@@ -11,7 +11,6 @@ const BENEFITS = [
   'Una generación inicial con 3 opciones para elegir un único modelo; los reemplazos requieren un pack',
   'Más datos para el modelo: pelo, piel, contextura y medidas corporales',
   'Probarte la ropa con tu propia foto',
-  'Máxima calidad de imagen en el probador',
   'Plan semanal con un outfit para cada salida',
   'Viajes: qué llevar y qué comprar según el destino',
   'Historial completo de outfits (el plan gratis ve los últimos 5)',
