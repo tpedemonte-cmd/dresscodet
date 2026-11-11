@@ -63,7 +63,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         key={path}
         to={path}
         onClick={inSheet ? () => setMenuOpen(false) : undefined}
-        className={`flex flex-col items-center gap-1 px-1 sm:px-3 py-2 rounded-lg transition-colors flex-shrink-0 min-w-[56px] sm:min-w-[64px] ${
+        className={`flex flex-col items-center gap-1 px-1 py-2 rounded-lg transition-colors flex-shrink-0 min-w-[56px] ${
           isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
         }`}
       >
@@ -71,7 +71,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <Icon className="h-5 w-5" />
           {isLocked && <Lock className="absolute -right-2 -top-1 h-3 w-3 rounded-full bg-card text-primary" />}
         </span>
-        <span className="text-[10px] sm:text-xs font-body font-medium whitespace-nowrap">{label}</span>
+        <span className="text-[10px] font-body font-medium whitespace-nowrap">{label}</span>
       </Link>
     );
   };
@@ -129,18 +129,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-md border-t border-border z-[60] max-w-full overflow-hidden">
-        <div className="w-full flex justify-between sm:justify-around px-1 py-2 sm:px-2 gap-0.5 sm:gap-1">
-            {navItems.map((item) =>
-              primaryPaths.includes(item.path) ? renderNavItem(item) : (
-                <div key={item.path} className="hidden sm:flex">{renderNavItem(item)}</div>
-              )
-            )}
+        <div className="mx-auto flex w-full max-w-2xl justify-between gap-0.5 px-1 py-2">
+            {navItems.filter((item) => primaryPaths.includes(item.path)).map((item) => renderNavItem(item))}
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
                 <Button
                   variant="ghost"
                   aria-label="Ver todas las funciones"
-                  className={`sm:hidden h-auto min-w-[56px] flex-shrink-0 flex-col gap-1 px-1 py-2 ${
+                  className={`h-auto min-w-[56px] flex-shrink-0 flex-col gap-1 px-1 py-2 ${
                     menuOpen ? 'text-primary' : 'text-muted-foreground'
                   }`}
                 >
@@ -150,7 +146,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               </SheetTrigger>
               <SheetContent
                 side="top"
-                className="bottom-[65px] flex h-auto flex-col gap-0 overflow-hidden border-b-0 p-0 shadow-none sm:bottom-0 sm:left-auto sm:w-full sm:max-w-md sm:border-l"
+                className="bottom-[65px] flex h-auto flex-col gap-0 overflow-hidden border-b-0 p-0 shadow-none sm:left-auto sm:w-full sm:max-w-md sm:border-l"
               >
                 <SheetHeader className="shrink-0 space-y-4 border-b border-border bg-primary/10 px-5 pb-5 pt-6 text-left">
                   <SheetTitle className="sr-only">Todas las funciones</SheetTitle>
