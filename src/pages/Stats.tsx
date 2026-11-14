@@ -100,7 +100,7 @@ export default function Stats() {
           {/* Usage analysis summary */}
           {items.length > 0 && (
             <div className="bg-card rounded-xl shadow-card p-4 space-y-3">
-              <h3 className="font-display font-semibold text-foreground flex items-center gap-2"><IconText text={"👗 Análisis de uso de prendas"} /></h3>
+              <h3 className="font-display font-semibold text-foreground flex items-center gap-2">Análisis de uso de prendas</h3>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <button
                   onClick={() => setStatusFilter(statusFilter === 'frecuente' ? null : 'frecuente')}
