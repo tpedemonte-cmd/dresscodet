@@ -19,3 +19,4 @@
 - Apply confirmed try-on usage to the account/plan query cache immediately after success, cancel stale reads and reconcile in the background so counters never wait for polling.
 - The Android APK bundles the built web app (webDir dist, no server.url) so it runs standalone; it talks to the same backend, and code changes require npm run build + cap sync + a new APK.
 - Share wardrobe and look images through the shared shareImages helper and useImageShare hook (native Share with cached files in the APK, Web Share files on web, separate downloads as fallback) so every image stays a separate attachment on all platforms.
+- After adding or removing a Capacitor plugin, commit the regenerated android/ios Capacitor plugin files, because stale copies conflict with the local cap sync on every pull.
