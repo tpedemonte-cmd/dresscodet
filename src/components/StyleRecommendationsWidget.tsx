@@ -39,7 +39,7 @@ export default function StyleRecommendationsWidget() {
       } else if (err?.message?.includes('402') || err?.status === 402) {
         toast.error('Créditos agotados. Agregá fondos en Configuración.');
       } else {
-        toast.error('Error al analizar tu estilo');
+        toast.error(err?.message || 'Error al analizar tu estilo');
       }
       console.error(err);
     } finally {

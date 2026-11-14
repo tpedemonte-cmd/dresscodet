@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { aiGenerateImage } from "../_shared/ai.ts";
+import { SAFE_AVATAR_SUFFIX } from "../_shared/imageSafety.ts";
 import { adminClient, checkQuota, recordUsage } from "../_shared/quotas.ts";
 import { authenticatedClient } from '../_shared/backend.ts';
 import type { DataBackend } from '../_shared/backendSelection.ts';
@@ -117,9 +118,17 @@ The person should:
 - Photorealistic quality, like a fashion catalog base model`;
 
     const images = await generateAvatarOptions(!!quota.isPremium, async (index) => {
-      const result = await aiGenerateImage(`${prompt}\nCandidate ${index + 1}: create a distinct person matching all specified traits. Produce exactly one full-body person, never a collage.`);
+      const candidatePrompt = `${prompt}\nCandidate ${index + 1}: create a distinct person matching all specified traits. Produce exactly one full-body person, never a collage.`;
+      let result = await aiGenerateImage(candidatePrompt);
+      // Safety refusals (IMAGE_SAFETY) get one gentler retry before failing.
+      if (!result.ok && result.blocked) {
+        console.warn('generate-avatar: safety block, retrying with safe prompt');
+        result = await aiGenerateImage(candidatePrompt + SAFE_AVATAR_SUFFIX);
+      }
       if (!result.ok) {
-        const message = result.status === 429
+        const message = result.blocked
+          ? 'La IA no pudo crear este avatar. No se descontó ningún avatar: probá de nuevo o cambiá alguna característica.'
+          : result.status === 429
           ? 'La IA está recibiendo demasiados pedidos. Esperá unos segundos y volvé a intentar.'
           : result.status === 402 || result.status === 403
             ? 'La IA no está disponible en este momento. Probá de nuevo más tarde.'

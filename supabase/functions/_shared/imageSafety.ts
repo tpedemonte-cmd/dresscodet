@@ -9,3 +9,7 @@ export function isSafetyBlock(errorText: string | undefined | null): boolean {
 // at every step and avoids "remove clothing" phrasing that triggers safety filters.
 export const SAFE_TRYON_SUFFIX = `
 SAFETY NOTE: This is a family-friendly fashion catalog photo. The person is always fully and modestly dressed. Do not depict undressing: simply show the person already wearing the selected garments, with any unselected areas covered by a plain neutral basic outfit. Bare feet only.`;
+
+// Retry wording for base avatars: modest athletic basics, still barefoot.
+export const SAFE_AVATAR_SUFFIX = `
+SAFETY NOTE: This is a family-friendly fashion catalog base model. The person wears a modest plain fitted gray T-shirt and plain knee-length gray shorts, fully covered and non-revealing. Still barefoot, no shoes or socks.`;

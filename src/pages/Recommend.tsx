@@ -356,7 +356,7 @@ export default function Recommend() {
       } else if (err?.message?.includes('402') || err?.status === 402) {
         toast.error('Créditos agotados. Agregá fondos en Configuración.');
       } else {
-        toast.error('Error al generar la recomendación');
+        toast.error(err?.message || 'Error al generar la recomendación');
       }
       console.error(err);
     } finally {

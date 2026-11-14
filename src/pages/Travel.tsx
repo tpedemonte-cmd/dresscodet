@@ -111,7 +111,7 @@ export default function Travel() {
     } catch (err: any) {
       if (err?.message?.includes('429')) toast.error('Demasiadas solicitudes, probá en un momento');
       else if (err?.message?.includes('402')) toast.error('Créditos agotados.');
-      else toast.error('No pudimos preparar tu guía de viaje');
+      else toast.error(err?.message || 'No pudimos preparar tu guía de viaje');
       console.error(err);
     } finally {
       setLoading(false);

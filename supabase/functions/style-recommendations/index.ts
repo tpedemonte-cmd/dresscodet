@@ -217,7 +217,7 @@ Analizá todo (priorizando el feedback explícito y los favoritos) y devolveme l
       }
       const text = await response.text();
       console.error("AI error:", response.status, text);
-      throw new Error("AI gateway error");
+      throw new Error("La IA no pudo responder esta vez. Probá de nuevo en unos segundos.");
     }
 
     const data = await response.json();
