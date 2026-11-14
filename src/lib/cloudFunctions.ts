@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { retryOnUnauthorized } from '@/lib/retryOnUnauthorized';
+import { withReadableError } from '@/lib/functionError';
 
 // Public endpoint credentials only. Data and Auth remain on the configured project.
 const CLOUD_URL = 'https://akgakdrpdhrcxnibxbii.supabase.co';
@@ -25,5 +26,5 @@ async function renewSession() {
 // A stale session (for example after the tab slept) gets one automatic renewal and retry.
 export const cloudFunctions = {
   invoke: ((name, options) =>
-    retryOnUnauthorized(() => cloud.functions.invoke(name, options), renewSession)) as typeof cloud.functions.invoke,
+    retryOnUnauthorized(() => cloud.functions.invoke(name, options), renewSession).then(withReadableError)) as typeof cloud.functions.invoke,
 };

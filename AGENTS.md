@@ -20,3 +20,4 @@
 - The Android APK bundles the built web app (webDir dist, no server.url) so it runs standalone; it talks to the same backend, and code changes require npm run build + cap sync + a new APK.
 - Share wardrobe and look images through the shared shareImages helper and useImageShare hook (native Share with cached files in the APK, Web Share files on web, separate downloads as fallback) so every image stays a separate attachment on all platforms.
 - After adding or removing a Capacitor plugin, commit the regenerated android/ios Capacitor plugin files, because stale copies conflict with the local cap sync on every pull.
+- Function calls pass through withReadableError so non-2xx responses surface the function's { error } message; image-safety refusals in try-on retry once with a safer prompt and return a readable 200 error without charging usage.

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { aiGenerateImage } from "../_shared/ai.ts";
+import { SAFE_TRYON_SUFFIX } from "../_shared/imageSafety.ts";
 import { checkQuota, recordUsage } from "../_shared/quotas.ts";
 import { clothingReplacementPlan } from '../_shared/clothingRules.ts';
 import { adminClient, authenticatedClient } from '../_shared/backend.ts';
@@ -103,10 +104,17 @@ STRICT RULES:
 - Layer ONLY different categories naturally, such as a jacket over the selected shirt. Preserve clothing in unselected categories. Bare feet remain bare unless selected socks or footwear cover them; never invent unselected socks or shoes.
 - Photorealistic result. Output a single image.`;
 
-    const result = await aiGenerateImage(prompt, [
+    const inputImages = [
       userPhotoBase64,
       ...clothingImages.map(img => `data:${img.mime};base64,${img.base64}`),
-    ]);
+    ];
+    let result = await aiGenerateImage(prompt, inputImages);
+    // The provider sometimes refuses (IMAGE_SAFETY) because the base avatar wears
+    // underwear and the prompt talks about replacing clothes: retry once, gentler.
+    if (!result.ok && result.blocked) {
+      console.warn("virtual-tryon: safety block, retrying with safe prompt");
+      result = await aiGenerateImage(prompt + SAFE_TRYON_SUFFIX, inputImages);
+    }
 
     if (!result.ok) {
       if (result.status === 429) {
@@ -119,6 +127,13 @@ STRICT RULES:
         return new Response(
           JSON.stringify({ error: "Se agotaron los créditos de IA de este entorno. Recargá el límite del workspace (o usá tu propia clave de Gemini) y volvé a intentar." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (result.blocked) {
+        // 200 so the app shows this message; nothing is charged for this attempt.
+        return new Response(
+          JSON.stringify({ error: "La IA no pudo armar este outfit con estas prendas. No se descontó ningún outfit: probá de nuevo o cambiá alguna prenda.", safety_blocked: true }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       return new Response(

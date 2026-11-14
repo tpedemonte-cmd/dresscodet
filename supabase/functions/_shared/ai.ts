@@ -1,4 +1,5 @@
 // Shared AI configuration.
+import { isSafetyBlock } from './imageSafety.ts';
 // Uses Lovable AI when available; otherwise falls back to a direct Gemini API key
 // (GEMINI_API_KEY) through Google's OpenAI-compatible endpoint, so the same code
 // works on a self-hosted Supabase project.
@@ -57,6 +58,8 @@ export interface AiImageResult {
   status: number;
   dataUrl?: string;
   text?: string;
+  /** The provider refused to draw this image for safety reasons. */
+  blocked?: boolean;
 }
 
 /**
@@ -119,7 +122,7 @@ export async function aiGenerateImage(
     if (!res.ok) {
       const errText = await res.text();
       console.error('AI gateway image error:', res.status, errText);
-      return { ok: false, status: res.status };
+      return { ok: false, status: res.status, text: errText, blocked: isSafetyBlock(errText) };
     }
 
     const data = await res.json();
@@ -185,7 +188,7 @@ export async function aiGenerateImage(
       return { ok: true, status: 200, dataUrl: url, text: msg?.content || '' };
     }
 
-    return { ok: false, status: lastStatus, text: lastError };
+    return { ok: false, status: lastStatus, text: lastError, blocked: isSafetyBlock(lastError) };
   }
 
   throw new Error('No hay clave de IA configurada (LOVABLE_API_KEY o GEMINI_API_KEY)');
