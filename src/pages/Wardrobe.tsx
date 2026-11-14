@@ -197,7 +197,7 @@ export default function Wardrobe() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-display font-bold text-foreground">Tu Guardarropas</h2>
+          <h2 className="text-2xl font-display font-bold text-foreground">Tu Guardarropa</h2>
           <p className="text-muted-foreground font-body">{items.length} prendas</p>
         </div>
         {items.length > 0 && !selecting && (
