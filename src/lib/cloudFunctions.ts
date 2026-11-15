@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { retryOnUnauthorized } from '@/lib/retryOnUnauthorized';
 import { withReadableError } from '@/lib/functionError';
+import { functionHost } from '@/lib/functionRouting';
 
 // Public endpoint credentials only. Data and Auth remain on the configured project.
 const CLOUD_URL = 'https://akgakdrpdhrcxnibxbii.supabase.co';
@@ -23,8 +24,16 @@ async function renewSession() {
   return !error && !!data.session;
 }
 
+// Non-AI functions can run in the own data project once they are uploaded there and
+// VITE_OWN_FUNCTIONS=true is set. They are called without the backend header, so they
+// use that project's own database. AI functions always stay on Lovable Cloud.
+const ownFunctionsEnabled = import.meta.env.VITE_OWN_FUNCTIONS === 'true';
+
 // A stale session (for example after the tab slept) gets one automatic renewal and retry.
 export const cloudFunctions = {
-  invoke: ((name, options) =>
-    retryOnUnauthorized(() => cloud.functions.invoke(name, options), renewSession).then(withReadableError)) as typeof cloud.functions.invoke,
+  invoke: ((name, options) => {
+    const host = functionHost(name, { externalData: external, ownFunctionsEnabled });
+    const client = host === 'own' ? supabase : cloud;
+    return retryOnUnauthorized(() => client.functions.invoke(name, options), renewSession).then(withReadableError);
+  }) as typeof cloud.functions.invoke,
 };

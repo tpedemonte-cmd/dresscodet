@@ -91,6 +91,19 @@ npm install
 
    Las variables `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY` las provee Supabase automáticamente a las funciones. El código también admite `LOVABLE_API_KEY` como alternativa, pero no es necesaria si se usa `GEMINI_API_KEY`.
 
+## Funciones sin IA en el proyecto propio
+
+Las 6 funciones con IA (`detect-clothing`, `recommend-outfit`, `virtual-tryon`, `generate-avatar`, `travel-wardrobe`, `style-recommendations`) corren en Lovable Cloud y usan sus créditos de IA. Las 5 sin IA pueden correr en el proyecto propio:
+
+```powershell
+npx supabase login
+npx supabase functions deploy mock-payments save-photo-model search-marketplace extract-ml-product refresh-plan-weather --project-ref pacjpldmhjjfawkcyzib --no-verify-jwt --use-api
+```
+
+Después, ejecutar `db/external/weather-cron.sql` en el editor SQL del proyecto propio y activar `VITE_OWN_FUNCTIONS=true` en `.env.local` (APK) y en Vercel → Settings → Environment Variables (web). Mientras esa variable no esté en `true`, la app sigue usando las funciones de Lovable Cloud.
+
+Cada vez que cambie alguna de esas 5 funciones hay que volver a ejecutar el comando `deploy`.
+
 ## Ejecución
 
 ```bash
