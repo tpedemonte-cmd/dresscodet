@@ -18,7 +18,7 @@ import { Clock, AlertTriangle } from 'lucide-react';
 import { fetchCurrentWeather, fetchWeatherFromCoords } from '@/lib/weather';
 import { getDeviceCoords } from '@/lib/geolocation';
 import OutfitFeedback from '@/components/OutfitFeedback';
-import { isAvailable } from '@/lib/availability';
+import { isAvailable, availableItemIds } from '@/lib/availability';
 
 const WEATHER = [
   { value: 'soleado', label: '☀️ Soleado' },
@@ -218,7 +218,8 @@ export default function Recommend() {
 
     // Detect forgotten items relevant to current context
     const allUsage = analizarUsoPrendas(outfitHistory as any, items as any, 30, 5);
-    const forgotten = allUsage.filter(u => u.estado === 'olvidada');
+    const availableIds = new Set(items.filter((i: any) => isAvailable(i)).map((i: any) => i.id));
+    const forgotten = allUsage.filter(u => u.estado === 'olvidada' && availableIds.has(u.itemId));
 
     // Filter forgotten items by categories relevant to the season/weather
     const coldCategories = ['campera', 'buzo', 'sweater'];
@@ -311,7 +312,7 @@ export default function Recommend() {
 
       let usedItemIds: string[] = [];
       if (itemsMatch && itemsMatch[1].trim() !== 'ninguno') {
-        usedItemIds = itemsMatch[1].split(',').map((id: string) => id.trim());
+        usedItemIds = availableItemIds(itemsMatch[1].split(',').map((id: string) => id.trim()), items as any);
         setRecommendedItems(items.filter(item => usedItemIds.includes(item.id)));
       }
 

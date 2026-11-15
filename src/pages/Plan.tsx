@@ -16,7 +16,7 @@ import { ChevronDown, ExternalLink, Loader2, Lock, MapPin, Plus, Search, Shoppin
 import { toast } from 'sonner';
 import { fetchForecastForDate, searchCity, type GeoResult } from '@/lib/weather';
 import OutfitFeedback from '@/components/OutfitFeedback';
-import { isAvailable } from '@/lib/availability';
+import { isAvailable, availableItemIds } from '@/lib/availability';
 import PremiumGate from '@/components/PremiumGate';
 
 const FORMALITY = [
@@ -174,7 +174,7 @@ export default function Plan() {
         .trim();
       let usedItemIds: string[] = [];
       if (itemsMatch && itemsMatch[1].trim() !== 'ninguno') {
-        usedItemIds = itemsMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+        usedItemIds = availableItemIds(itemsMatch[1].split(',').map(s => s.trim()).filter(Boolean), items as any);
       }
 
       // Parse WISHLIST_USADOS

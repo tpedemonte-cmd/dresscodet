@@ -38,7 +38,9 @@ serve(async (req) => {
     const modelGender = models?.[0]?.gender || "";
     const genderLabel = modelGender === "femenino" ? "mujer" : modelGender === "masculino" ? "hombre" : "";
 
+    // Solo prendas disponibles (no en lavado, prestadas ni en arreglo).
     const wardrobe = (items || [])
+      .filter((i: any) => (i.availability ?? "disponible") === "disponible")
       .map((i: any) => `${i.name} (${i.category}${i.subcategory ? "/" + i.subcategory : ""}, ${i.color || "sin color"})`)
       .join("\n") || "Placard vacío";
 

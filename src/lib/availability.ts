@@ -19,3 +19,9 @@ export function getAvailability(value?: string | null) {
 export function isAvailable(item: { availability?: string | null }) {
   return (item.availability ?? 'disponible') === 'disponible';
 }
+
+/** Keeps only the ids of wardrobe items that are currently available, so AI picks never include items in laundry, lent or under repair. */
+export function availableItemIds(ids: readonly string[], wardrobe: readonly { id: string; availability?: string | null }[]): string[] {
+  const available = new Set(wardrobe.filter(isAvailable).map((item) => item.id));
+  return ids.filter((id) => available.has(id));
+}
