@@ -1,5 +1,6 @@
 import IconText from '@/components/IconText';
 import ExplanationToggle from '@/components/ExplanationToggle';
+import HorizontalScroller from '@/components/HorizontalScroller';
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -178,7 +179,7 @@ export default function Favorites() {
           {filtered.map((f) => {
             const usedItems = (items as any[]).filter((i) => f.recommended_item_ids.includes(i.id));
             return (
-              <div key={`${f.source}-${f.id}`} className="bg-card p-5 rounded-xl shadow-card space-y-3">
+              <div key={`${f.source}-${f.id}`} className="bg-card p-5 rounded-xl shadow-card space-y-3 min-w-0">
                 <div className="flex items-start justify-between gap-2 flex-wrap">
                   <div className="space-y-1">
                     <div className="text-base font-body font-semibold flex items-center gap-2">
@@ -203,7 +204,7 @@ export default function Favorites() {
                 )}
 
                 {usedItems.length > 0 && (
-                  <div className="flex gap-2 overflow-x-auto pb-1">
+                  <HorizontalScroller ariaLabel="Prendas del outfit favorito">
                     {usedItems.map((it) => (
                       <div key={it.id} className="flex-shrink-0 w-20 text-center">
                         <div className="aspect-square rounded-lg overflow-hidden bg-secondary">
@@ -212,7 +213,7 @@ export default function Favorites() {
                         <p className="text-[10px] mt-1 truncate"><IconText text={it.name} /></p>
                       </div>
                     ))}
-                  </div>
+                  </HorizontalScroller>
                 )}
 
                 <OutfitFeedback
