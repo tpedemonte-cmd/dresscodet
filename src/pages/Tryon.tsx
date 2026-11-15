@@ -8,7 +8,8 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles, RotateCcw, X, Save, Trash2, Check, ChevronDown, Camera, Crown, Lock, Plus, Images, Maximize2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { toggleOutfitItem } from '@/lib/tryonSelection';
+import { toggleOutfitItem, canSelectForTryon, keepAvailableSelection } from '@/lib/tryonSelection';
+import { getAvailability } from '@/lib/availability';
 import { useTryonDraftState } from '@/lib/tryonDraft';
 import { getSubcategories, getSubcategoryLabel } from '@/lib/subcategories';
 import { usePlan, LIMITS } from '@/lib/plan';
@@ -144,7 +145,7 @@ export default function Tryon() {
 
   const [showVariantPicker, setShowVariantPicker] = useDraftState('showVariantPicker', false);
 
-  const { data: items = [] } = useQuery({
+  const { data: items = [], isFetched: itemsFetched } = useQuery({
     queryKey: ['clothing_items', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -505,7 +506,18 @@ export default function Tryon() {
     deleteModelMutation.mutate(id);
   };
 
+  // Prendas que dejaron de estar disponibles (lavado, prestada, arreglo) o se borraron salen de la selección.
+  useEffect(() => {
+    if (!itemsFetched || selectedItems.length === 0) return;
+    const kept = keepAvailableSelection(selectedItems, items);
+    if (kept.length !== selectedItems.length) setSelectedItems(kept);
+  }, [items, itemsFetched, selectedItems]);
+
   const toggleItem = (item: any) => {
+    if (!canSelectForTryon(item) && !selectedItems.some(i => i.id === item.id)) {
+      toast.error(`Esta prenda está "${getAvailability(item.availability).label.toLowerCase()}". Solo podés probarte prendas disponibles.`);
+      return;
+    }
     setSelectedItems(prev => toggleOutfitItem(prev, item));
   };
 
@@ -1232,6 +1244,7 @@ export default function Tryon() {
             <div className="flex flex-col gap-3 overflow-y-auto max-h-[420px] snap-y snap-mandatory pb-2 px-1 sm:grid sm:grid-cols-4 lg:grid-cols-5 sm:snap-none sm:max-h-96">
               {visibleItems.map((item: any) => {
                 const isSelected = selectedItems.some(i => i.id === item.id);
+                const selectable = canSelectForTryon(item);
                 const subLabel = getSubcategoryLabel(item.category, item.subcategory);
                 return (
                   <Button
@@ -1239,9 +1252,12 @@ export default function Tryon() {
                     key={item.id}
                     onClick={() => toggleItem(item)}
                     aria-pressed={isSelected}
-                    aria-label={item.name}
+                    aria-disabled={!selectable}
+                    aria-label={selectable ? item.name : `${item.name} (${getAvailability(item.availability).label}, no disponible)`}
                     className={`h-auto justify-start p-0 whitespace-normal w-full sm:w-auto shrink-0 snap-start rounded-xl overflow-hidden bg-card text-left transition-all relative flex sm:block ${
-                      isSelected
+                      !selectable
+                        ? 'cursor-not-allowed shadow-card hover:bg-card'
+                        : isSelected
                         ? 'ring-2 ring-primary shadow-elevated'
                         : 'shadow-card hover:shadow-elevated'
                     }`}
@@ -1252,7 +1268,7 @@ export default function Tryon() {
                       </div>
                     )}
                     <div className="h-20 w-20 shrink-0 sm:h-auto sm:w-auto sm:aspect-square">
-                      <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
+                      <img src={item.image_url} alt={item.name} className={`w-full h-full object-cover ${selectable ? '' : 'opacity-40 grayscale'}`} loading="lazy" />
                     </div>
                     <div className="p-2 space-y-0.5">
                       <p className="text-xs font-body font-medium text-foreground truncate">
@@ -1260,6 +1276,11 @@ export default function Tryon() {
                       </p>
                       {subLabel && (
                         <p className="text-[11px] font-body text-muted-foreground truncate">{subLabel}</p>
+                      )}
+                      {!selectable && (
+                        <p className="text-[11px] font-body font-medium text-destructive truncate">
+                          {getAvailability(item.availability).label}
+                        </p>
                       )}
                     </div>
                   </Button>
