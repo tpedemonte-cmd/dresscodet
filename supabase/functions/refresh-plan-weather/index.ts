@@ -1,5 +1,6 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { adminClient } from '../_shared/backend.ts'
+import type { DataBackend } from '../_shared/backendSelection.ts'
 
 const BATCH_SIZE = 40
 const LOCK_NAME = 'refresh-plan-weather'
@@ -82,36 +83,27 @@ async function fetchForecast(lat: number, lon: number, date: string, time?: stri
   }
 }
 
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+type Db = ReturnType<typeof adminClient>
 
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
+// Each database keeps its own plans and its own lock, so both are refreshed independently.
+async function refreshBackend(supabase: Db) {
+  const now = new Date()
+  const leaseUntil = new Date(now.getTime() + LEASE_MINUTES * 60_000).toISOString()
+
+  const { data: lock } = await supabase
+    .from('job_locks')
+    .select('name, locked_until')
+    .eq('name', LOCK_NAME)
+    .maybeSingle()
+
+  if (lock && lock.locked_until && new Date(lock.locked_until) > now) return { skipped: 'locked' }
+
+  const { error: lockError } = await supabase
+    .from('job_locks')
+    .upsert({ name: LOCK_NAME, locked_until: leaseUntil }, { onConflict: 'name' })
+  if (lockError) throw lockError
 
   try {
-    // Single-flight lock (lease based)
-    const now = new Date()
-    const leaseUntil = new Date(now.getTime() + LEASE_MINUTES * 60_000).toISOString()
-
-    const { data: lock } = await supabase
-      .from('job_locks')
-      .select('name, locked_until')
-      .eq('name', LOCK_NAME)
-      .maybeSingle()
-
-    if (lock && lock.locked_until && new Date(lock.locked_until) > now) {
-      return new Response(JSON.stringify({ skipped: 'locked' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    const { error: lockError } = await supabase
-      .from('job_locks')
-      .upsert({ name: LOCK_NAME, locked_until: leaseUntil }, { onConflict: 'name' })
-    if (lockError) throw lockError
-
     const today = now.toISOString().slice(0, 10)
     const staleCutoff = new Date(now.getTime() - 12 * 3600_000).toISOString()
 
@@ -122,19 +114,12 @@ Deno.serve(async (req) => {
       .or(`temperature.is.null,weather_synced_at.is.null,weather_synced_at.lt.${staleCutoff}`)
       .order('plan_date', { ascending: true })
       .limit(BATCH_SIZE)
-
     if (error) throw error
 
     let updated = 0
     let pending = 0
-
     for (const p of plans ?? []) {
-      const forecast = await fetchForecast(
-        Number(p.latitude),
-        Number(p.longitude),
-        p.plan_date,
-        p.plan_time
-      )
+      const forecast = await fetchForecast(Number(p.latitude), Number(p.longitude), p.plan_date, p.plan_time)
       if (!forecast) {
         // Pronóstico todavía no disponible: se reintenta en la próxima corrida
         pending++
@@ -146,24 +131,34 @@ Deno.serve(async (req) => {
         .eq('id', p.id)
       if (!upErr) updated++
     }
-
-    // Release lock
+    return { checked: plans?.length ?? 0, updated, pending }
+  } finally {
     await supabase
       .from('job_locks')
       .upsert({ name: LOCK_NAME, locked_until: new Date().toISOString() }, { onConflict: 'name' })
-
-    return new Response(
-      JSON.stringify({ checked: plans?.length ?? 0, updated, pending }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  } catch (e) {
-    console.error('refresh-plan-weather error', e)
-    await supabase
-      .from('job_locks')
-      .upsert({ name: LOCK_NAME, locked_until: new Date().toISOString() }, { onConflict: 'name' })
-    return new Response(JSON.stringify({ error: String((e as Error).message ?? e) }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
   }
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+
+  const backends: DataBackend[] = ['cloud']
+  if (Deno.env.get('EXTERNAL_SUPABASE_URL') && Deno.env.get('EXTERNAL_SUPABASE_SECRET_KEY')) backends.push('external')
+
+  const results: Record<string, unknown> = {}
+  let failed = false
+  for (const backend of backends) {
+    try {
+      results[backend] = await refreshBackend(adminClient(backend))
+    } catch (e) {
+      failed = true
+      console.error(`refresh-plan-weather ${backend} error`, e)
+      results[backend] = { error: String((e as Error).message ?? e) }
+    }
+  }
+
+  return new Response(JSON.stringify(results), {
+    status: failed ? 500 : 200,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
 })
